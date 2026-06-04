@@ -61,11 +61,12 @@ export function AdminSettings({
     file: File,
     maxWidth: number,
     maxHeight: number,
-    quality: number = 0.75
+    quality: number = 0.85
   ): Promise<string> => {
     return new Promise((resolve) => {
-      // SVGs don't need scaling or compression, keep them original
-      if (file.type === 'image/svg+xml') {
+      // SVGs and any reasonably sized images (< 600KB) don't need scaling or compression, keep them original. 
+      // This guarantees 100% sharp rendering, exactly as uploaded!
+      if (file.size < 600 * 1024 || file.type === 'image/svg+xml') {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string || '');
         reader.onerror = () => resolve('');
@@ -85,14 +86,18 @@ export function AdminSettings({
           let width = img.width;
           let height = img.height;
 
+          // Increase resolution thresholds to maintain premium crisp details
+          const upperWidth = Math.max(maxWidth, 1000);
+          const upperHeight = Math.max(maxHeight, 1000);
+
           // Scale proportion calculation
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+          if (width > upperWidth) {
+            height = Math.round((height * upperWidth) / width);
+            width = upperWidth;
           }
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+          if (height > upperHeight) {
+            width = Math.round((width * upperHeight) / height);
+            height = upperHeight;
           }
 
           canvas.width = width;
@@ -104,9 +109,16 @@ export function AdminSettings({
             return;
           }
 
-          // Render scaled image to canvas and compress as high-quality JPEG
+          // Render scaled image smoothly
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+          // Support transparency for PNG, WebP or GIF, otherwise use JPEG
+          const isTransparentCompatible = file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/webp';
+          const outputFormat = isTransparentCompatible ? 'image/png' : 'image/jpeg';
+          
+          const dataUrl = canvas.toDataURL(outputFormat, outputFormat === 'image/jpeg' ? quality : undefined);
           resolve(dataUrl);
         };
         img.onerror = () => {

@@ -228,7 +228,7 @@ export function PublicSite({
               <img
                 src={config.logo}
                 alt="Logo AGE"
-                className="w-5.5 h-5.5 sm:w-6.5 sm:h-6.5 object-contain rounded-md border border-white/10"
+                className="max-h-8 sm:max-h-9 max-w-[130px] object-contain rounded-md border border-white/10"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
@@ -1112,7 +1112,7 @@ export function PublicSite({
               <img
                 src={config.logo}
                 alt="Logo AGE"
-                className="w-7 h-7 object-contain rounded border border-white/10 select-none"
+                className="max-h-9 max-w-[110px] object-contain rounded border border-white/10 select-none"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.onerror = null;

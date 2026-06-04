@@ -114,7 +114,7 @@ export const DEFAULT_USERS: Usuario[] = [
     id: 'usr-1',
     nome: 'Akson Pereira',
     email: 'ageeletricasuporte@gmail.com', // Logged in user email is provided as ageeletricasuporte@gmail.com
-    senhaHash: 'Admin@123',
+    senhaHash: '1234',
     nivelAcesso: 'Administrador',
     telefone: '(84) 99888-7766',
     status: 'Ativo',
@@ -559,7 +559,7 @@ export class AgeEletricaDB {
       localStorage.setItem('solicitations', JSON.stringify(DEFAULT_SOLICITATIONS));
       localStorage.setItem(this.initKey, 'true');
     } else {
-      // Force update or ensure admin user ageeletricasuporte@gmail.com has Admin@123 as password
+      // Ensure admin user ageeletricasuporte@gmail.com has correct default or migrated password
       try {
         const storedUsers = localStorage.getItem('users');
         if (storedUsers) {
@@ -567,8 +567,8 @@ export class AgeEletricaDB {
           let modified = false;
           const updatedUsers = users.map((u: any) => {
             if (u.email && u.email.toLowerCase() === 'ageeletricasuporte@gmail.com') {
-              if (u.senhaHash !== 'Admin@123') {
-                u.senhaHash = 'Admin@123';
+              if (u.senhaHash === 'Admin@123') {
+                u.senhaHash = '1234';
                 modified = true;
               }
               if (u.nome !== 'Akson Pereira') {
@@ -644,6 +644,21 @@ export class AgeEletricaDB {
         if (cloudConfigData && (!cloudConfigData.logo || cloudConfigData.logo === "" || !cloudConfigData.logo.includes("svg"))) {
           console.log('Force updating cloud config with initial logoSvg...');
           await setDoc(configRef, { logo: logoSvg, logoPdf: logoSvg }, { merge: true });
+        }
+
+        // Migrate cloud admin user's password from Admin@123 to 1234
+        try {
+          const userDocRef = doc(db, 'users', 'usr-1');
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData && userData.senhaHash === 'Admin@123') {
+              console.log('Migrating cloud user usr-1 password to 1234...');
+              await setDoc(userDocRef, { senhaHash: '1234' }, { merge: true });
+            }
+          }
+        } catch (err) {
+          console.error('Error migrating cloud admin password:', err);
         }
 
         // Force update cloud services count/IDs if they contain old services (or length is not 7)

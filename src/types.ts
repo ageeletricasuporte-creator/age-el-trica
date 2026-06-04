@@ -15,6 +15,7 @@ export interface Usuario {
   status: 'Ativo' | 'Inativo';
   dataCriacao: string;
   ultimoAcesso: string;
+  precisaMudarSenha?: boolean; // Se true, solicita alteração de senha no primeiro acesso
 }
 
 export type TipoCliente = 'Residencial' | 'Comercial' | 'Industrial' | 'Condomínio';

@@ -60,6 +60,13 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  // Password change states
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [userToUpdatePassword, setUserToUpdatePassword] = useState<Usuario | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState('');
+
   // Logged-in user information
   const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -132,11 +139,73 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
         setLoginError('Sua credencial de funcionário foi suspensa do banco!');
         return;
       }
+      
+      // If logging in with default passwords (1234 or Admin@123), force custom password selection
+      if (found.senhaHash === '1234' || found.senhaHash === 'Admin@123' || found.precisaMudarSenha) {
+        setUserToUpdatePassword(found);
+        setShowChangePasswordModal(true);
+        return;
+      }
+
       setCurrentUser(found);
       setIsAuthenticated(true);
       sessionStorage.setItem('age_el_logged_user', JSON.stringify(found));
     } else {
       setLoginError('E-mail ou chave de acesso incorretos. Verifique suas credenciais!');
+    }
+  };
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordChangeError('');
+
+    if (!newPassword || !confirmNewPassword) {
+      setPasswordChangeError('Por favor, preencha os campos da nova senha!');
+      return;
+    }
+
+    if (newPassword === '1234' || newPassword === 'Admin@123') {
+      setPasswordChangeError('A nova senha não pode ser igual às senhas padrões (1234 ou Admin@123)!');
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      setPasswordChangeError('A nova senha deve ter no mínimo 4 caracteres!');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordChangeError('As senhas digitadas não conferem! Verifique.');
+      return;
+    }
+
+    if (userToUpdatePassword) {
+      // Find and update the user in the database
+      const dbUsers = AgeEletricaDB.getUsers();
+      const updatedUsers = dbUsers.map(u => {
+        if (u.id === userToUpdatePassword.id) {
+          return { ...u, senhaHash: newPassword, precisaMudarSenha: false };
+        }
+        return u;
+      });
+
+      // Saving to DB - triggers localStorage and instant Firestore cloud sync
+      AgeEletricaDB.saveUsers(updatedUsers);
+      setUsers(updatedUsers);
+
+      const updatedUser = { ...userToUpdatePassword, senhaHash: newPassword, precisaMudarSenha: false };
+      
+      // Authenticate the user session of the freshly set credentials
+      setCurrentUser(updatedUser);
+      setIsAuthenticated(true);
+      sessionStorage.setItem('age_el_logged_user', JSON.stringify(updatedUser));
+
+      // Reset wizard states
+      setShowChangePasswordModal(false);
+      setUserToUpdatePassword(null);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      alert('Sua senha particular de segurança foi configurada e sincronizada com sucesso!');
     }
   };
 
@@ -259,62 +328,141 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
 
         {/* Center panel */}
         <main className="z-10 w-full max-w-sm mx-auto bg-zinc-950 border border-zinc-900 rounded-3xl p-8 shadow-2xl relative">
-          <div className="text-center mb-6">
-            <span className="p-1 px-1.5 bg-zinc-900 text-amber-500 font-black text-xs rounded border border-zinc-550/20 italic tracking-widest inline-block mb-3">
-              ⚡ AGE ELETRICA
-            </span>
-            <h1 className="text-white text-xl font-black uppercase tracking-tight">Painel de Engenharia</h1>
-            <p className="text-zinc-500 text-[11px] leading-relaxed mt-1">Insira suas chaves funcionais para faturamento de wallbox, agendas e laudos técnicos.</p>
-          </div>
-
-          <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
-            {loginError && (
-              <div className="bg-red-500/10 border border-red-505/20 text-red-400 p-3 rounded-xl font-semibold leading-relaxed">
-                ⚠️ {loginError}
-              </div>
-            )}
-
+          {showChangePasswordModal && userToUpdatePassword ? (
             <div>
-              <label className="text-zinc-400 font-mono block mb-1">E-mail Corporativo</label>
-              <input
-                type="email"
-                value={loginEmail}
-                onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2 px-3 text-white transition font-mono"
-                placeholder="Ex: ageeletricasuporte@gmail.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-zinc-400 font-mono block mb-1">Chave de Segurança / Senha</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-zinc-650 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2 pl-9 pr-3 text-white font-mono"
-                  placeholder="••••••••"
-                  required
-                />
+              <div className="text-center mb-6">
+                <span className="p-1 px-1.5 bg-amber-500/10 text-amber-500 font-black text-[10px] rounded border border-amber-500/20 italic tracking-widest inline-block mb-3">
+                  🔐 COORDENAÇÃO DE SEGURANÇA
+                </span>
+                <h1 className="text-white text-xl font-black uppercase tracking-tight">Nova Senha</h1>
+                <p className="text-zinc-400 text-[11px] leading-relaxed mt-2">
+                  Olá, <strong className="text-white">{userToUpdatePassword.nome}</strong>! Para garantir a segurança integral do seu painel corporativo e de suas assinaturas de orçamentos, você deve redefinir a sua senha provisória de acesso.
+                </p>
               </div>
+
+              <form onSubmit={handleChangePasswordSubmit} className="space-y-4 text-xs">
+                {passwordChangeError && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl font-semibold leading-relaxed">
+                    ⚠️ {passwordChangeError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-zinc-400 font-mono block mb-1">E-mail Cadastrado</label>
+                  <input
+                    type="text"
+                    value={userToUpdatePassword.email}
+                    disabled
+                    className="w-full bg-zinc-900/50 border border-zinc-900 outline-none rounded-xl py-2.5 px-3 text-zinc-500 font-mono cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-zinc-400 font-mono block mb-1">Crie sua Senha Particular</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-650 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2.5 pl-9 pr-3 text-white font-mono"
+                      placeholder="Nova senha pessoal"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-zinc-400 font-mono block mb-1">Confirme a Nova Senha</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-650 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2.5 pl-9 pr-3 text-white font-mono"
+                      placeholder="Repita a senha pessoal"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowChangePasswordModal(false);
+                      setUserToUpdatePassword(null);
+                      setNewPassword('');
+                      setConfirmNewPassword('');
+                      setPasswordChangeError('');
+                    }}
+                    className="w-1/3 bg-zinc-900 hover:bg-zinc-850 hover:text-white border border-zinc-900 text-zinc-400 font-extrabold py-3.5 rounded-xl transition text-[10px] tracking-wider uppercase cursor-pointer"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-2/3 bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-3.5 rounded-xl transition text-[10px] tracking-wider uppercase flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    Gravar Senha <ChevronRight className="w-3.5 h-3.5 text-black" strokeWidth={3} />
+                  </button>
+                </div>
+              </form>
             </div>
+          ) : (
+            <div>
+              <div className="text-center mb-6">
+                <span className="p-1 px-1.5 bg-zinc-900 text-amber-500 font-black text-xs rounded border border-zinc-550/20 italic tracking-widest inline-block mb-3">
+                  ⚡ AGE ELÉTRICA
+                </span>
+                <h1 className="text-white text-xl font-black uppercase tracking-tight">Painel de Engenharia</h1>
+                <p className="text-zinc-500 text-[11px] leading-relaxed mt-1">Insira suas chaves funcionais para faturamento de wallbox, agendas e laudos técnicos.</p>
+              </div>
 
-            <button
-              type="submit"
-              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-3.5 rounded-xl transition text-xs tracking-wider uppercase flex items-center justify-center gap-1.5"
-            >
-              LIBERAR ACESSO <ChevronRight className="w-4 h-4 text-black" strokeWidth={3} />
-            </button>
-          </form>
+              <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+                {loginError && (
+                  <div className="bg-red-500/10 border border-red-505/20 text-red-400 p-3 rounded-xl font-semibold leading-relaxed">
+                    ⚠️ {loginError}
+                  </div>
+                )}
 
-          {/* Quick guidance logins preset */}
-          <div className="border-t border-zinc-900 mt-6 pt-4 text-[10px] text-zinc-500 leading-relaxed font-mono space-y-1 bg-zinc-901 p-3 rounded-xl border border-zinc-950">
-            <span className="block font-bold text-gray-400 mb-1">🔑 Credenciais de Testes Incorporadas:</span>
-            <span>• <strong>Admin:</strong> ageeletricasuporte@gmail.com / Admin@123</span>
-            <span className="block">• <strong>Técnico:</strong> carlos.eletricista@gmail.com / 456789</span>
-          </div>
+                <div>
+                  <label className="text-zinc-400 font-mono block mb-1">E-mail Corporativo</label>
+                  <input
+                    type="email"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2 px-3 text-white transition font-mono"
+                    placeholder="Ex: ageeletricasuporte@gmail.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-zinc-400 font-mono block mb-1">Chave de Segurança / Senha</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-650 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-800 focus:border-amber-500 outline-none rounded-xl py-2 pl-9 pr-3 text-white font-mono"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-3.5 rounded-xl transition text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  LIBERAR ACESSO <ChevronRight className="w-4 h-4 text-black" strokeWidth={3} />
+                </button>
+              </form>
+            </div>
+          )}
         </main>
 
         {/* Footer */}
@@ -341,7 +489,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
           <div className="p-6 border-b border-zinc-900 flex items-center justify-between">
             <div className="flex items-center gap-2">
               {config.logo ? (
-                <img src={config.logo} alt="Logo" className="w-8 h-8 object-contain rounded" referrerPolicy="no-referrer" />
+                <img src={config.logo} alt="Logo" className="max-h-8 max-w-[80px] object-contain rounded" referrerPolicy="no-referrer" />
               ) : (
                 <span className="p-1 px-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 font-black text-xs rounded tracking-widest italic select-none">
                   ⚡ AGE
