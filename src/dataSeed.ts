@@ -25,6 +25,7 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from './firebase';
+import logoSvg from './assets/logo.svg';
 
 // Seed Services
 export const DEFAULT_SERVICES: Servico[] = [
@@ -236,8 +237,8 @@ export const DEFAULT_CONFIG: ConfiguracaoEmpresa = {
   endereco: 'Av. Engenheiro Roberto Freire, 1200 - Capim Macio',
   cidade: 'Natal',
   estado: 'RN',
-  logo: '', // We can draw an elegant SVG
-  logoPdf: '', // Exclusivo para PDFs
+  logo: logoSvg, // Elegant responsive SVG representation
+  logoPdf: logoSvg, // Exclusivo para PDFs
   bannerHero: '', // Banner Hero do site público
   corPrincipal: '#f59e0b', // Yellow Amber
   corSecundaria: '#0f172a', // Slate Dark gray
@@ -586,12 +587,21 @@ export class AgeEletricaDB {
         const storedConfig = localStorage.getItem('config');
         if (storedConfig) {
           const conf = JSON.parse(storedConfig);
+          let modified = false;
           if (conf.cidade === 'São Paulo' || !conf.nomeAdministrador) {
             conf.cidade = 'Natal';
             conf.estado = 'RN';
             conf.endereco = 'Av. Engenheiro Roberto Freire, 1200 - Capim Macio';
             conf.nomeAdministrador = 'Akson Pereira';
             conf.assinaturaDigital = 'Akson Pereira - Diretor Técnico AGE Elétrica';
+            modified = true;
+          }
+          if (!conf.logo || conf.logo === "" || conf.logo.includes("svg") === false) {
+            conf.logo = logoSvg;
+            conf.logoPdf = logoSvg;
+            modified = true;
+          }
+          if (modified) {
             localStorage.setItem('config', JSON.stringify(conf));
           }
         }
@@ -629,6 +639,13 @@ export class AgeEletricaDB {
         await seedCol('solicitations', DEFAULT_SOLICITATIONS);
         console.log('Firebase Cloud database populated successfully!');
       } else {
+        // Force update cloud logo if empty or non-svg on cloud config
+        const cloudConfigData = configDoc.data();
+        if (cloudConfigData && (!cloudConfigData.logo || cloudConfigData.logo === "" || !cloudConfigData.logo.includes("svg"))) {
+          console.log('Force updating cloud config with initial logoSvg...');
+          await setDoc(configRef, { logo: logoSvg, logoPdf: logoSvg }, { merge: true });
+        }
+
         // Force update cloud services count/IDs if they contain old services (or length is not 7)
         const servicesSnapshot = await getDocs(collection(db, 'services'));
         const hasOldServices = servicesSnapshot.docs.length !== 7 || servicesSnapshot.docs.some(doc => doc.id === 'srv-11' || doc.id === 'srv-16');

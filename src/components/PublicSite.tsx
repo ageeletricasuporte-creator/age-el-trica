@@ -219,16 +219,16 @@ export function PublicSite({
       </div>
 
       {/* 3. High-End Capsule Floating Navigation Header */}
-      <div className="sticky top-4 z-40 px-4 w-full flex justify-center no-print bg-transparent pointer-events-none">
-        <header className="w-full max-w-5xl bg-neutral-950/70 backdrop-blur-xl border border-white/[0.06] rounded-full px-6 py-2 flex justify-between items-center shadow-[0_20px_50px_rgba(0,0,0,0.95)] pointer-events-auto transition-all duration-300 hover:border-white/[0.12]">
+      <div className="sticky top-4 z-40 px-4 w-full flex flex-col items-center gap-2.5 no-print bg-transparent pointer-events-none">
+        <header className="w-full max-w-5xl bg-neutral-950/75 backdrop-blur-xl border border-white/[0.06] rounded-full px-4 sm:px-6 py-2 flex justify-between items-center shadow-[0_20px_50px_rgba(0,0,0,0.95)] pointer-events-auto transition-all duration-300 hover:border-white/[0.12]">
           
           {/* Elegant Logo brand */}
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setPublicTab('home')}>
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setPublicTab('home')}>
             {config.logo ? (
               <img
                 src={config.logo}
                 alt="Logo AGE"
-                className="w-6.5 h-6.5 object-contain rounded-md border border-white/10"
+                className="w-5.5 h-5.5 sm:w-6.5 sm:h-6.5 object-contain rounded-md border border-white/10"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
@@ -241,7 +241,7 @@ export function PublicSite({
               </div>
             )}
             <div>
-              <span className="font-black tracking-widest text-[11px] text-white block uppercase">
+              <span className="font-black tracking-widest text-[9.5px] sm:text-[11px] text-white block uppercase">
                 {config.nomeFantasia.split(' ')[0]} <span className="text-[#f2b705]">{config.nomeFantasia.split(' ').slice(1).join(' ')}</span>
               </span>
             </div>
@@ -279,12 +279,40 @@ export function PublicSite({
           <div className="flex items-center gap-3">
             <button
               onClick={onNavigateToRequest}
-              className="px-4.5 py-1.5 bg-gradient-to-r from-amber-500 to-[#f2b705] text-black text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-350 hover:shadow-[0_0_20px_rgba(242,183,5,0.45)] hover:scale-[1.02] cursor-pointer"
+              className="px-3 sm:px-4.5 py-1.5 bg-gradient-to-r from-amber-500 to-[#f2b705] text-black text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-350 hover:shadow-[0_0_20px_rgba(242,183,5,0.45)] hover:scale-[1.02] cursor-pointer"
             >
               Orçamento Rápido
             </button>
           </div>
         </header>
+
+        {/* Sleek Horizontal Tab Bar for Mobile viewports */}
+        <nav className="md:hidden w-full max-w-sm bg-neutral-950/90 backdrop-blur-xl border border-white/[0.06] rounded-full p-1 flex justify-around items-center shadow-lg pointer-events-auto text-[8.5px] font-extrabold uppercase tracking-widest gap-0.5">
+          <button
+            onClick={() => setPublicTab('home')}
+            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+          >
+            Início
+          </button>
+          <button
+            onClick={() => setPublicTab('servicos')}
+            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+          >
+            Catálogo
+          </button>
+          <button
+            onClick={() => setPublicTab('sobre')}
+            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+          >
+            Sobre
+          </button>
+          <button
+            onClick={() => setPublicTab('contato')}
+            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+          >
+            Contato
+          </button>
+        </nav>
       </div>
 
       {/* 4. Tab views controller */}
@@ -325,13 +353,13 @@ export function PublicSite({
                 </p>
 
                 {/* Horizontal list specifications */}
-                <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-zinc-500 font-mono text-[9.5px] uppercase tracking-[0.2em] mb-12 border-t border-b border-white/[0.03] py-4 w-full max-w-3xl">
+                <div className="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-5 gap-y-2 text-zinc-500 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-12 border-t border-b border-white/[0.03] py-4 w-full max-w-3xl px-4 text-center">
                   <span>RESIDÊNCIAS & APARTAMENTOS</span>
-                  <span className="text-[#f2b705]/40 font-bold">•</span>
+                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
                   <span>CARREGADOR INSTALADO WALLBOX</span>
-                  <span className="text-[#f2b705]/40 font-bold">•</span>
+                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
                   <span>SEGURANÇA CFTV</span>
-                  <span className="text-[#f2b705]/40 font-bold">•</span>
+                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
                   <span>AUTOMACÃO SMART HOME</span>
                 </div>
 
@@ -395,7 +423,7 @@ export function PublicSite({
 
                   {/* Right side: Core information block */}
                   <div className="lg:col-span-7 space-y-6">
-                    <span className="text-[9px] font-mono tracking-[0.25em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1.5 rounded-full w-max font-bold block">
+                    <span className="text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1.5 rounded-full inline-block max-w-full font-bold text-center">
                       ⚡ RESPONSABILIDADE SOCIAL E CONFORMIDADE
                     </span>
                     
@@ -506,7 +534,7 @@ export function PublicSite({
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
                   <div className="lg:col-span-8 space-y-4">
-                    <span className="text-[9px] font-mono tracking-[0.25em] text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 px-3.5 py-1.5 rounded-full w-max font-bold block uppercase">
+                    <span className="text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 px-3.5 py-1.5 rounded-full inline-block max-w-full font-bold uppercase">
                       🍃 MOBILIDADE ELÉTRICA SUSTENTÁVEL
                     </span>
                     <h3 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tighter text-white">
@@ -542,7 +570,7 @@ export function PublicSite({
                     >
                       Solicitar Orçamento Wallbox
                     </button>
-                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block text-center lg:text-right">Compatível com condomínios fechados e indústrias</span>
+                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block text-center lg:text-right">Compatível com condomínios fechados e residências</span>
                   </div>
                 </div>
               </div>
@@ -668,7 +696,7 @@ export function PublicSite({
               className="px-4 md:px-8 py-12 max-w-6xl mx-auto space-y-10"
             >
               <div className="text-center sm:text-left space-y-2">
-                <span className="text-[9.5px] font-mono tracking-[0.2em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1 rounded-full w-max block font-bold">
+                <span className="text-[9.5px] font-mono tracking-[0.2em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1 rounded-full inline-block max-w-full font-bold">
                   ⚡ CATÁLOGO COMERCIAL COMPLETO
                 </span>
                 <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white">
@@ -774,7 +802,7 @@ export function PublicSite({
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 <div className="lg:col-span-7 space-y-6">
-                  <span className="text-[9.5px] font-mono tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3.5 py-1.5 rounded-full w-max block uppercase font-bold">
+                  <span className="text-[9.5px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3.5 py-1.5 rounded-full inline-block max-w-full uppercase font-bold text-center sm:text-left">
                     🛡️ CONSTITUIÇÃO DA ORGANIZAÇÃO
                   </span>
                   <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-none">
@@ -857,7 +885,7 @@ export function PublicSite({
                 {/* Channels side */}
                 <div className="lg:col-span-5 flex flex-col space-y-6">
                   <div className="space-y-2">
-                    <span className="text-[9.5px] font-mono tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3 py-1.5 rounded-full w-max block uppercase font-bold">
+                    <span className="text-[9.5px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3 py-1.5 rounded-full inline-block max-w-full uppercase font-bold text-center sm:text-left">
                       📍 CANAIS DIRETOS DE ENTRADA
                     </span>
                     <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
@@ -1073,19 +1101,7 @@ export function PublicSite({
         </AnimatePresence>
       </main>
 
-      {/* 5. Floating Widgets: Beautiful WhatsApp icon lower-right replaced custom supporter frames */}
-      <div className="fixed bottom-6 right-6 z-50 no-print">
-        <button
-          onClick={() => openWhatsAppDirect('Interessado', 'Contato Comercial Rápido')}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white p-3.5 rounded-full shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.6)] flex items-center justify-center transition-all hover:scale-105 group cursor-pointer border border-emerald-450/20"
-          title="Acionar WhatsApp"
-        >
-          <MessageSquare className="w-6 h-6 fill-white text-white" />
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-out font-black text-[10px] tracking-widest uppercase pl-0 group-hover:pl-2.5 whitespace-nowrap">
-            Falar no WhatsApp
-          </span>
-        </button>
-      </div>
+      {/* 5. Floating Widgets removed by user request to keep only compositional site controls */}
 
       {/* 6. Clean Institutional Footer */}
       <footer className="bg-neutral-950 border-t border-white/[0.04] py-12 px-6 text-xs text-zinc-500 z-10 relative">
