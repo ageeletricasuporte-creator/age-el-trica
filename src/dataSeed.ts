@@ -520,6 +520,45 @@ export const DEFAULT_SOLICITATIONS: SolicitacaoPublica[] = [
   }
 ];
 
+// Safe Storage Utility to bypass iframe/third-party cookie/localstorage restrictions on mobile viewports
+const isStorageAvailable = (() => {
+  try {
+    const x = '__storage_test__';
+    localStorage.setItem(x, x);
+    localStorage.removeItem(x);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
+
+const memoryFallbackStorage: Record<string, string> = {};
+
+export class SafeStorage {
+  public static getItem(key: string): string | null {
+    if (isStorageAvailable) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        // Fallback below
+      }
+    }
+    return memoryFallbackStorage[key] || null;
+  }
+
+  public static setItem(key: string, value: string): void {
+    if (isStorageAvailable) {
+      try {
+        localStorage.setItem(key, value);
+        return;
+      } catch (e) {
+        // Fallback below
+      }
+    }
+    memoryFallbackStorage[key] = value;
+  }
+}
+
 // Database Management Class
 export class AgeEletricaDB {
   private static initKey = 'age_eletrica_db_initialized';
@@ -545,23 +584,23 @@ export class AgeEletricaDB {
   }
 
   public static initialize(): void {
-    const isInitializedLocally = localStorage.getItem(this.initKey);
+    const isInitializedLocally = SafeStorage.getItem(this.initKey);
     if (!isInitializedLocally) {
-      localStorage.setItem('users', JSON.stringify(DEFAULT_USERS));
-      localStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
-      localStorage.setItem('clients', JSON.stringify(DEFAULT_CLIENTS));
-      localStorage.setItem('config', JSON.stringify(DEFAULT_CONFIG));
-      localStorage.setItem('budgets', JSON.stringify(DEFAULT_BUDGETS));
-      localStorage.setItem('budget_items', JSON.stringify(DEFAULT_BUDGET_ITEMS));
-      localStorage.setItem('receipts', JSON.stringify(DEFAULT_RECEIPTS));
-      localStorage.setItem('payments', JSON.stringify(DEFAULT_PAYMENTS));
-      localStorage.setItem('appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
-      localStorage.setItem('solicitations', JSON.stringify(DEFAULT_SOLICITATIONS));
-      localStorage.setItem(this.initKey, 'true');
+      SafeStorage.setItem('users', JSON.stringify(DEFAULT_USERS));
+      SafeStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
+      SafeStorage.setItem('clients', JSON.stringify(DEFAULT_CLIENTS));
+      SafeStorage.setItem('config', JSON.stringify(DEFAULT_CONFIG));
+      SafeStorage.setItem('budgets', JSON.stringify(DEFAULT_BUDGETS));
+      SafeStorage.setItem('budget_items', JSON.stringify(DEFAULT_BUDGET_ITEMS));
+      SafeStorage.setItem('receipts', JSON.stringify(DEFAULT_RECEIPTS));
+      SafeStorage.setItem('payments', JSON.stringify(DEFAULT_PAYMENTS));
+      SafeStorage.setItem('appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
+      SafeStorage.setItem('solicitations', JSON.stringify(DEFAULT_SOLICITATIONS));
+      SafeStorage.setItem(this.initKey, 'true');
     } else {
       // Ensure admin user ageeletricasuporte@gmail.com has correct default or migrated password
       try {
-        const storedUsers = localStorage.getItem('users');
+        const storedUsers = SafeStorage.getItem('users');
         if (storedUsers) {
           const users = JSON.parse(storedUsers);
           let modified = false;
@@ -579,12 +618,12 @@ export class AgeEletricaDB {
             return u;
           });
           if (modified) {
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            SafeStorage.setItem('users', JSON.stringify(updatedUsers));
           }
         }
 
         // Also force update config location constraints (Natal / RN) if still set to São Paulo
-        const storedConfig = localStorage.getItem('config');
+        const storedConfig = SafeStorage.getItem('config');
         if (storedConfig) {
           const conf = JSON.parse(storedConfig);
           let modified = false;
@@ -602,7 +641,7 @@ export class AgeEletricaDB {
             modified = true;
           }
           if (modified) {
-            localStorage.setItem('config', JSON.stringify(conf));
+            SafeStorage.setItem('config', JSON.stringify(conf));
           }
         }
       } catch (e) {
@@ -672,7 +711,7 @@ export class AgeEletricaDB {
           for (const item of DEFAULT_SERVICES) {
             await setDoc(doc(db, 'services', item.id), item);
           }
-          localStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
+          SafeStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
           console.log('Cloud services corrected with updated 7 items!');
         }
       }
@@ -708,11 +747,11 @@ export class AgeEletricaDB {
           if (colInfo.isSingle) {
             const docData = snapshot.docs[0]?.data();
             if (docData) {
-              localStorage.setItem(colInfo.name, JSON.stringify(docData));
+              SafeStorage.setItem(colInfo.name, JSON.stringify(docData));
             }
           } else {
             const listData = snapshot.docs.map(d => d.data());
-            localStorage.setItem(colInfo.name, JSON.stringify(listData));
+            SafeStorage.setItem(colInfo.name, JSON.stringify(listData));
           }
           this.notifySubscribers();
         } catch (e) {
@@ -771,13 +810,13 @@ export class AgeEletricaDB {
   // Generic Get & Set
   public static get<T>(key: string, defaultValue: T): T {
     this.initialize();
-    const data = localStorage.getItem(key);
+    const data = SafeStorage.getItem(key);
     return data ? JSON.parse(data) : defaultValue;
   }
 
   public static set(key: string, value: any): void {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      SafeStorage.setItem(key, JSON.stringify(value));
     } catch (e: any) {
       if (
         e.name === 'QuotaExceededError' ||
