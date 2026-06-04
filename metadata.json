@@ -1,0 +1,6 @@
+{
+  "name": "AGE Elétrica - Orçamentos e Serviços",
+  "description": "Sistema de gestão de clientes, orçamentos, recibos, agenda e serviços para a AGE Elétrica",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

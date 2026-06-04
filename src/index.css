@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #050505; /* editorial pitch black */
+  color: #ffffff; /* absolute white text contrast */
+  overflow-x: hidden;
+}
+
+/* Custom electric gold neon hover scrollbar etc */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+::-webkit-scrollbar-thumb {
+  background: #f2b705;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ffc107;
+}
+
+/* Print CSS setup for premium PDF layout printing */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+}
+
+.glow-amber {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+.glow-amber-strong {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);
+}
+
+.tech-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(242, 183, 5, 0.012) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(242, 183, 5, 0.012) 1px, transparent 1px);
+}
+

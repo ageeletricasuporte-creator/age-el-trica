@@ -1,0 +1,263 @@
+{
+  "entities": {
+    "Usuario": {
+      "title": "Usuario",
+      "description": "Dados operacionais de usuários e permissões do sistema",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "senhaHash": { "type": "string" },
+        "nivelAcesso": { "type": "string" },
+        "telefone": { "type": "string" },
+        "status": { "type": "string" },
+        "dataCriacao": { "type": "string" },
+        "ultimoAcesso": { "type": "string" }
+      },
+      "required": ["id", "nome", "email", "senhaHash", "nivelAcesso", "status"]
+    },
+    "Cliente": {
+      "title": "Cliente",
+      "description": "Informações cadastrais e de contato de clientes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nomeCompleto": { "type": "string" },
+        "cpfCnpj": { "type": "string" },
+        "telefone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "email": { "type": "string" },
+        "enderecoCompleto": { "type": "string" },
+        "numero": { "type": "string" },
+        "complemento": { "type": "string" },
+        "bairro": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" },
+        "cep": { "type": "string" },
+        "tipoCliente": { "type": "string" },
+        "observacoes": { "type": "string" },
+        "dataCadastro": { "type": "string" },
+        "statusCliente": { "type": "string" }
+      },
+      "required": ["id", "nomeCompleto", "telefone", "tipoCliente"]
+    },
+    "Servico": {
+      "title": "Servico",
+      "description": "Especificações e tabela de preços base de serviços elétricos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nomeServico": { "type": "string" },
+        "categoria": { "type": "string" },
+        "descricao": { "type": "string" },
+        "precoBase": { "type": "number" },
+        "unidadeCobranca": { "type": "string" },
+        "tempoMedio": { "type": "string" },
+        "status": { "type": "string" },
+        "observacoesTecnicas": { "type": "string" }
+      },
+      "required": ["id", "nomeServico", "categoria", "precoBase", "unidadeCobranca"]
+    },
+    "Orcamento": {
+      "title": "Orcamento",
+      "description": "Documentos de orçamentos emitidos para os clientes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "numeroOrcamento": { "type": "string" },
+        "clienteId": { "type": "string" },
+        "dataOrcamento": { "type": "string" },
+        "validadeOrcamento": { "type": "string" },
+        "responsavelOrcamento": { "type": "string" },
+        "status": { "type": "string" },
+        "descricaoGeral": { "type": "string" },
+        "localServico": { "type": "string" },
+        "formaPagamento": { "type": "string" },
+        "prazoExecucao": { "type": "string" },
+        "observacoes": { "type": "string" },
+        "subtotal": { "type": "number" },
+        "desconto": { "type": "number" },
+        "valorTotal": { "type": "number" },
+        "dataCriacao": { "type": "string" },
+        "dataAtualizacao": { "type": "string" }
+      },
+      "required": ["id", "numeroOrcamento", "clienteId", "status", "valorTotal"]
+    },
+    "ItemOrcamento": {
+      "title": "ItemOrcamento",
+      "description": "Itens de serviço vinculados a um orçamento específico",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orcamentoId": { "type": "string" },
+        "servicoId": { "type": "string" },
+        "descricaoItem": { "type": "string" },
+        "quantidade": { "type": "number" },
+        "unidade": { "type": "string" },
+        "valorUnitario": { "type": "number" },
+        "valorTotal": { "type": "number" },
+        "observacaoItem": { "type": "string" }
+      },
+      "required": ["id", "orcamentoId", "servicoId", "quantidade", "valorUnitario", "valorTotal"]
+    },
+    "Recibo": {
+      "title": "Recibo",
+      "description": "Recibos de pagamento gerados para comprovação financeira",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "numeroRecibo": { "type": "string" },
+        "clienteId": { "type": "string" },
+        "orcamentoId": { "type": "string" },
+        "dataEmissao": { "type": "string" },
+        "valorRecebido": { "type": "number" },
+        "formaPagamento": { "type": "string" },
+        "referenteServico": { "type": "string" },
+        "responsavelRecebimento": { "type": "string" },
+        "observacoes": { "type": "string" },
+        "status": { "type": "string" },
+        "assinaturaResponsavel": { "type": "string" },
+        "dataCriacao": { "type": "string" }
+      },
+      "required": ["id", "numeroRecibo", "clienteId", "valorRecebido", "status"]
+    },
+    "Pagamento": {
+      "title": "Pagamento",
+      "description": "Transações financeiras e acompanhamento de recebíveis",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clienteId": { "type": "string" },
+        "orcamentoId": { "type": "string" },
+        "reciboId": { "type": "string" },
+        "valor": { "type": "number" },
+        "formaPagamento": { "type": "string" },
+        "dataPagamento": { "type": "string" },
+        "status": { "type": "string" },
+        "comprovante": { "type": "string" },
+        "observacoes": { "type": "string" }
+      },
+      "required": ["id", "clienteId", "valor", "status"]
+    },
+    "Atendimento": {
+      "title": "Atendimento",
+      "description": "Agendamentos de visitas técnicas e ordens de serviço executadas",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clienteId": { "type": "string" },
+        "orcamentoId": { "type": "string" },
+        "tecnicoResponsavel": { "type": "string" },
+        "dataAgendada": { "type": "string" },
+        "horario": { "type": "string" },
+        "status": { "type": "string" },
+        "descricaoAtendimento": { "type": "string" },
+        "observacoesTecnicas": { "type": "string" },
+        "fotosAntes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fotosDepois": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "assinaturaCliente": { "type": "string" },
+        "dataFinalizacao": { "type": "string" }
+      },
+      "required": ["id", "clienteId", "dataAgendada", "horario", "status"]
+    },
+    "ConfiguracaoEmpresa": {
+      "title": "ConfiguracaoEmpresa",
+      "description": "Definições e dados institucionais da empresa",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nomeEmpresa": { "type": "string" },
+        "nomeFantasia": { "type": "string" },
+        "cnpj": { "type": "string" },
+        "telefone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "email": { "type": "string" },
+        "endereco": { "type": "string" },
+        "cidade": { "type": "string" },
+        "estado": { "type": "string" },
+        "logo": { "type": "string" },
+        "logoPdf": { "type": "string" },
+        "bannerHero": { "type": "string" },
+        "corPrincipal": { "type": "string" },
+        "corSecundaria": { "type": "string" },
+        "chavePix": { "type": "string" },
+        "dadosBancarios": { "type": "string" },
+        "textoPadraoOrcamento": { "type": "string" },
+        "textoPadraoRecibo": { "type": "string" },
+        "assinaturaDigital": { "type": "string" },
+        "rodapePdf": { "type": "string" },
+        "nomeAdministrador": { "type": "string" }
+      },
+      "required": ["id", "nomeEmpresa", "nomeFantasia", "cnpj", "telefone", "whatsapp", "email"]
+    },
+    "SolicitacaoPublica": {
+      "title": "SolicitacaoPublica",
+      "description": "Pedidos de orçamento enviados publicamente por clientes a partir do site",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nome": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "endereco": { "type": "string" },
+        "bairro": { "type": "string" },
+        "cidade": { "type": "string" },
+        "tipoServico": { "type": "string" },
+        "descricaoProblema": { "type": "string" },
+        "foto": { "type": "string" },
+        "melhorHorario": { "type": "string" },
+        "dataSolicitacao": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "nome", "whatsapp", "tipoServico", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "Usuario",
+      "description": "Coleção de usuários de gestão do painel operacional"
+    },
+    "/services/{serviceId}": {
+      "schema": "Servico",
+      "description": "Tabela de serviços e valores oferecidos pela empresa"
+    },
+    "/clients/{clientId}": {
+      "schema": "Cliente",
+      "description": "Registros cadastrais dos clientes"
+    },
+    "/config/{configId}": {
+      "schema": "ConfiguracaoEmpresa",
+      "description": "Configurações institucionais da empresa"
+    },
+    "/budgets/{budgetId}": {
+      "schema": "Orcamento",
+      "description": "Cabeçalho de orçamentos e status"
+    },
+    "/budget_items/{itemId}": {
+      "schema": "ItemOrcamento",
+      "description": "Itens individuais componentes dos orçamentos"
+    },
+    "/receipts/{receiptId}": {
+      "schema": "Recibo",
+      "description": "Recibos emitidos aos clientes"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Pagamento",
+      "description": "Histórico de pagamentos efetuados"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Atendimento",
+      "description": "Agendamentos integrados com o painel administrador"
+    },
+    "/solicitations/{solicitationId}": {
+      "schema": "SolicitacaoPublica",
+      "description": "Solicitações externas enviadas pelo site público"
+    }
+  }
+}
