@@ -162,25 +162,25 @@ export function PublicSite({
     {
       author: "Dra. Clarice Vasconcelos",
       location: "Petrópolis, Natal",
-      role: "Sindica Residencial",
-      text: "Excelente projeto na reforma do quadro elétrico do nosso edifício. Laudo de conformidade NBR 5410 emitido de forma impecável. Profissionais limpos, ágeis e de altíssima categoria técnica.",
-      category: "Predial",
+      role: "Moradora de Apartamento",
+      text: "Excelente projeto na reforma do quadro elétrico do nosso apartamento. Laudo de conformidade técnica emitido de forma impecável. Profissionais altamente capacitados, limpos e atenciosos.",
+      category: "Residencial / Ap",
       rating: 5
     },
     {
-      author: "Eng. Ricardo Fontes",
+      author: "Juliano Fontes",
       location: "Ponta Negra, Natal",
-      role: "Diretor Comercial - Construtora RN",
-      text: "Parceria forte na instalação técnica de múltiplos carregadores BYD Wallbox de alta capacidade para nossa garagem comercial. Homologação rápida, cabeamento de bitola perfeita e acabamento cirúrgico.",
+      role: "Proprietário de Veículo Elétrico",
+      text: "Instalação técnica impecável do meu carregador BYD Wallbox de alta capacidade para minha vaga de garagem. Homologação rápida, cabeamento dimensionado com perfeição e acabamento cirúrgico.",
       category: "Wallbox",
       rating: 5
     },
     {
       author: "Marcos Aurelio Macedo",
       location: "Lagoa Nova, Natal",
-      role: "Proprietário - Clínica OdontoTech",
-      text: "Estávamos parados com curtos frequentes na rede de ar condicionado. A equipe chegou rápido, realizou testes digitais com aparelhos calibrados, isolou a falha e sanou em menos de duas horas.",
-      category: "Comercial / Manutenção",
+      role: "Residência Unifamiliar",
+      text: "Estávamos parados com curto frequente na rede do ar condicionado e tomadas. A equipe chegou rápido, realizou testes digitais com aparelhos calibrados, isolou a falha e sanou tudo no mesmo dia.",
+      category: "Manutenção & Ar",
       rating: 5
     }
   ];
@@ -204,7 +204,7 @@ export function PublicSite({
               <Zap className="w-3 h-3 text-[#f2b705] animate-pulse" /> Atendimento 24h Natal/RN Metropolitano
             </span>
             <span className="hidden md:inline text-zinc-800">|</span>
-            <span className="hidden md:inline text-zinc-500 font-normal">Normas de Engenharia Federal (NBR 5410, NR10, NR35)</span>
+            <span className="hidden md:inline text-zinc-500 font-normal">Normas de Instalações Elétricas (NBR 5410, NR10, NR35)</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-[#f2b705] font-mono tracking-tight font-bold">{config.telefone}</span>
@@ -309,30 +309,30 @@ export function PublicSite({
                 {/* Sub-header badge outline */}
                 <div className="mb-8 select-none">
                   <div className="inline-flex items-center gap-2 bg-[#f2b705]/[0.03] border border-[#f2b705]/20 text-[#f2b705] px-5 py-2.5 rounded-full text-[9px] font-mono tracking-[0.25em] uppercase font-bold backdrop-blur-sm shadow-[0_4px_15px_rgba(242,183,5,0.05)]">
-                    <Sparkles className="w-3.5 h-3.5 text-[#f2b705] fill-[#f2b705]/20" /> ALTA OPERACIONALIDADE DE ENGENHARIA ELÉTRICA
+                    <Sparkles className="w-3.5 h-3.5 text-[#f2b705] fill-[#f2b705]/20" /> SEU ELETRICISTA AMIGO
                   </div>
                 </div>
 
                 {/* Main Hero giant title */}
                 <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter text-white mb-6 uppercase select-none leading-none">
-                  A NOVA COMEDIÇÃO <br />
-                  DA ENERGIA <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f2b705] via-amber-400 to-amber-500 drop-shadow-[0_0_50px_rgba(242,183,5,0.2)]">PREMIUM</span>
+                  SEU ELETRICISTA <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f2b705] via-amber-400 to-amber-500 drop-shadow-[0_0_50px_rgba(242,183,5,0.2)]">AMIGO</span>
                 </h1>
 
                 {/* Tagline sentence */}
                 <p className="text-zinc-400 font-light text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed mb-10 text-center">
-                  Oferecemos projetos e manutenção residencial, predial e industrial de alto padrão com absoluto cumprimento de normas de engenharia e foco em soluções sustentáveis.
+                  Oferecemos instalações residenciais e apartamentos, reparos elétricos rápidos, manutenção preventiva técnica, câmeras de segurança CFTV, carregadores Wallbox, ar condicionado e automação residencial, com total segurança e compromisso para você e seu lar.
                 </p>
 
                 {/* Horizontal list specifications */}
                 <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-zinc-500 font-mono text-[9.5px] uppercase tracking-[0.2em] mb-12 border-t border-b border-white/[0.03] py-4 w-full max-w-3xl">
-                  <span>SISTEMA DE FORÇA</span>
+                  <span>RESIDÊNCIAS & APARTAMENTOS</span>
                   <span className="text-[#f2b705]/40 font-bold">•</span>
-                  <span>MOBILIDADE ELÉTRICA (WALLBOX)</span>
+                  <span>CARREGADOR INSTALADO WALLBOX</span>
                   <span className="text-[#f2b705]/40 font-bold">•</span>
-                  <span>PROJETOS NBR 5410</span>
+                  <span>SEGURANÇA CFTV</span>
                   <span className="text-[#f2b705]/40 font-bold">•</span>
-                  <span>AUTOMAÇÃO PREDIAL</span>
+                  <span>AUTOMACÃO SMART HOME</span>
                 </div>
 
                 {/* Hero Button Action Groups aligning side-by-side */}
@@ -400,7 +400,7 @@ export function PublicSite({
                     </span>
                     
                     <h2 className="text-3.5xl sm:text-5xl font-extrabold text-white uppercase tracking-tight leading-none">
-                      ENGENHARIA QUE PROTEGE SEU FAMILIAR E PATRIMÔNIO
+                      SERVIÇO TÉCNICO QUE PROTEGE SEU FAMILIAR E PATRIMÔNIO
                     </h2>
                     
                     <p className="text-zinc-405 text-sm leading-relaxed text-zinc-400">
@@ -568,7 +568,7 @@ export function PublicSite({
                       02
                     </div>
                     <h4 className="text-white font-extrabold text-xs uppercase tracking-widest mb-2 block">Orçamento Técnico</h4>
-                    <p className="text-zinc-500 text-[11px] leading-relaxed">Nossa engenharia analisa o caso e formata uma discriminação estruturada de custos, peças homologadas e prazos.</p>
+                    <p className="text-zinc-500 text-[11px] leading-relaxed">Nossa equipe técnica analisa o caso e formata uma discriminação estruturada de custos, peças homologadas e prazos.</p>
                   </div>
 
                   <div className="bg-neutral-900/[0.15] p-7 rounded-2xl border border-white/[0.04] relative">
@@ -593,7 +593,7 @@ export function PublicSite({
               <div className="max-w-6xl mx-auto space-y-12">
                 <div className="text-center max-w-xl mx-auto">
                   <h2 className="text-3xl font-black uppercase tracking-tighter text-white">RECONHECIMENTO REGIONAL</h2>
-                  <p className="text-zinc-500 text-xs sm:text-sm mt-1">Opinião de quem confiou nossos engenheiros em Natal e região metropolitana</p>
+                  <p className="text-zinc-500 text-xs sm:text-sm mt-1">Opinião de quem confiou nossos técnicos eletricistas em Natal e região metropolitana</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -633,7 +633,7 @@ export function PublicSite({
                 
                 <div className="max-w-2xl mx-auto space-y-6 relative z-10">
                   <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter uppercase leading-none">
-                    PRONTO PARA SOLICITAR <br />UM ENGENHEIRO DA <span className="text-[#f2b705]">AGE ELÉTRICA</span>?
+                    PRONTO PARA SOLICITAR <br />UM TÉCNICO ELETRICISTA DA <span className="text-[#f2b705]">AGE ELÉTRICA</span>?
                   </h3>
                   <p className="text-zinc-400 text-sm leading-relaxed font-light">
                     Evite perigos de fios expostos ou dimensionamentos errôneos. Deixe nossa equipe de especialistas resolver seu caso rapidamente. Preencha agora e agende uma vistoria prioritária.
@@ -781,10 +781,10 @@ export function PublicSite({
                     Quem Somos Nós
                   </h1>
                   <p className="text-zinc-400 text-base leading-relaxed font-light">
-                    A AGE Elétrica é consolidada por sua alta capacitação técnica. Unimos o rigor mecânico e de engenharia com a agilidade produtiva de atendimento a Natal/RN e bacias metropolitanas.
+                    A AGE Elétrica é consolidada por sua alta capacitação técnica. Unimos o rigor das normas técnicas e da eletricidade recomendada com a agilidade produtiva de atendimento a Natal/RN e bacias metropolitanas.
                   </p>
                   <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed">
-                    Nossos engenheiros e técnicos parceiros são devidamente diplomados e portadores de carteiras operacionais ativas do conselho de engenharia, ostentando treinamentos obrigatórios federais das normas regulamentadoras de risco NR10 e de trabalho em alturas NR35. Isto assegura que qualquer modificação estrutural de rede não traga futuros dores de cabeça regulatórios, físicos ou perdas securitárias.
+                    Nossos eletricistas e técnicos parceiros são altamente capacitados, qualificados e certificados, ostentando credenciamento e treinamentos obrigatórios federais das normas regulamentadoras de risco NR10 e de trabalho em alturas NR35. Isto assegura que qualquer modificação estrutural de rede não traga futuros dores de cabeça regulatórios, físicos ou perdas securitárias.
                   </p>
                 </div>
 
@@ -812,7 +812,7 @@ export function PublicSite({
                       <Cpu className="text-emerald-400 shrink-0 w-5 h-5 mt-0.5" />
                       <div>
                         <span className="font-bold text-white text-xs uppercase tracking-wider block">Inovação e Mobilidade</span>
-                        <span className="text-zinc-500 text-xs mt-0.5 block leading-relaxed">Dimensionamentos corretos de redes para super-wallbox com segurança predial.</span>
+                        <span className="text-zinc-500 text-xs mt-0.5 block leading-relaxed">Dimensionamentos corretos de redes para super-wallbox com total segurança e proteção residencial.</span>
                       </div>
                     </div>
                   </div>
@@ -925,7 +925,7 @@ export function PublicSite({
                 <div className="lg:col-span-7 bg-neutral-900/[0.15] border border-white/[0.04] p-8 rounded-3xl relative shadow-2xl space-y-6">
                   <div>
                     <h3 className="text-xl font-bold uppercase tracking-tight text-white">Solicitar Orçamento Online</h3>
-                    <p className="text-zinc-500 text-xs mt-1">Nossa engenharia fará um diagnóstico preliminar do seu caso para envio de proposta.</p>
+                    <p className="text-zinc-500 text-xs mt-1">Nossa equipe técnica fará um diagnóstico preliminar do seu caso para envio de proposta eletrônica.</p>
                   </div>
 
                   {contactSuccess ? (
@@ -1027,7 +1027,7 @@ export function PublicSite({
                             {services.map(s => (
                               <option key={s.id} value={s.nomeServico}>{s.nomeServico}</option>
                             ))}
-                            <option value="Outro">Outro serviço de engenharia</option>
+                            <option value="Outro">Outro serviço técnico elétrico</option>
                           </select>
                         </div>
                       </div>

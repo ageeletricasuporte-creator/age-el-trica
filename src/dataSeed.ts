@@ -30,179 +30,80 @@ import { db, handleFirestoreError, OperationType } from './firebase';
 export const DEFAULT_SERVICES: Servico[] = [
   {
     id: 'srv-1',
-    nomeServico: 'Instalação de chuveiro elétrico',
-    categoria: 'Instalação',
-    descricao: 'Instalação completa de chuveiro elétrico ou ducha, incluindo passagem de fiação adequada se necessário, conexões hidráulicas e testes de temperatura.',
-    precoBase: 150.00,
+    nomeServico: 'Instalações residenciais e apartamentos',
+    categoria: 'Residencial',
+    descricao: 'Redimensionamento completo, projetos de fiação, identificação e reorganização de quadros elétricos em residências e apartamentos.',
+    precoBase: 350.00,
     unidadeCobranca: 'serviço',
-    tempoMedio: '1 hora',
+    tempoMedio: '4 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Requer disjuntor exclusivo e fiação de seção mínima de 6mm² para potências até 7500W em 220V.'
+    observacoesTecnicas: 'Instalação feita em conformidade com as normas técnicas de segurança NBR 5410 com condutores antichama.'
   },
   {
     id: 'srv-2',
-    nomeServico: 'Troca de disjuntores',
-    categoria: 'Manutenção',
-    descricao: 'Substituição de disjuntores antigos ou danificados no quadro de distribuição, garantindo o correto dimensionamento e proteção dos circuitos.',
-    precoBase: 80.00,
-    unidadeCobranca: 'ponto',
-    tempoMedio: '30 minutos',
+    nomeServico: 'Reparos elétricos gerais',
+    categoria: 'Reparo',
+    descricao: 'Localização imediata e correção de curtos-circuitos, tomadas danificadas, fiação superaquecida e troca de disjuntores.',
+    precoBase: 120.00,
+    unidadeCobranca: 'visita',
+    tempoMedio: '1.5 hora',
     status: 'Ativo',
-    observacoesTecnicas: 'Substituição por modelos padrão DIN de curvas compatíveis (B para cargas resistivas, C para indutivas).'
+    observacoesTecnicas: 'Isolamento de falhas, teste de continuidade e substituição de componentes danificados utilizando equipamentos calibrados.'
   },
   {
     id: 'srv-3',
-    nomeServico: 'Instalação de tomadas',
-    categoria: 'Instalação',
-    descricao: 'Instalação de novos pontos de tomada ou substituição de espelhos e módulos antigos pelo padrão brasileiro de 3 pinos (10A ou 20A).',
-    precoBase: 40.00,
-    unidadeCobranca: 'ponto',
-    tempoMedio: '20 minutos',
+    nomeServico: 'Manutenção preventiva',
+    categoria: 'Manutenção',
+    descricao: 'Revisão periódica do quadro de distribuição, reaperto geral de conexões para evitar pontos quentes, testes de fuga de corrente e bom funcionamento de IDR/DPS.',
+    precoBase: 180.00,
+    unidadeCobranca: 'serviço',
+    tempoMedio: '2 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Conexão adequada dos condutores fase, neutro e aterramento conforme NBR 5410.'
+    observacoesTecnicas: 'Varredura de circuitos, identificação visual de fiação antiga e testes dinâmicos de isolamento.'
   },
   {
     id: 'srv-4',
-    nomeServico: 'Instalação de interruptores',
-    categoria: 'Instalação',
-    descricao: 'Instalação ou troca de interruptores comuns, paralelos (Three-Way) ou intermediários (Four-Way).',
-    precoBase: 45.00,
-    unidadeCobranca: 'ponto',
-    tempoMedio: '25 minutos',
+    nomeServico: 'Instalação de câmeras CFTV',
+    categoria: 'Segurança',
+    descricao: 'Posicionamento, cabeamento estruturado e instalação inteligente de câmeras de segurança CFTV (IP ou analógicas) com configuração no seu smartphone.',
+    precoBase: 250.00,
+    unidadeCobranca: 'serviço',
+    tempoMedio: '3 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Verificação do corte fase direto no interruptor, evitando levar o neutro direto à chave.'
+    observacoesTecnicas: 'Utilização de fontes estabilizadas blindadas e conectores de alta qualidade evitando perdas de sinal.'
   },
   {
     id: 'srv-5',
-    nomeServico: 'Instalação de luminárias',
-    categoria: 'Iluminação',
-    descricao: 'Fixação e ligação elétrica de lustres, plafons, spots de LED, painéis embutidos ou sobrepostos e fitas de LED.',
-    precoBase: 90.00,
+    nomeServico: 'Instalação de carregador veicular Wallbox',
+    categoria: 'Recarga veicular',
+    descricao: 'Criação de infraestrutura dedicada e instalação completa de estações de carregamento rápido (Wallbox) ou portáteis de alta eficiência para veículos elétricos.',
+    precoBase: 850.00,
     unidadeCobranca: 'serviço',
-    tempoMedio: '45 minutos',
+    tempoMedio: '4 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Isolamento perfeito das emendas e fixação segura em forros de gesso ou lajes com as buchas adequadas.'
+    observacoesTecnicas: 'Dimensionamento correto de cabos condutores de alta isolação elétrica, disjuntores dedicados e DPS.'
   },
   {
     id: 'srv-6',
-    nomeServico: 'Manutenção elétrica residencial',
-    categoria: 'Manutenção',
-    descricao: 'Localização e correção de curtos-circuitos, quedas de tensão, fugas de corrente ou fiação sobreaquecida em residências.',
-    precoBase: 120.00,
-    unidadeCobranca: 'hora',
-    tempoMedio: '2 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Uso de alicate amperímetro e megômetro caso necessário para detectar fugas de isolamento.'
-  },
-  {
-    id: 'srv-7',
-    nomeServico: 'Manutenção elétrica comercial',
-    categoria: 'Manutenção',
-    descricao: 'Diagnóstico e reparo elétrico em comércios, lojas ou escritórios, focando no menor tempo de interrupção operacional.',
-    precoBase: 150.00,
-    unidadeCobranca: 'hora',
-    tempoMedio: '3 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Revisão das tomadas de uso comercial, iluminação de emergência e balanceamento de fases.'
-  },
-  {
-    id: 'srv-8',
-    nomeServico: 'Montagem de quadro de distribuição',
-    categoria: 'Quadro elétrico',
-    descricao: 'Montagem completa de Quadro de Distribuição de Circuitos (QDC), incluindo barramentos de fase, neutro e terra, disjuntor geral, IDR e DPS.',
-    precoBase: 650.00,
-    unidadeCobranca: 'serviço',
-    tempoMedio: '6 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Dimensionamento balanceado das fases, identificação adequada de todos os circuitos e fiação organizada com anilhas e canaletas.'
-  },
-  {
-    id: 'srv-9',
-    nomeServico: 'Aterramento elétrico',
-    categoria: 'Segurança elétrica',
-    descricao: 'Instalação de eletrodo de aterramento (hastes de cobre), conexão de caixa de inspeção e condutor de aterramento principal até o QDC.',
-    precoBase: 400.00,
-    unidadeCobranca: 'serviço',
-    tempoMedio: '4 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Medição da resistência de aterramento buscando valores inferiores a 10 ohms para garantir máxima eficiência.'
-  },
-  {
-    id: 'srv-10',
-    nomeServico: 'Instalação de DPS',
-    categoria: 'Segurança elétrica',
-    descricao: 'Instalação de Dispositivo de Proteção contra Surtos (DPS) no quadro de energia para proteger equipamentos queimados por descargas atmosféricas.',
-    precoBase: 120.00,
-    unidadeCobranca: 'ponto',
-    tempoMedio: '1 hora',
-    status: 'Ativo',
-    observacoesTecnicas: 'Conectado em paralelo com a rede, antes do DR, encaminhando o surto diretamente para o barramento de aterramento.'
-  },
-  {
-    id: 'srv-11',
-    nomeServico: 'Instalação de DR',
-    categoria: 'Segurança elétrica',
-    descricao: 'Instalação de Dispositivo Diferencial Residual (DR / IDR) para proteção de pessoas contra choques elétricos fatais (fuga de corrente).',
-    precoBase: 180.00,
-    unidadeCobranca: 'serviço',
-    tempoMedio: '1.5 hora',
-    status: 'Ativo',
-    observacoesTecnicas: 'Obrigatório para circuitos que servem áreas molhadas (cozinha, banheiros, lavanderias, áreas externas) conforme NBR 5410.'
-  },
-  {
-    id: 'srv-12',
-    nomeServico: 'Revisão elétrica preventiva',
-    categoria: 'Segurança elétrica',
-    descricao: 'Check-up completo das instalações, reaperto de conexões (evitando pontos quentes), teste mecânico de disjuntores e medição de isolamento.',
-    precoBase: 250.00,
-    unidadeCobranca: 'visita',
-    tempoMedio: '2.5 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Inspeção visual com foco em fios desencapados, gambiarras e emendas mal executadas.'
-  },
-  {
-    id: 'srv-13',
-    nomeServico: 'Instalação de carregador veicular',
-    categoria: 'Recarga veicular',
-    descricao: 'Infraestrutura completa para instalação de carregador veicular comum ou portátil de alta corrente.',
-    precoBase: 500.00,
-    unidadeCobranca: 'serviço',
-    tempoMedio: '4 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Definição de cabo dimensionado, preferencialmente blindado, ligado a disjuntor de curva C e IDR tipo A.'
-  },
-  {
-    id: 'srv-14',
-    nomeServico: 'Instalação de Wallbox',
-    categoria: 'Recarga veicular',
-    descricao: 'Instalação física e elétrica de estação de recarga rápida Wallbox com fiação exclusiva de alta potência (até 22kW).',
-    precoBase: 950.00,
-    unidadeCobranca: 'serviço',
-    tempoMedio: '5 horas',
-    status: 'Ativo',
-    observacoesTecnicas: 'Requer linha dedicada de cobre de alta bitola, DPS exclusivo e IDR classe A ou B de sensibilidade de 30mA.'
-  },
-  {
-    id: 'srv-15',
-    nomeServico: 'Adequação elétrica para ar-condicionado',
-    categoria: 'Instalação',
-    descricao: 'Criação de circuito exclusivo direto do QDC para alimentação da evaporadora/condensadora de aparelho de ar-condicionado.',
+    nomeServico: 'Instalação de ar condicionado',
+    categoria: 'Climatização',
+    descricao: 'Alimentação elétrica dedicada direta do quadro geral para o ar condicionado (split), incluindo cabeamento adequado, canalização e disjuntor exclusivo.',
     precoBase: 220.00,
     unidadeCobranca: 'ponto',
     tempoMedio: '2 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Dimensionamento do disjuntor considerando o pico do motor elétrico sob carga.'
+    observacoesTecnicas: 'Uso de fiação adequada para a potência correspondente de BTUs escolhida pelo cliente.'
   },
   {
-    id: 'srv-16',
-    nomeServico: 'Emergência elétrica 24h',
-    categoria: 'Emergência',
-    descricao: 'Deslocamento imediato para solução de emergências em caso de falta de energia localizada, fumaça ou faísca em painéis elétricos.',
+    id: 'srv-7',
+    nomeServico: 'Automação residencial',
+    categoria: 'Automação',
+    descricao: 'Deixe sua casa inteligente! Instalação de interruptores Wi-Fi/Zigbee, módulos para portão eletrônico, controle smart de lâmpadas LED e automotizores compatíveis com Alexa e Google Home.',
     precoBase: 300.00,
-    unidadeCobranca: 'visita',
-    tempoMedio: '1.5 hora',
+    unidadeCobranca: 'serviço',
+    tempoMedio: '3 horas',
     status: 'Ativo',
-    observacoesTecnicas: 'Atendimento emergencial focado na mitigação de riscos imediatos à vida ou patrimônio.'
+    observacoesTecnicas: 'Vinculação com redes sem fio locais e aplicativos para controle remoto centralizado.'
   }
 ];
 
@@ -604,13 +505,13 @@ export const DEFAULT_SOLICITATIONS: SolicitacaoPublica[] = [
   },
   {
     id: 'sol-2',
-    nome: 'Padaria Pão de Ouro Ltda',
-    whatsapp: '(11) 94002-8922',
-    endereco: 'Rua Vergueiro, 321',
-    bairro: 'Liberdade',
-    cidade: 'São Paulo',
-    tipoServico: 'Manutenção elétrica comercial',
-    descricaoProblema: 'Temos duas tomadas industriais derretidas na fiação dos fornos elétricos. Preciso de reparo com materiais de alta temperatura.',
+    nome: 'Dra. Gisela Albuquerque',
+    whatsapp: '(84) 99122-3844',
+    endereco: 'Rua Potengi, 450',
+    bairro: 'Petrópolis',
+    cidade: 'Natal',
+    tipoServico: 'Instalação de carregador veicular Wallbox',
+    descricaoProblema: 'Comprei um novo carro elétrico e necessito fazer a instalação técnica e infraestrutura dedicada para o Wallbox na minha vaga de garagem.',
     foto: '',
     melhorHorario: 'Tarde (13:00 às 18:00)',
     dataSolicitacao: '2026-06-04 02:15',
@@ -727,6 +628,21 @@ export class AgeEletricaDB {
         await seedCol('appointments', DEFAULT_APPOINTMENTS);
         await seedCol('solicitations', DEFAULT_SOLICITATIONS);
         console.log('Firebase Cloud database populated successfully!');
+      } else {
+        // Force update cloud services count/IDs if they contain old services (or length is not 7)
+        const servicesSnapshot = await getDocs(collection(db, 'services'));
+        const hasOldServices = servicesSnapshot.docs.length !== 7 || servicesSnapshot.docs.some(doc => doc.id === 'srv-11' || doc.id === 'srv-16');
+        if (hasOldServices) {
+          console.log('Syncing old cloud services list with updated 7 residential focus items...');
+          for (const d of servicesSnapshot.docs) {
+            await deleteDoc(doc(db, 'services', d.id));
+          }
+          for (const item of DEFAULT_SERVICES) {
+            await setDoc(doc(db, 'services', item.id), item);
+          }
+          localStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
+          console.log('Cloud services corrected with updated 7 items!');
+        }
       }
     } catch (e) {
       console.error('Error during cloud check and seeding:', e);

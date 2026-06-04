@@ -533,7 +533,7 @@ export function AdminReceipts({
               </p>
 
               <p className="mt-4">
-                {selectedReceiptForPrint.observacoes || 'Declaramos que recebemos o valor informado referente aos serviços de engenharia e instalações.'}
+                {selectedReceiptForPrint.observacoes || 'Declaramos que recebemos o valor informado referente aos serviços técnicos de instalações elétricas e manutenção.'}
               </p>
 
             </div>
