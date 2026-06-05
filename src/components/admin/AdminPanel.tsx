@@ -240,7 +240,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
     sessionStorage.removeItem('age_el_logged_user');
     localStorage.removeItem('age_el_logged_user');
     setIsLogoutConfirmOpen(false);
-    onNavigateToRoute('portal');
+    onNavigateToRoute('terminal-login');
   };
 
   // State saving handlers wrapper
