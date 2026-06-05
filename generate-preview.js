@@ -61,6 +61,7 @@ async function generate() {
   }
 
   const outputPath = path.join(publicDir, 'preview-age-eletrica.png');
+  const outputPathV3 = path.join(publicDir, 'preview-age-eletrica-v3.png');
   const logoOutputPath = path.join(publicDir, 'logo-age.png');
   const faviconPath = path.join(publicDir, 'favicon.png');
   const appleIconPath = path.join(publicDir, 'apple-touch-icon.png');
@@ -113,11 +114,17 @@ async function generate() {
 `;
 
   try {
-    // Render the 1200x630 sharing preview
+    // Render the 1200x630 sharing preview for default domain
     await sharp(Buffer.from(svgContent))
       .png()
       .toFile(outputPath);
     console.log(`Success! Preview PNG Image saved successfully to ${outputPath}`);
+
+    // Render the 1200x630 sharing preview for custom ageeletrica.com domain
+    await sharp(Buffer.from(svgContent))
+      .png()
+      .toFile(outputPathV3);
+    console.log(`Success! Preview V3 PNG Image saved successfully to ${outputPathV3}`);
 
     // Render 512x512 app logo (used by site elements)
     await sharp(Buffer.from(iconSvgContent))
