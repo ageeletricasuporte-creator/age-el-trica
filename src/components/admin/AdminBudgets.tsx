@@ -347,6 +347,9 @@ export function AdminBudgets({
 
   // Open Budget PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabBudget = (b: Orcamento) => {
+    const url = `${window.location.origin}${window.location.pathname}?print-budget=${encodeURIComponent(b.id)}`;
+    window.open(url, '_blank');
+    return;
     const clientObj = clients.find(cl => cl.id === b.clienteId);
     const clientDetailsHtml = clientObj ? `
       <div>

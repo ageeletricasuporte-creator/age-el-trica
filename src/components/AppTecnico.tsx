@@ -73,6 +73,9 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
 
   // Open Budget PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabBudget = (b: Orcamento) => {
+    const url = `${window.location.origin}${window.location.pathname}?print-budget=${encodeURIComponent(b.id)}`;
+    window.open(url, '_blank');
+    return;
     const clientObj = clients.find(cl => cl.id === b.clienteId);
     const clientDetailsHtml = clientObj ? `
       <div>
@@ -241,6 +244,9 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
 
   // Open Receipt PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabReceipt = (r: Recibo) => {
+    const url = `${window.location.origin}${window.location.pathname}?print-receipt=${encodeURIComponent(r.id)}`;
+    window.open(url, '_blank');
+    return;
     const clientObj = clients.find(cl => cl.id === r.clienteId);
     const clientDetailsHtml = clientObj ? `
       <div>
