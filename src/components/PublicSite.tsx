@@ -36,9 +36,11 @@ import {
   Calendar,
   Layers,
   Lightbulb,
-  Flame
+  Flame,
+  Smartphone,
+  Key
 } from 'lucide-react';
-import { Servico, ConfiguracaoEmpresa } from '../types';
+import { Servico, ConfiguracaoEmpresa, Cliente } from '../types';
 import { AgeEletricaDB } from '../dataSeed';
 import defaultBannerImg from '../assets/images/electrician_hero_1780581241012.png';
 
@@ -58,6 +60,22 @@ export function PublicSite({
   const [services, setServices] = React.useState<Servico[]>([]);
   const [config, setConfig] = React.useState<ConfiguracaoEmpresa>(() => AgeEletricaDB.getConfig());
 
+  // Real-time replicated collections for responsive customer application
+  const [allClients, setAllClients] = useState<Cliente[]>(() => AgeEletricaDB.getClients());
+  const [allBudgets, setAllBudgets] = useState<any[]>(() => AgeEletricaDB.getBudgets());
+  const [allAppointments, setAllAppointments] = useState<any[]>(() => AgeEletricaDB.getAppointments());
+  const [allReceipts, setAllReceipts] = useState<any[]>(() => AgeEletricaDB.getReceipts());
+  const [allSolicitations, setAllSolicitations] = useState<any[]>(() => AgeEletricaDB.getSolicitations());
+
+  // Customer authentication status
+  const [loggedClient, setLoggedClient] = useState<Cliente | null>(null);
+  const loggedClientRef = React.useRef<Cliente | null>(null);
+
+  const updateLoggedClient = (client: Cliente | null) => {
+    loggedClientRef.current = client;
+    setLoggedClient(client);
+  };
+
   // Mouse Glow Position Tracking State for dynamic tech backdrop
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -70,6 +88,20 @@ export function PublicSite({
     const unsubscribe = AgeEletricaDB.subscribe(() => {
       setServices(AgeEletricaDB.getServices().filter(s => s.status === 'Ativo'));
       setConfig(AgeEletricaDB.getConfig());
+
+      const clientsList = AgeEletricaDB.getClients();
+      setAllClients(clientsList);
+      setAllBudgets(AgeEletricaDB.getBudgets());
+      setAllAppointments(AgeEletricaDB.getAppointments());
+      setAllReceipts(AgeEletricaDB.getReceipts());
+      setAllSolicitations(AgeEletricaDB.getSolicitations());
+
+      if (loggedClientRef.current) {
+        const found = clientsList.find(c => c.id === loggedClientRef.current?.id);
+        if (found) {
+          setLoggedClient(found);
+        }
+      }
     });
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -101,6 +133,44 @@ export function PublicSite({
   });
   const [contactSuccess, setContactSuccess] = useState(false);
   const [submittedNum, setSubmittedNum] = useState('');
+
+  // Interactive App-Cliente States
+  const [loginPhone, setLoginPhone] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  // Registration profile form
+  const [regForm, setRegForm] = useState({
+    nomeCompleto: '',
+    cpfCnpj: '',
+    telefone: '',
+    whatsapp: '',
+    email: '',
+    enderecoCompleto: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cep: '',
+    tipoCliente: 'Residencial' as 'Residencial' | 'Comercial' | 'Industrial' | 'Condomínio',
+    observacoes: ''
+  });
+
+  // Raising a service request / scheduling from within the App
+  const [newReqForm, setNewReqForm] = useState({
+    categoria: 'Outros',
+    descricao: '',
+    melhorHorario: 'Qualquer Horário'
+  });
+  const [newReqSuccess, setNewReqSuccess] = useState(false);
+
+  // Active sub-navigation inside client dashboard panels
+  const [currentClientTab, setCurrentClientTab] = useState<'dados' | 'solicitacoes' | 'orcamentos' | 'agendamentos' | 'recibos'>('solicitacoes');
+
+  // Selected receipt for official printable view
+  const [selectedReceiptForModal, setSelectedReceiptForModal] = useState<any | null>(null);
+
+  // Success notifications inside Client Area
+  const [clientActionSuccess, setClientActionSuccess] = useState('');
 
   // Categories processing and sanitization
   const categories = useMemo(() => {
@@ -205,22 +275,30 @@ export function PublicSite({
       />
 
       {/* 2. Top Minimal Technological Utility Strip */}
-      <div className="bg-neutral-950/90 border-b border-white/[0.04] py-1.5 px-6 text-[10px] uppercase tracking-[0.15em] text-zinc-500 hover:text-zinc-400 transition-colors z-50 no-print">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-5 font-mono">
-            <span className="flex items-center gap-1.5 text-zinc-400 font-medium">
+      <div className="bg-neutral-950/90 border-b border-white/[0.04] py-1.5 px-6 text-[10px] uppercase tracking-[0.11em] text-zinc-500 transition-colors z-50 no-print">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-5 font-mono text-[9px] md:text-[10px]">
+            <span className="flex items-center gap-1.5 text-zinc-400 font-medium whitespace-nowrap">
               <Zap className="w-3 h-3 text-[#f2b705] animate-pulse" /> Atendimento 24h Natal/RN Metropolitano
             </span>
             <span className="hidden md:inline text-zinc-800">|</span>
-            <span className="hidden md:inline text-zinc-500 font-normal">Normas de Instalações Elétricas (NBR 5410, NR10, NR35)</span>
+            <span className="hidden md:inline text-zinc-500 font-normal">Normas NBR 5410, NR10, NR35</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-[#f2b705] font-mono tracking-tight font-bold">{config.telefone}</span>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3.5">
+            <span className="text-[#f2b705] font-mono tracking-tight font-bold text-xs mr-1">{config.telefone}</span>
+            
             <button
               onClick={onNavigateToAdmin}
-              className="flex items-center gap-1.5 bg-white/[0.01] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3.5 py-1 rounded-full transition-all text-[9px] font-mono tracking-widest cursor-pointer"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400"
             >
-              ← VOLTAR AO PORTAL
+              <Smartphone className="w-3 h-3 text-current" /> App Age Elétrica
+            </button>
+
+            <button
+              onClick={onNavigateToAdmin}
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400"
+            >
+              <Key className="w-3 h-3 text-current" /> Terminal Age Elétrica
             </button>
           </div>
         </div>
@@ -276,17 +354,6 @@ export function PublicSite({
               Sobre
             </button>
             <button
-              onClick={() => {
-                setPublicTab('contato');
-                setTimeout(() => {
-                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-                }, 100);
-              }}
-              className="transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer text-zinc-400 hover:text-white"
-            >
-              Orçamento
-            </button>
-            <button
               onClick={() => setPublicTab('contato')}
               className={`transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
             >
@@ -298,9 +365,9 @@ export function PublicSite({
           <div className="flex items-center gap-2">
             <button
               onClick={onNavigateToAdmin}
-              className="px-3 sm:px-4 py-1.5 bg-neutral-900 border border-zinc-800 hover:border-amber-500/40 text-[#f2b705] hover:text-white text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-amber-500/10 cursor-pointer font-display"
+              className="px-3 sm:px-4 py-1.5 bg-neutral-900 border border-zinc-800 hover:border-amber-500/40 text-zinc-400 hover:text-white text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-amber-500/10 cursor-pointer font-display"
             >
-              ← Portal
+              Terminal
             </button>
             <button
               onClick={() => {
@@ -317,47 +384,30 @@ export function PublicSite({
         </header>
 
         {/* Sleek Horizontal Tab Bar for Mobile viewports */}
-        <nav className="md:hidden w-full max-w-[340px] bg-neutral-950/90 backdrop-blur-xl border border-white/[0.06] rounded-full p-1 flex justify-around items-center shadow-lg pointer-events-auto text-[8.5px] font-extrabold uppercase tracking-widest gap-0.5 font-display">
+        <nav className="md:hidden w-full max-w-[340px] bg-neutral-950/90 backdrop-blur-xl border border-white/[0.06] rounded-full p-1 flex justify-around items-center shadow-lg pointer-events-auto text-[8px] font-extrabold uppercase tracking-widest gap-0.5 font-display">
           <button
             onClick={() => setPublicTab('home')}
-            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+            className={`transition-all duration-200 py-1.5 px-2 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
             Início
           </button>
           <button
             onClick={() => setPublicTab('servicos')}
-            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+            className={`transition-all duration-205 py-1.5 px-2 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
             Serviços
           </button>
           <button
             onClick={() => setPublicTab('sobre')}
-            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+            className={`transition-all duration-205 py-1.5 px-2 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
             Sobre
           </button>
           <button
-            onClick={() => {
-              setPublicTab('contato');
-              setTimeout(() => {
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-              }, 100);
-            }}
-            className="transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer text-zinc-400 hover:text-white"
-          >
-            Orçar
-          </button>
-          <button
             onClick={() => setPublicTab('contato')}
-            className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
+            className={`transition-all duration-200 py-1.5 px-2 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
             Contato
-          </button>
-          <button
-            onClick={onNavigateToAdmin}
-            className="transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer text-[#f2b705] hover:text-white font-bold bg-amber-500/10 border border-amber-500/20"
-          >
-            ← Portal
           </button>
         </nav>
       </div>
@@ -1282,6 +1332,879 @@ export function PublicSite({
                   )}
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* TAB: INTERACTIVE CLIENT PORTAL APPLICATION */}
+          {false && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4 }}
+              className="px-4 md:px-8 py-8 max-w-6xl mx-auto space-y-8"
+            >
+              {/* Golden Badge and Header */}
+              <div className="text-center pt-8 space-y-3 relative">
+                <div className="absolute left-1/2 -translate-x-1/2 top-0 w-80 h-32 bg-[#f2b705]/[0.05] blur-[80px] pointer-events-none" />
+                <div className="inline-flex items-center gap-2 bg-[#f2b705]/[0.03] border border-[#f2b705]/15 text-[#f2b705] px-4 py-2 rounded-full text-[10px] font-mono tracking-widest uppercase font-semibold">
+                  <Smartphone className="w-4 h-4 text-[#f2b705] animate-bounce" /> APLICATIVO DO CLIENTE AGE ELÉTRICA
+                </div>
+                <h1 className="text-4xl md:text-5xl font-extrabold uppercase text-white tracking-tight leading-none font-display">
+                  Portal do Cliente
+                </h1>
+                <p className="text-zinc-400 text-sm max-w-lg mx-auto font-sans">
+                  Acesse instantaneamente o acompanhamento de orçamentos, chamados, histórico financeiro e faturas de serviços solicitados.
+                </p>
+              </div>
+
+              {/* Toast Alerts inside Area */}
+              {clientActionSuccess && (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center flex items-center justify-center gap-2 max-w-xl mx-auto animate-pulse">
+                  <CheckCircle className="w-4 h-4 shrink-0" />
+                  <span>{clientActionSuccess}</span>
+                  <button onClick={() => setClientActionSuccess('')} className="ml-auto text-emerald-400 hover:text-white font-bold px-1 select-none">×</button>
+                </div>
+              )}
+
+              {/* CORE CONDITIONAL: SIGNED OUT vs SIGNED IN */}
+              {!loggedClient ? (
+                <div className="max-w-md mx-auto bg-neutral-950 border border-white/[0.07] rounded-3xl p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.9)] space-y-6 relative">
+                  {/* Subtle decorative glow */}
+                  <div className="absolute -left-12 -top-12 w-32 h-32 rounded-full bg-[#f2b705]/[0.03] blur-2xl" />
+
+                  {/* Toggle Mode */}
+                  <div className="grid grid-cols-2 p-1 bg-neutral-900 rounded-xl border border-white/[0.04]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRegistering(false);
+                        setLoginError('');
+                      }}
+                      className={`py-2 px-3 text-xs uppercase font-extrabold rounded-lg transition-all cursor-pointer ${!isRegistering ? 'bg-[#f2b705] text-black shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                    >
+                      Acessar Conta
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRegistering(true);
+                        setLoginError('');
+                      }}
+                      className={`py-2 px-3 text-xs uppercase font-extrabold rounded-lg transition-all cursor-pointer ${isRegistering ? 'bg-[#f2b705] text-black shadow-md' : 'text-zinc-400 hover:text-white'}`}
+                    >
+                      Novo Cadastro
+                    </button>
+                  </div>
+
+                  {loginError && (
+                    <div className="p-3.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl text-center">
+                      ⚠️ {loginError}
+                    </div>
+                  )}
+
+                  {/* SUB-FORM A: LOGIN WITH PHONE */}
+                  {!isRegistering ? (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        setLoginError('');
+                        
+                        if (!loginPhone.trim()) {
+                          setLoginError('Por favor, digite seu WhatsApp ou Celular cadastrado.');
+                          return;
+                        }
+
+                        // Sanitize input phone to compare digits only
+                        const cleanDigits = loginPhone.replace(/\D/g, '');
+                        if (cleanDigits.length < 8) {
+                          setLoginError('Digite um celular válido com DDD.');
+                          return;
+                        }
+
+                        // Try to find client with matching phone
+                        const found = allClients.find(c => {
+                          const cliTel = (c.telefone || '').replace(/\D/g, '');
+                          const cliWa = (c.whatsapp || '').replace(/\D/g, '');
+                          return (cliTel.endsWith(cleanDigits) || cleanDigits.endsWith(cliTel)) ||
+                                 (cliWa.endsWith(cleanDigits) || cleanDigits.endsWith(cliWa));
+                        });
+
+                        if (found) {
+                          updateLoggedClient(found);
+                          setClientActionSuccess(`Bem-vindo de volta! Área do cliente de ${found.nomeCompleto} acessada com sucesso.`);
+                          setLoginPhone('');
+                        } else {
+                          setLoginError('Seu celular não foi localizado em nossa base! Marque a aba "Novo Cadastro" ao lado para ativar seu perfil em segundos ou utilize o WhatsApp de suporte.');
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Número do seu Telefone / WhatsApp</label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-xs font-mono">📱</span>
+                          <input
+                            type="text"
+                            required
+                            value={loginPhone}
+                            onChange={(e) => setLoginPhone(e.target.value)}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-12 focus:outline-none rounded-xl pl-10 pr-4 text-sm text-white font-mono placeholder:text-zinc-700"
+                            placeholder="Ex: (84) 99999-9999"
+                          />
+                        </div>
+                        <span className="text-[9px] text-zinc-500 block leading-tight">Digitar com o DDD do seu estado correspondente (Ex: 84 ou 21).</span>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full h-12 bg-gradient-to-r from-amber-500 to-[#f2b705] hover:from-amber-400 hover:to-[#ffca03] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-[0_5px_15px_rgba(242,183,5,0.15)] hover:shadow-[0_8px_25px_rgba(242,183,5,0.3)] hover:-translate-y-0.5 active:translate-y-0 cursor-pointer text-center flex items-center justify-center gap-2"
+                      >
+                        Entrar no Meu Painel <Key className="w-4 h-4 fill-black text-black" />
+                      </button>
+
+                      <div className="text-center pt-2">
+                        <span className="text-[10px] text-zinc-500 block">Ou nos chame direto no suporte elétrico:</span>
+                        <a 
+                          href={`https://wa.me/55${config.whatsapp.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-[#f2b705] font-mono text-[11px] font-bold mt-1 inline-block hover:underline"
+                        >
+                          💬 WhatsApp Central AGE
+                        </a>
+                      </div>
+                    </form>
+                  ) : (
+                    /* SUB-FORM B: FAST REGISTRATION AT APP */
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        setLoginError('');
+
+                        if (!regForm.nomeCompleto || !regForm.telefone) {
+                          setLoginError('Nome Completo e Telefone/WhatsApp são campos indispensáveis.');
+                          return;
+                        }
+
+                        // Sanitize and save
+                        try {
+                          const created = AgeEletricaDB.addClient({
+                            nomeCompleto: regForm.nomeCompleto,
+                            cpfCnpj: regForm.cpfCnpj,
+                            telefone: regForm.telefone,
+                            whatsapp: regForm.whatsapp || regForm.telefone,
+                            email: regForm.email || `${regForm.nomeCompleto.replace(/\s+/g, '').toLowerCase()}@ageeletrica.com.br`,
+                            enderecoCompleto: regForm.enderecoCompleto,
+                            numero: regForm.numero,
+                            complemento: regForm.complemento,
+                            bairro: regForm.bairro,
+                            cep: regForm.cep,
+                            cidade: 'Natal',
+                            estado: 'RN',
+                            tipoCliente: regForm.tipoCliente,
+                            observacoes: regForm.observacoes || 'Cadastrado no App AGE Elétrica'
+                          });
+
+                          updateLoggedClient(created);
+                          setClientActionSuccess(`Parabéns, ${created.nomeCompleto}! Seu login e perfil comercial foram ativados com todo sucesso.`);
+                          
+                          // Reset form keys
+                          setRegForm({
+                            nomeCompleto: '',
+                            cpfCnpj: '',
+                            telefone: '',
+                            whatsapp: '',
+                            email: '',
+                            enderecoCompleto: '',
+                            numero: '',
+                            complemento: '',
+                            bairro: '',
+                            cep: '',
+                            tipoCliente: 'Residencial',
+                            observacoes: ''
+                          });
+                        } catch (err: any) {
+                          setLoginError(err?.message || 'Erro ao efetivar novo cadastro de cliente.');
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-1 bg-amber-500/5 p-3 rounded-xl border border-[#f2b705]/15 mb-2">
+                        <span className="text-[9px] font-mono font-bold text-[#f2b705] uppercase block">🔑 CRIAÇÃO DE PERFIL COMERCIAL</span>
+                        <span className="text-zinc-400 text-[10px] block leading-relaxed">Emita orçamentos personalizados, salve endereços para atendimento e garanta serviços em seu nome.</span>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">Seu Nome Completo *</label>
+                        <input
+                          type="text"
+                          required
+                          value={regForm.nomeCompleto}
+                          onChange={(e) => setRegForm({ ...regForm, nomeCompleto: e.target.value })}
+                          className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                          placeholder="Ex: Alexandre Pereira"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">WhatsApp / Celular *</label>
+                          <input
+                            type="text"
+                            required
+                            value={regForm.telefone}
+                            onChange={(e) => setRegForm({ ...regForm, telefone: e.target.value, whatsapp: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            placeholder="Ex: (84) 99999-9999"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">CPF ou CNPJ</label>
+                          <input
+                            type="text"
+                            value={regForm.cpfCnpj}
+                            onChange={(e) => setRegForm({ ...regForm, cpfCnpj: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            placeholder="Ex: 000.000.000-00"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Endereço de Correspondência</label>
+                        <input
+                          type="text"
+                          value={regForm.enderecoCompleto}
+                          onChange={(e) => setRegForm({ ...regForm, enderecoCompleto: e.target.value })}
+                          className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                          placeholder="Ex: Avenida Engenheiro Roberto Freire, 100"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Bairro</label>
+                          <input
+                            type="text"
+                            value={regForm.bairro}
+                            onChange={(e) => setRegForm({ ...regForm, bairro: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            placeholder="Ponta Negra"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Tipo do Imóvel</label>
+                          <select
+                            value={regForm.tipoCliente}
+                            onChange={(e: any) => setRegForm({ ...regForm, tipoCliente: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3 text-xs text-white"
+                          >
+                            <option value="Residencial">Residencial</option>
+                            <option value="Comercial">Comercial</option>
+                            <option value="Condomínio">Condomínio</option>
+                            <option value="Industrial">Industrial</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full h-11 bg-[#f2b705] hover:bg-[#ffca03] text-black font-black uppercase text-xs tracking-widest rounded-xl transition-all shadow-[0_5px_15px_rgba(242,183,5,0.15)] cursor-pointer text-center flex items-center justify-center gap-2 mt-4"
+                      >
+                        Salvar e Acessar App <CheckCircle className="w-4 h-4 text-black font-bold" />
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ) : (
+                /* ACTIVE CLIENT PROFILE DASHBOARD */
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  
+                  {/* Left sidebar - Actions / Details Profile */}
+                  <div className="lg:col-span-4 flex flex-col space-y-6">
+                    
+                    {/* Welcome card */}
+                    <div className="bg-neutral-950 border border-white/[0.07] p-6 rounded-3xl space-y-4 shadow-[0_15px_40px_rgba(0,0,0,0.8)] relative overflow-hidden">
+                      <div className="absolute right-0 top-0 w-24 h-24 bg-[#f2b705]/[0.02] blur-xl pointer-events-none" />
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-500 to-[#f2b705] text-black font-black flex items-center justify-center text-sm shadow-[0_4px_10px_rgba(242,183,5,0.2)] select-none">
+                          {loggedClient.nomeCompleto.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                        </div>
+                        <div className="grow">
+                          <span className="text-[10px] font-mono tracking-widest text-[#f2b705] font-black uppercase block">CONECTADO</span>
+                          <span className="text-white font-bold leading-normal block text-base truncate">{loggedClient.nomeCompleto}</span>
+                          <span className="text-zinc-550 font-mono text-[9px] uppercase tracking-wide text-zinc-500">ID: {loggedClient.id}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-white/[0.04] grid grid-cols-2 gap-4 text-center">
+                        <div className="bg-neutral-900/40 p-2.5 rounded-xl border border-white/[0.02]">
+                          <span className="text-zinc-500 text-[8px] block uppercase font-mono tracking-wider">TIPO DE IMÓVEL</span>
+                          <span className="text-[#f2b705] text-[11px] font-bold block mt-0.5">{loggedClient.tipoCliente}</span>
+                        </div>
+                        <div className="bg-neutral-900/40 p-2.5 rounded-xl border border-white/[0.02]">
+                          <span className="text-zinc-500 text-[8px] block uppercase font-mono tracking-wider">CIDADE / ESTADO</span>
+                          <span className="text-white text-[11px] font-bold block mt-0.5">{loggedClient.cidade || 'Natal'}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateLoggedClient(null);
+                          setClientActionSuccess('Sessão do cliente finalizada com segurança.');
+                        }}
+                        className="w-full py-2 bg-neutral-900 hover:bg-neutral-800 text-zinc-400 hover:text-white border border-white/[0.06] hover:border-red-500/20 text-[10px] uppercase font-bold tracking-widest rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        Sair do Aplicativo
+                      </button>
+                    </div>
+
+                    {/* Operational Tabs Selector list */}
+                    <div className="bg-neutral-950 border border-white/[0.05] p-2.5 rounded-2xl flex flex-col space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentClientTab('solicitacoes')}
+                        className={`w-full py-3 px-4 rounded-xl text-left text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-between cursor-pointer ${currentClientTab === 'solicitacoes' ? 'bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/35' : 'text-zinc-400 hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span className="flex items-center gap-2">🔹 Chamados e Solicitações</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-zinc-500">
+                          {allSolicitations.filter(s => {
+                            const clWa = (loggedClient.whatsapp || '').replace(/\D/g, '');
+                            const solWa = (s.whatsapp || '').replace(/\D/g, '');
+                            return clWa.endsWith(solWa) || solWa.endsWith(clWa);
+                          }).length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentClientTab('orcamentos')}
+                        className={`w-full py-3 px-4 rounded-xl text-left text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-between cursor-pointer ${currentClientTab === 'orcamentos' ? 'bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/35' : 'text-zinc-400 hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span className="flex items-center gap-2">💰 Meus Orçamentos</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-zinc-500">
+                          {allBudgets.filter(b => b.clienteId === loggedClient.id).length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentClientTab('agendamentos')}
+                        className={`w-full py-3 px-4 rounded-xl text-left text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-between cursor-pointer ${currentClientTab === 'agendamentos' ? 'bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/35' : 'text-zinc-400 hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span className="flex items-center gap-2">📅 Agenda e Cronograma</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-zinc-500">
+                          {allAppointments.filter(ap => ap.clienteId === loggedClient.id).length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentClientTab('recibos')}
+                        className={`w-full py-3 px-4 rounded-xl text-left text-xs uppercase font-extrabold tracking-wider transition-all flex items-center justify-between cursor-pointer ${currentClientTab === 'recibos' ? 'bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/35' : 'text-zinc-400 hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span className="flex items-center gap-2">🧾 Meus Recibos</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 text-zinc-500">
+                          {allReceipts.filter(r => r.clienteId === loggedClient.id).length}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentClientTab('dados')}
+                        className={`w-full py-3 px-4 rounded-xl text-left text-xs uppercase font-extrabold tracking-wider transition-all flex items-center gap-2 cursor-pointer ${currentClientTab === 'dados' ? 'bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/35' : 'text-zinc-400 hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span>⚙️ Meus Dados Cadastrais</span>
+                      </button>
+                    </div>
+
+                    {/* Action Card: Fast Solicitation Request form within logged panel */}
+                    <div className="bg-neutral-950 border border-white/[0.06] p-5 rounded-2xl space-y-4">
+                      <div className="space-y-1">
+                        <span className="text-[9.5px] font-mono font-bold text-[#f2b705] uppercase block">🚨 NOVO CHAMADO EXPRESS</span>
+                        <span className="text-zinc-450 text-[10.5px] block leading-snug">Está com pressa? Solicite um novo orçamento ou agendamento para este endereço!</span>
+                      </div>
+
+                      {newReqSuccess ? (
+                        <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-center text-emerald-400 space-y-2">
+                          <span className="text-[11px] font-bold block">Chamado enviado!</span>
+                          <button
+                            type="button"
+                            onClick={() => setNewReqSuccess(false)}
+                            className="bg-neutral-900 hover:bg-[#111] border border-white/[0.05] text-zinc-300 text-[9px] py-1 px-3 rounded uppercase font-bold cursor-pointer"
+                          >
+                            Pedir Outro
+                          </button>
+                        </div>
+                      ) : (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!newReqForm.descricao.trim()) {
+                              alert('Por favor, informe detalhes da sua necessidade.');
+                              return;
+                            }
+
+                            // Auto seed with actual customer details
+                            AgeEletricaDB.addSolicitacao({
+                              nome: loggedClient.nomeCompleto,
+                              whatsapp: loggedClient.whatsapp || loggedClient.telefone || '',
+                              endereco: loggedClient.enderecoCompleto || '',
+                              bairro: loggedClient.bairro || '',
+                              cidade: loggedClient.cidade || 'Natal',
+                              tipoServico: newReqForm.categoria,
+                              descricaoProblema: newReqForm.descricao,
+                              foto: '',
+                              melhorHorario: newReqForm.melhorHorario
+                            });
+
+                            setNewReqForm({ categoria: 'Outros', descricao: '', melhorHorario: 'Qualquer Horário' });
+                            setNewReqSuccess(true);
+                            setClientActionSuccess('Seu novo chamado técnico foi processado e adicionado à fila administrativa com sucesso.');
+                          }}
+                          className="space-y-3"
+                        >
+                          <div className="space-y-1">
+                            <label className="text-[8.5px] uppercase font-bold text-zinc-500 block">Natureza do Serviço</label>
+                            <select
+                              value={newReqForm.categoria}
+                              onChange={(e) => setNewReqForm({ ...newReqForm, categoria: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] h-9.5 text-xs text-zinc-300 rounded-lg px-2 focus:outline-none focus:border-[#f2b705]/40"
+                            >
+                              <option value="Reparo Técnico">Reparo / Manutenção Corretiva</option>
+                              <option value="Instalações Elétricas">Instalação Residencial Nova</option>
+                              <option value="Segurança / CFTV">Câmeras CFTV ou Alarmes</option>
+                              <option value="Recarga Wallbox">Instalação de Wallbox (Carro Elétrico)</option>
+                              <option value="Automação Residencial">Automação Inteligente</option>
+                              <option value="Padrão COSERN">Padrão Cosern ou Entrada de Luz</option>
+                              <option value="Outros">Outras demandas elétricas</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[8.5px] uppercase font-bold text-zinc-500 block">Detalhes da Execução ou Sintomas</label>
+                            <textarea
+                              rows={3}
+                              value={newReqForm.descricao}
+                              onChange={(e) => setNewReqForm({ ...newReqForm, descricao: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] text-xs text-white rounded-lg p-2 placeholder:text-zinc-650 focus:outline-none focus:border-[#f2b705]/45"
+                              placeholder="Fale o que está acontecendo ou que tipo de instalação deseja realizar de forma sucinta..."
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full h-10 bg-gradient-to-r from-[#f2b705] to-amber-500 hover:from-[#ffca03] hover:to-amber-400 text-black font-black uppercase text-[10px] tracking-wider rounded-xl transition-all cursor-pointer"
+                          >
+                            Registrar Chamado
+                          </button>
+                        </form>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {/* Right - Central Tab dynamic panel contents */}
+                  <div className="lg:col-span-8 bg-neutral-950 border border-white/[0.07] p-6 rounded-3xl shadow-[0_15px_45px_rgba(0,0,0,0.85)] max-w-full min-h-[460px]">
+                    
+                    {/* SUB-TAB: SOLICITACOES */}
+                    {currentClientTab === 'solicitacoes' && (
+                      <div className="space-y-6">
+                        <div className="space-y-1 border-b border-white/[0.04] pb-4">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">HISTÓRICO OPERACIONAL</span>
+                          <h2 className="text-white text-lg font-bold uppercase">Meus Chamados e Solicitações de Serviço</h2>
+                        </div>
+
+                        {/* Query actual solicitations from the seed DB matching client number */}
+                        {allSolicitations.filter(s => {
+                          const clWa = (loggedClient.whatsapp || '').replace(/\D/g, '');
+                          const solWa = (s.whatsapp || '').replace(/\D/g, '');
+                          return clWa.endsWith(solWa) || solWa.endsWith(clWa);
+                        }).length === 0 ? (
+                          <div className="py-12 text-center text-zinc-500 text-xs">
+                            Nenhum chamado aberto nos registros com as informações do seu número. Faça um pedido emergencial no menu ao lado!
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {allSolicitations.filter(s => {
+                              const clWa = (loggedClient.whatsapp || '').replace(/\D/g, '');
+                              const solWa = (s.whatsapp || '').replace(/\D/g, '');
+                              return clWa.endsWith(solWa) || solWa.endsWith(clWa);
+                            }).map((s, i) => (
+                              <div key={s.id || i} className="p-4 bg-neutral-900/[0.4] rounded-2xl border border-white/[0.04] space-y-3 transition hover:border-white/[0.1]">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div>
+                                    <span className="text-[9px] font-mono text-zinc-500 uppercase block">Protocolo: {s.id}</span>
+                                    <span className="text-white text-xs font-bold font-sans uppercase">{s.tipoServico}</span>
+                                  </div>
+                                  <span className={`px-2.5 py-1 text-[8.5px] font-mono uppercase font-bold rounded-full ${
+                                    s.status === 'Novo' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                    s.status === 'Em atendimento' ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' :
+                                    s.status === 'Convertido' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                    'bg-zinc-800 text-zinc-400 text-[8px]'
+                                  }`}>
+                                    {s.status}
+                                  </span>
+                                </div>
+                                
+                                <p className="text-zinc-400 text-xs text-balance font-mono">
+                                  {s.descricaoProblema}
+                                </p>
+                                
+                                <div className="flex flex-wrap items-center justify-between gap-1 text-[9px] font-mono text-zinc-500 border-t border-white/[0.02] pt-2">
+                                  <span>Data: {s.dataSolicitacao}</span>
+                                  <span className="text-zinc-500">Agendar: {s.melhorHorario}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SUB-TAB: ORCAMENTOS & INTERACTIVE COMMERCIAL APPROVALS */}
+                    {currentClientTab === 'orcamentos' && (
+                      <div className="space-y-6">
+                        <div className="space-y-1 border-b border-white/[0.04] pb-4">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">PROPOSTAS FORMAIS</span>
+                          <h2 className="text-white text-lg font-bold uppercase font-display">Orçamentos e Projetos de Execução</h2>
+                        </div>
+
+                        {allBudgets.filter(b => b.clienteId === loggedClient.id).length === 0 ? (
+                          <div className="py-12 text-center text-zinc-500 text-xs">
+                            Nenhum orçamento particular emitido para seu código de cliente ainda. Entre em contato para geramento de vistoria técnica presencial!
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {allBudgets.filter(b => b.clienteId === loggedClient.id).map((b, i) => (
+                              <div key={b.id || i} className="p-4.5 bg-neutral-900/[0.3] rounded-2xl border border-white/[0.04] space-y-4 transition hover:border-[#f2b705]/10">
+                                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                                  <div>
+                                    <span className="text-[9px] font-mono text-[#f2b705] block">{b.numeroOrcamento}</span>
+                                    <span className="text-white text-sm font-semibold font-sans">{b.descricaoCompleta}</span>
+                                  </div>
+                                  <span className={`px-2.5 py-1 text-[8.5px] font-mono uppercase font-black rounded-full ${
+                                    b.status === 'Enviado' ? 'bg-amber-500/10 text-[#f2b705] border border-[#f2b705]/30 animate-pulse' :
+                                    b.status === 'Aprovado' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                                    b.status === 'Recusado' ? 'bg-red-500/10 text-red-400 border border-red-500/30' :
+                                    'bg-neutral-800 text-zinc-400'
+                                  }`}>
+                                    {b.status === 'Enviado' ? 'Aguardando sua Aprovação' : b.status}
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-3 bg-neutral-950/60 rounded-xl border border-white/[0.02] text-center text-xs">
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block font-mono uppercase">MÃO DE OBRA</span>
+                                    <span className="text-white font-mono font-medium block mt-0.5">R$ {b.valorMaoObra?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block font-mono uppercase">MATERIAIS</span>
+                                    <span className="text-white font-mono font-medium block mt-0.5">R$ {b.valorMateriais?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[#f2b705] text-[8px] block font-mono uppercase font-bold text-[#f2b705]">TOTAL LÍQUIDO</span>
+                                    <span className="text-[#f2b705] font-mono font-black block mt-0.5 text-sm">R$ {b.valorTotal?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block font-mono uppercase">PARCELAS</span>
+                                    <span className="text-white font-sans font-medium block mt-0.5">{b.pagamentoCondicoes}</span>
+                                  </div>
+                                </div>
+
+                                {/* Dynamic Interactive Buttons for customer to approve/reject on live database */}
+                                {b.status === 'Enviado' && (
+                                  <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 border-t border-white/[0.02]">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const budgets = AgeEletricaDB.getBudgets();
+                                        const idx = budgets.findIndex(x => x.id === b.id);
+                                        if (idx !== -1) {
+                                          budgets[idx].status = 'Aprovado';
+                                          budgets[idx].dataAtualizacao = new Date().toISOString();
+                                          AgeEletricaDB.saveBudgets(budgets);
+                                          setClientActionSuccess(`Proposta comercial ${b.numeroOrcamento} aprovada com extremo sucesso! Entraremos em contato para agendamento dos serviços.`);
+                                        }
+                                      }}
+                                      className="w-full sm:w-auto px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                                    >
+                                      👍 Confirmar e Aprovar Orçamento
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const proceed = confirm('Deseja recusar esta proposta comercial formal da AGE Elétrica?');
+                                        if (proceed) {
+                                          const budgets = AgeEletricaDB.getBudgets();
+                                          const idx = budgets.findIndex(x => x.id === b.id);
+                                          if (idx !== -1) {
+                                            budgets[idx].status = 'Recusado';
+                                            budgets[idx].dataAtualizacao = new Date().toISOString();
+                                            AgeEletricaDB.saveBudgets(budgets);
+                                            setClientActionSuccess(`Proposta comercial ${b.numeroOrcamento} foi recusada e informada à administração.`);
+                                          }
+                                        }
+                                      }}
+                                      className="w-full sm:w-auto px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-zinc-400 hover:text-white border border-white/[0.05] text-[10px] uppercase font-bold tracking-wider rounded-lg transition-all cursor-pointer"
+                                    >
+                                      Recusar...
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SUB-TAB: AGENDAMENTOS / EVENTS */}
+                    {currentClientTab === 'agendamentos' && (
+                      <div className="space-y-6">
+                        <div className="space-y-1 border-b border-white/[0.04] pb-4">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">AGENDA DE ATENDIDIMENTO</span>
+                          <h2 className="text-white text-lg font-bold uppercase font-display">Cronograma de Instalações e Vistorias</h2>
+                        </div>
+
+                        {allAppointments.filter(ap => ap.clienteId === loggedClient.id).length === 0 ? (
+                          <div className="py-12 text-center text-zinc-500 text-xs">
+                            Nenhum cronograma de serviço reservado em sua agenda no momento. Entre em contato para marcar a primeira vistoria de conformidade técnica!
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {allAppointments.filter(ap => ap.clienteId === loggedClient.id).map((ap, i) => (
+                              <div key={ap.id || i} className="p-4 bg-neutral-900/[0.25] rounded-2xl border border-white/[0.05] space-y-3 transition hover:border-[#f2b705]/15">
+                                <div className="flex items-center justify-between">
+                                  <span className="px-2.5 py-0.5 bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/20 text-[8.5px] font-mono uppercase font-bold rounded">
+                                    {ap.tipo === 'vistoria' ? 'Vistoria Prévia' : 'Execução de Obra'}
+                                  </span>
+                                  <span className="text-[8.5px] font-mono text-zinc-500">Agendamento ID: {ap.id}</span>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                  <span className="text-white text-xs font-semibold block">{ap.descritorServico}</span>
+                                  <p className="text-zinc-500 text-[11px] leading-relaxed">
+                                    Técnico Líder Responsável: <strong className="text-zinc-300 font-bold">{ap.tecnicoResponsavel || 'Equipe Técnica AGE Elétrica'}</strong>
+                                  </p>
+                                </div>
+
+                                <div className="p-3 bg-neutral-950/60 rounded-xl border border-white/[0.02] flex items-center justify-between text-xs font-mono">
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">DATA PROGRAMADA</span>
+                                    <span className="text-[#f2b705] font-bold">{ap.dataAgendamento}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">HORÁRIO</span>
+                                    <span className="text-white font-bold">{ap.horarioPrevisto || 'A combinar'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">ATIVIDADE ESTADO</span>
+                                    <span className="text-emerald-400 font-bold uppercase">{ap.statusAtendimento || 'Agendado'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SUB-TAB: RECIBOS & PAYMENT INVOICES */}
+                    {currentClientTab === 'recibos' && (
+                      <div className="space-y-6">
+                        <div className="space-y-1 border-b border-white/[0.04] pb-4">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">HISTÓRICO FINANCEIRO</span>
+                          <h2 className="text-white text-lg font-bold uppercase font-display">Recibos Técnicos de Serviço e Quitação</h2>
+                        </div>
+
+                        {allReceipts.filter(r => r.clienteId === loggedClient.id).length === 0 ? (
+                          <div className="py-12 text-center text-zinc-500 text-xs">
+                            Nenhum recibo quitado ou ordem de pagamento registrada em sua ficha financeira ainda.
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {allReceipts.filter(r => r.clienteId === loggedClient.id).map((r, i) => (
+                              <div key={r.id || i} className="p-4 bg-neutral-900/[0.2] rounded-2xl border border-white/[0.05] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition hover:border-[#f2b705]/10">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-white text-xs font-mono font-bold">{r.numeroRecibo}</span>
+                                    <span className="text-[8.5px] font-mono text-zinc-550 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-black">PAGO / QUITADO</span>
+                                  </div>
+                                  <span className="text-zinc-400 text-xs font-sans block">{r.referenteServico}</span>
+                                  <span className="text-[9.5px] font-mono text-zinc-500 block">Emitido em: {r.dataEmissao}</span>
+                                </div>
+
+                                <div className="flex items-center gap-3.5 shrink-0 self-end sm:self-auto">
+                                  <div className="text-right">
+                                    <span className="text-zinc-500 text-[8px] block font-mono uppercase">VALOR PAGO</span>
+                                    <span className="text-emerald-400 font-mono font-bold text-sm">R$ {r.valorTotalServico?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedReceiptForModal(r)}
+                                    className="px-4 py-2 hover:bg-white/[0.04] text-[#f2b705] hover:text-white border border-[#f2b705]/20 hover:border-white/20 text-[9.5px] font-mono tracking-wider font-extrabold uppercase rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1"
+                                  >
+                                    📄 Imprimir Recibo
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SUB-TAB: PROFILES UPDATE DADOS */}
+                    {currentClientTab === 'dados' && (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const clients = AgeEletricaDB.getClients();
+                          const idx = clients.findIndex(c => c.id === loggedClient.id);
+                          
+                          if (idx !== -1) {
+                            const updated: Cliente = {
+                              ...clients[idx],
+                              nomeCompleto: loggedClient.nomeCompleto,
+                              cpfCnpj: loggedClient.cpfCnpj,
+                              telefone: loggedClient.telefone,
+                              whatsapp: loggedClient.whatsapp,
+                              email: loggedClient.email,
+                              enderecoCompleto: loggedClient.enderecoCompleto,
+                              numero: loggedClient.numero,
+                              complemento: loggedClient.complemento,
+                              bairro: loggedClient.bairro,
+                              cep: loggedClient.cep
+                            };
+
+                            clients[idx] = updated;
+                            AgeEletricaDB.saveClients(clients);
+                            updateLoggedClient(updated);
+                            setClientActionSuccess('Dados de cadastro atualizados no servidor central com absoluto êxito.');
+                          }
+                        }}
+                        className="space-y-6"
+                      >
+                        <div className="space-y-1 border-b border-white/[0.04] pb-4">
+                          <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block">CADASTRO DE PROFILE</span>
+                          <h2 className="text-white text-lg font-bold uppercase font-display">Meus Dados Cadastrais Digitais</h2>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Nome Completo do Titular</label>
+                          <input
+                            type="text"
+                            required
+                            value={loggedClient.nomeCompleto}
+                            onChange={(e) => updateLoggedClient({ ...loggedClient, nomeCompleto: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">Celular / WhatsApp Cadastrado</label>
+                            <input
+                              type="text"
+                              required
+                              value={loggedClient.telefone}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, telefone: e.target.value, whatsapp: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Identificação CPF ou CNPJ</label>
+                            <input
+                              type="text"
+                              value={loggedClient.cpfCnpj}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, cpfCnpj: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">E-mail para Correspondência de Nota Fiscal</label>
+                            <input
+                              type="email"
+                              value={loggedClient.email}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, email: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white lowercase"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-450 text-zinc-500 block">Imóvel de Correspondência Perfil</label>
+                            <select
+                              value={loggedClient.tipoCliente}
+                              onChange={(e: any) => updateLoggedClient({ ...loggedClient, tipoCliente: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3 text-xs text-white"
+                            >
+                              <option value="Residencial">Residencial</option>
+                              <option value="Comercial">Comercial</option>
+                              <option value="Condomínio">Condomínio</option>
+                              <option value="Industrial">Industrial</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Endereço de Entrega Serviços</label>
+                          <input
+                            type="text"
+                            value={loggedClient.enderecoCompleto}
+                            onChange={(e) => updateLoggedClient({ ...loggedClient, enderecoCompleto: e.target.value })}
+                            className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/40 h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Número</label>
+                            <input
+                              type="text"
+                              value={loggedClient.numero}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, numero: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Complemento</label>
+                            <input
+                              type="text"
+                              value={loggedClient.complemento || ''}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, complemento: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Bairro</label>
+                            <input
+                              type="text"
+                              value={loggedClient.bairro}
+                              onChange={(e) => updateLoggedClient({ ...loggedClient, bairro: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] h-10 focus:outline-none rounded-lg px-3.5 text-xs text-white"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="px-6 py-3 bg-[#f2b705] hover:bg-[#ffca03] text-black font-black uppercase text-xs tracking-wider rounded-xl transition-all shadow-[0_5px_15px_rgba(242,183,5,0.15)] cursor-pointer"
+                        >
+                          Salvar Alterações de Ficha
+                        </button>
+                      </form>
+                    )}
+
+                  </div>
+
+                </div>
+              )}
             </motion.div>
           )}
 

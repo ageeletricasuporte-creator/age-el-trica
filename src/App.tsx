@@ -9,7 +9,7 @@ import { PublicSite } from './components/PublicSite';
 import { AdminPanel } from './components/admin/AdminPanel';
 
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<'portal' | 'app' | 'terminal-login' | 'terminal'>('portal');
+  const [currentRoute, setCurrentRoute] = useState<'portal' | 'app' | 'terminal-login' | 'terminal'>('app');
   const [publicTab, setPublicTab] = useState<'home' | 'servicos' | 'sobre' | 'contato'>('home');
 
   // Initialize and list popstate/hash triggers to enable physical back-forward phone controls
@@ -25,12 +25,13 @@ export default function App() {
 
       if (isApp) {
         setCurrentRoute('app');
+        setPublicTab('home');
       } else if (isTerminalLogin) {
         setCurrentRoute('terminal-login');
       } else if (isTerminal) {
         setCurrentRoute('terminal');
       } else {
-        setCurrentRoute('portal');
+        setCurrentRoute('app');
       }
     };
 
@@ -45,6 +46,9 @@ export default function App() {
 
   const navigateTo = (route: 'portal' | 'app' | 'terminal-login' | 'terminal') => {
     setCurrentRoute(route);
+    if (route === 'app') {
+      setPublicTab('home');
+    }
     const hash = route === 'portal' ? '' : `#/${route}`;
     try {
       window.history.pushState({ route }, '', hash || '/');
@@ -64,7 +68,7 @@ export default function App() {
 
       {currentRoute === 'app' && (
         <PublicSite
-          onNavigateToAdmin={() => navigateTo('portal')}
+          onNavigateToAdmin={() => navigateTo('terminal-login')}
           onNavigateToRequest={() => {
             setPublicTab('contato');
             // Smooth scroll to top/form
@@ -79,7 +83,7 @@ export default function App() {
         <AdminPanel
           currentRoute={currentRoute}
           onNavigateToRoute={navigateTo}
-          onBackToSite={() => navigateTo('portal')}
+          onBackToSite={() => navigateTo('app')}
         />
       )}
     </div>
