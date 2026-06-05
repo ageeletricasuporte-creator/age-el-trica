@@ -19,23 +19,38 @@ export default function App() {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
-      // Match pathnames or hash values to cover all possible hosted configurations, subfolders, the index.html file, or hashes.
-      const isApp = path.endsWith('/app') || path.endsWith('/app/') || hash === '#/app' || hash === '#app';
-      const isAppTecnico = path.endsWith('/app-tecnico') || path.endsWith('/app-tecnico/') || hash === '#/app-tecnico' || hash === '#app-tecnico';
-      const isTerminalLogin = path.endsWith('/terminal-login') || path.endsWith('/terminal-login/') || hash === '#/terminal-login' || hash === '#terminal-login';
-      const isTerminal = path.endsWith('/terminal') || path.endsWith('/terminal/') || hash === '#/terminal' || hash === '#terminal';
+      // Normalize string of path and hash to determine route
+      let routeStr = '';
+      if (hash && hash.startsWith('#/')) {
+        routeStr = hash.replace('#/', '');
+      } else if (hash && hash.startsWith('#')) {
+        routeStr = hash.replace('#', '');
+      } else {
+        const segments = path.split('/').filter(Boolean);
+        routeStr = segments[segments.length - 1] || '';
+      }
 
-      if (isApp) {
+      if (routeStr === 'servicos') {
+        setCurrentRoute('app');
+        setPublicTab('servicos');
+      } else if (routeStr === 'sobre') {
+        setCurrentRoute('app');
+        setPublicTab('sobre');
+      } else if (routeStr === 'contato') {
+        setCurrentRoute('app');
+        setPublicTab('contato');
+      } else if (routeStr === 'app-tecnico') {
+        setCurrentRoute('app-tecnico');
+      } else if (routeStr === 'terminal-login') {
+        setCurrentRoute('terminal-login');
+      } else if (routeStr === 'terminal') {
+        setCurrentRoute('terminal');
+      } else if (routeStr === 'portal') {
+        setCurrentRoute('portal');
+      } else {
+        // Fallback / index home
         setCurrentRoute('app');
         setPublicTab('home');
-      } else if (isAppTecnico) {
-        setCurrentRoute('app-tecnico');
-      } else if (isTerminalLogin) {
-        setCurrentRoute('terminal-login');
-      } else if (isTerminal) {
-        setCurrentRoute('terminal');
-      } else {
-        setCurrentRoute('app');
       }
     };
 
@@ -53,11 +68,22 @@ export default function App() {
     if (route === 'app') {
       setPublicTab('home');
     }
-    const hash = route === 'portal' ? '' : `#/${route}`;
+
+    const path = route === 'portal' ? '/' : (route === 'app' ? '/' : `/${route}`);
     try {
-      window.history.pushState({ route }, '', hash || '/');
+      window.history.pushState({ route, tab: 'home' }, '', path);
     } catch (e) {
-      window.location.hash = hash;
+      window.location.hash = route === 'portal' ? '' : `#/${route}`;
+    }
+  };
+
+  const updatePublicTab = (tab: 'home' | 'servicos' | 'sobre' | 'contato') => {
+    setPublicTab(tab);
+    const path = tab === 'home' ? '/' : `/${tab}`;
+    try {
+      window.history.pushState({ route: 'app', tab }, '', path);
+    } catch (e) {
+      window.location.hash = `#/${tab}`;
     }
   };
 
@@ -75,12 +101,12 @@ export default function App() {
           onNavigateToAdmin={() => navigateTo('terminal-login')}
           onNavigateToAppTecnico={() => navigateTo('app-tecnico')}
           onNavigateToRequest={() => {
-            setPublicTab('contato');
+            updatePublicTab('contato');
             // Smooth scroll to top/form
             window.scrollTo({ top: 300, behavior: 'smooth' });
           }}
           publicTab={publicTab}
-          setPublicTab={setPublicTab}
+          setPublicTab={updatePublicTab}
         />
       )}
 
