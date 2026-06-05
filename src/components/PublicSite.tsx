@@ -46,6 +46,7 @@ import defaultBannerImg from '../assets/images/electrician_hero_1780581241012.pn
 
 interface PublicSiteProps {
   onNavigateToAdmin: () => void;
+  onNavigateToAppTecnico: () => void;
   onNavigateToRequest: () => void;
   publicTab: 'home' | 'servicos' | 'sobre' | 'contato';
   setPublicTab: (tab: 'home' | 'servicos' | 'sobre' | 'contato') => void;
@@ -53,6 +54,7 @@ interface PublicSiteProps {
 
 export function PublicSite({
   onNavigateToAdmin,
+  onNavigateToAppTecnico,
   onNavigateToRequest,
   publicTab,
   setPublicTab
@@ -288,7 +290,7 @@ export function PublicSite({
             <span className="text-[#f2b705] font-mono tracking-tight font-bold text-xs mr-1">{config.telefone}</span>
             
             <button
-              onClick={onNavigateToAdmin}
+              onClick={onNavigateToAppTecnico}
               className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400"
             >
               <Smartphone className="w-3 h-3 text-current" /> App Age Elétrica

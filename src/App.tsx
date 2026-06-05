@@ -7,9 +7,10 @@ import React, { useState, useEffect } from 'react';
 import { CompanyPortal } from './components/CompanyPortal';
 import { PublicSite } from './components/PublicSite';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AppTecnico } from './components/AppTecnico';
 
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<'portal' | 'app' | 'terminal-login' | 'terminal'>('app');
+  const [currentRoute, setCurrentRoute] = useState<'portal' | 'app' | 'terminal-login' | 'terminal' | 'app-tecnico'>('app');
   const [publicTab, setPublicTab] = useState<'home' | 'servicos' | 'sobre' | 'contato'>('home');
 
   // Initialize and list popstate/hash triggers to enable physical back-forward phone controls
@@ -20,12 +21,15 @@ export default function App() {
 
       // Match pathnames or hash values to cover all possible hosted configurations, subfolders, the index.html file, or hashes.
       const isApp = path.endsWith('/app') || path.endsWith('/app/') || hash === '#/app' || hash === '#app';
+      const isAppTecnico = path.endsWith('/app-tecnico') || path.endsWith('/app-tecnico/') || hash === '#/app-tecnico' || hash === '#app-tecnico';
       const isTerminalLogin = path.endsWith('/terminal-login') || path.endsWith('/terminal-login/') || hash === '#/terminal-login' || hash === '#terminal-login';
       const isTerminal = path.endsWith('/terminal') || path.endsWith('/terminal/') || hash === '#/terminal' || hash === '#terminal';
 
       if (isApp) {
         setCurrentRoute('app');
         setPublicTab('home');
+      } else if (isAppTecnico) {
+        setCurrentRoute('app-tecnico');
       } else if (isTerminalLogin) {
         setCurrentRoute('terminal-login');
       } else if (isTerminal) {
@@ -44,7 +48,7 @@ export default function App() {
     };
   }, []);
 
-  const navigateTo = (route: 'portal' | 'app' | 'terminal-login' | 'terminal') => {
+  const navigateTo = (route: 'portal' | 'app' | 'terminal-login' | 'terminal' | 'app-tecnico') => {
     setCurrentRoute(route);
     if (route === 'app') {
       setPublicTab('home');
@@ -69,6 +73,7 @@ export default function App() {
       {currentRoute === 'app' && (
         <PublicSite
           onNavigateToAdmin={() => navigateTo('terminal-login')}
+          onNavigateToAppTecnico={() => navigateTo('app-tecnico')}
           onNavigateToRequest={() => {
             setPublicTab('contato');
             // Smooth scroll to top/form
@@ -77,6 +82,10 @@ export default function App() {
           publicTab={publicTab}
           setPublicTab={setPublicTab}
         />
+      )}
+
+      {currentRoute === 'app-tecnico' && (
+        <AppTecnico onBackToSite={() => navigateTo('app')} />
       )}
 
       {(currentRoute === 'terminal-login' || currentRoute === 'terminal') && (

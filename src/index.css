@@ -36,18 +36,20 @@ body {
     background: white !important;
     color: black !important;
   }
-  .no-print {
-    display: none !important;
+  body * {
+    visibility: hidden;
   }
-  .print-only {
-    display: block !important;
+  .print-card, .print-card * {
+    visibility: visible;
   }
   .print-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm; /* A4 width */
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    background: white !important;
-    color: black !important;
   }
 }
 
