@@ -102,7 +102,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
 
   // Check login session
   useEffect(() => {
-    const saved = sessionStorage.getItem('age_el_tech_user');
+    const saved = sessionStorage.getItem('age_el_tech_user') || localStorage.getItem('age_el_tech_user');
     if (saved) {
       const parsed = JSON.parse(saved) as Usuario;
       setCurrentUser(parsed);
@@ -144,6 +144,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
         return;
       }
       sessionStorage.setItem('age_el_tech_user', JSON.stringify(matchedUser));
+      localStorage.setItem('age_el_tech_user', JSON.stringify(matchedUser));
       setCurrentUser(matchedUser);
       setIsAuthenticated(true);
       showNotification('Acesso autenticado com sucesso!', 'success');
@@ -154,6 +155,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
 
   const handleLogout = () => {
     sessionStorage.removeItem('age_el_tech_user');
+    localStorage.removeItem('age_el_tech_user');
     setCurrentUser(null);
     setIsAuthenticated(false);
     showNotification('Sessão encerrada.', 'success');

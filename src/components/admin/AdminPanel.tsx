@@ -95,8 +95,8 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
 
   // Load backend states on startup
   useEffect(() => {
-    // Check if session exists in sessionStorage
-    const savedUser = sessionStorage.getItem('age_el_logged_user');
+    // Check if session exists in sessionStorage or localStorage
+    const savedUser = sessionStorage.getItem('age_el_logged_user') || localStorage.getItem('age_el_logged_user');
     if (savedUser) {
       const parsed = JSON.parse(savedUser) as Usuario;
       setCurrentUser(parsed);
@@ -167,6 +167,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
       setCurrentUser(found);
       setIsAuthenticated(true);
       sessionStorage.setItem('age_el_logged_user', JSON.stringify(found));
+      localStorage.setItem('age_el_logged_user', JSON.stringify(found));
       onNavigateToRoute('terminal');
     } else {
       setLoginError('E-mail ou chave de acesso incorretos. Verifique suas credenciais!');
@@ -217,6 +218,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
       setCurrentUser(updatedUser);
       setIsAuthenticated(true);
       sessionStorage.setItem('age_el_logged_user', JSON.stringify(updatedUser));
+      localStorage.setItem('age_el_logged_user', JSON.stringify(updatedUser));
 
       // Reset wizard states
       setShowChangePasswordModal(false);
@@ -236,6 +238,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
     setCurrentUser(null);
     setIsAuthenticated(false);
     sessionStorage.removeItem('age_el_logged_user');
+    localStorage.removeItem('age_el_logged_user');
     setIsLogoutConfirmOpen(false);
     onNavigateToRoute('portal');
   };
@@ -297,6 +300,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
         const updatedCurrentUser = { ...currentUser, nome: updated.nomeAdministrador };
         setCurrentUser(updatedCurrentUser);
         sessionStorage.setItem('age_el_logged_user', JSON.stringify(updatedCurrentUser));
+        localStorage.setItem('age_el_logged_user', JSON.stringify(updatedCurrentUser));
       }
     }
   };
