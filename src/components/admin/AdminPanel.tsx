@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard,
   Users as UsersIcon,
@@ -19,7 +20,9 @@ import {
   Zap,
   Lock,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 
 // Database core
@@ -51,9 +54,11 @@ import { ConfirmModal } from './ConfirmModal';
 
 interface AdminPanelProps {
   onBackToSite: () => void;
+  currentRoute: 'terminal-login' | 'terminal';
+  onNavigateToRoute: (route: 'portal' | 'app' | 'terminal-login' | 'terminal') => void;
 }
 
-export function AdminPanel({ onBackToSite }: AdminPanelProps) {
+export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: AdminPanelProps) {
   // Authentication states
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
@@ -70,6 +75,9 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
   // Logged-in user information
   const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  // Mobile drawer panel state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Database Memory states
   const [clients, setClients] = useState<Cliente[]>([]);
@@ -106,6 +114,15 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
       unsubscribe();
     };
   }, []);
+
+  // Sync state between routing paths and current session status
+  useEffect(() => {
+    if (isAuthenticated && currentUser && currentRoute === 'terminal-login') {
+      onNavigateToRoute('terminal');
+    } else if ((!isAuthenticated || !currentUser) && currentRoute === 'terminal') {
+      onNavigateToRoute('terminal-login');
+    }
+  }, [isAuthenticated, currentUser, currentRoute, onNavigateToRoute]);
 
   const refreshLocalStates = () => {
     setClients(AgeEletricaDB.getClients());
@@ -150,6 +167,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
       setCurrentUser(found);
       setIsAuthenticated(true);
       sessionStorage.setItem('age_el_logged_user', JSON.stringify(found));
+      onNavigateToRoute('terminal');
     } else {
       setLoginError('E-mail ou chave de acesso incorretos. Verifique suas credenciais!');
     }
@@ -206,6 +224,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
       setNewPassword('');
       setConfirmNewPassword('');
       alert('Sua senha particular de segurança foi configurada e sincronizada com sucesso!');
+      onNavigateToRoute('terminal');
     }
   };
 
@@ -218,6 +237,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
     setIsAuthenticated(false);
     sessionStorage.removeItem('age_el_logged_user');
     setIsLogoutConfirmOpen(false);
+    onNavigateToRoute('portal');
   };
 
   // State saving handlers wrapper
@@ -413,11 +433,12 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
           ) : (
             <div>
               <div className="text-center mb-6">
-                <span className="p-1 px-1.5 bg-zinc-900 text-amber-500 font-black text-xs rounded border border-zinc-550/20 italic tracking-widest inline-block mb-3">
+                <span className="p-1 px-1.5 bg-zinc-900 border border-zinc-800 text-amber-500 font-black text-[10px] rounded italic tracking-widest inline-block mb-3 select-none">
                   ⚡ AGE ELÉTRICA
                 </span>
-                <h1 className="text-white text-xl font-black uppercase tracking-tight">Login do Sistema</h1>
-                <p className="text-zinc-500 text-[11px] leading-relaxed mt-1">Insira seus dados de acesso cadastrados para entrar no aplicativo de gestão.</p>
+                <h1 className="text-white text-xl font-black uppercase tracking-tight font-display text-center">Terminal AGE Elétrica</h1>
+                <p className="text-[#f2b705] text-xs leading-relaxed mt-1 font-bold">Gerenciador administrativo</p>
+                <p className="text-zinc-500 text-[11px] leading-relaxed mt-2.5 max-w-[240px] mx-auto">Insira seus dados de acesso credenciados para realizar o controle interno.</p>
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
@@ -480,10 +501,138 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 selection:bg-amber-500 selection:text-black font-sans relative flex">
+    <div className="min-h-screen bg-[#050505] text-zinc-300 selection:bg-[#f2b705] selection:text-black font-sans relative flex flex-col md:flex-row w-full max-w-[100vw] overflow-x-hidden">
 
-      {/* SIDEBAR NAVIGATION - Hides during paper printing */}
-      <aside className="w-64 bg-zinc-950 border-r border-zinc-900 flex flex-col justify-between shrink-0 no-print">
+      {/* MOBILE TOP BAR - Fixed/Sticky on mobile */}
+      <div className="md:hidden w-full bg-zinc-950 border-b border-zinc-900 p-4 flex items-center justify-between no-print sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          {config.logo ? (
+            <img src={config.logo} alt="Logo" className="max-h-7 max-w-[65px] object-contain rounded" referrerPolicy="no-referrer" />
+          ) : (
+            <span className="p-1 px-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 font-extrabold text-[10px] rounded tracking-wider italic">
+              ⚡ AGE
+            </span>
+          )}
+          <span className="text-white font-extrabold text-xs tracking-tight">{config.nomeFantasia || 'Sistema AGE'}</span>
+        </div>
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="p-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-[#f2b705] hover:text-white transition cursor-pointer"
+          aria-label="Abrir Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* MOBILE DRAWER OVERLAY */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop filter */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden"
+            />
+
+            {/* Drawer side panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[280px] max-w-[85vw] bg-zinc-950 border-r border-zinc-900 z-50 p-6 flex flex-col justify-between md:hidden shadow-2xl"
+            >
+              <div>
+                {/* Close and Brand row */}
+                <div className="flex items-center justify-between pb-6 border-b border-zinc-900 mb-6 font-display">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1 px-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 font-extrabold text-xs rounded tracking-widest italic">
+                      ⚡ AGE
+                    </span>
+                    <span className="text-white font-extrabold text-sm block leading-tight">Terminal</span>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Mobile Quick profile */}
+                <div className="p-3 bg-zinc-900/40 rounded-2xl border border-zinc-900 flex items-center gap-2.5 mb-6">
+                  <div className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center font-bold text-xs">
+                    {currentUser.nome.substring(0,2)}
+                  </div>
+                  <div>
+                    <span className="text-white text-xs font-bold block leading-none">{currentUser.nome.split(' ')[0]}</span>
+                    <span className="text-[9px] text-[#f2b705] font-mono mt-0.5 block uppercase tracking-wider">{currentUser.nivelAcesso}</span>
+                  </div>
+                </div>
+
+                {/* Mobile navigation links */}
+                <nav className="space-y-1.5 text-xs max-h-[60vh] overflow-y-auto pr-1">
+                  {[
+                    { id: 'dashboard', label: 'Dashboard Gerencial', icon: LayoutDashboard },
+                    { id: 'agenda', label: 'Escala / Agenda Técnica', icon: Calendar },
+                    { id: 'clientes', label: 'Clientes Cadastrados', icon: UsersIcon },
+                    { id: 'servicos', label: 'Catálogo de Serviços', icon: Layers },
+                    { id: 'orcamentos', label: 'Orçamentos & Invoices', icon: FileText },
+                    { id: 'recibos', label: 'Quitações & Recibos', icon: DollarSign },
+                    ...((currentUser.nivelAcesso !== 'Tecnico/Eletricista') ? [{ id: 'fila', label: 'Fila de Contatos', icon: MessageSquare }] : []),
+                    ...((currentUser.nivelAcesso === 'Administrador') ? [
+                      { id: 'contas', label: 'Contas de Acesso', icon: ShieldAlert },
+                      { id: 'settings', label: 'Configuração Geral', icon: SettingsIcon }
+                    ] : [])
+                  ].map((item) => {
+                    const IconComp = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id as any);
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl font-semibold transition ${activeTab === item.id ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                      >
+                        <IconComp className="w-4 h-4 shrink-0" /> {item.label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Back and Logout blocks on Mobile menu */}
+              <div className="pt-4 border-t border-zinc-900 text-xs text-zinc-550 space-y-2.5">
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onBackToSite();
+                  }}
+                  className="w-full text-left hover:text-amber-500 transition py-1 text-[11px] font-mono text-[#a1a1aa] block"
+                >
+                  ← RETORNAR À TELA INICIAL
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    handleLogoutTrigger();
+                  }}
+                  className="w-full flex items-center gap-2.5 hover:text-red-400 transition text-[#a1a1aa]"
+                >
+                  <LogOut className="w-4 h-4 shrink-0" /> Encerrar Sessão
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* DESKTOP SIDEBAR NAVIGATION - Hides on small devices or during page print */}
+      <aside className="hidden md:flex w-64 bg-zinc-950 border-r border-[#1a1a1a] flex-col justify-between shrink-0 no-print">
         <div>
           {/* Brand header */}
           <div className="p-6 border-b border-zinc-900 flex items-center justify-between">
@@ -514,45 +663,45 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
           </div>
 
           {/* Navigation Links list */}
-          <nav className="px-3 space-y-1 text-xs">
+          <nav className="px-3 space-y-1 text-xs font-medium">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'dashboard' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'dashboard' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" /> Dashboard Gerencial
             </button>
 
             <button
               onClick={() => setActiveTab('agenda')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'agenda' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'agenda' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <Calendar className="w-4 h-4 shrink-0" /> Escala / Agenda Técnica
             </button>
 
             <button
               onClick={() => setActiveTab('clientes')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'clientes' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'clientes' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <UsersIcon className="w-4 h-4 shrink-0" /> Clientes Cadastrados
             </button>
 
             <button
               onClick={() => setActiveTab('servicos')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'servicos' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'servicos' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <Layers className="w-4 h-4 shrink-0" /> Catálogo de Serviços
             </button>
 
             <button
               onClick={() => setActiveTab('orcamentos')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'orcamentos' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'orcamentos' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <FileText className="w-4 h-4 shrink-0" /> Orçamentos & Invoices
             </button>
 
             <button
               onClick={() => setActiveTab('recibos')}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'recibos' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'recibos' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
             >
               <DollarSign className="w-4 h-4 shrink-0" /> Quitações & Recibos
             </button>
@@ -561,11 +710,11 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
             {currentUser.nivelAcesso !== 'Tecnico/Eletricista' && (
               <button
                 onClick={() => setActiveTab('fila')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'fila' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'fila' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
               >
                 <MessageSquare className="w-4 h-4 shrink-0" /> Fila de Contatos
                 {solicitations.filter(s => s.status === 'Pendente').length > 0 && (
-                  <span className="bg-amber-500/10 text-amber-500 border border-amber-500/15 shrink-0 px-2 py-0.5 rounded text-[9px] font-bold font-mono ml-auto">
+                  <span className="bg-[#f2b705]/10 text-[#f2b705] border border-[#f2b705]/15 shrink-0 px-2 py-0.5 rounded text-[9px] font-bold font-mono ml-auto">
                     {solicitations.filter(s => s.status === 'Pendente').length}
                   </span>
                 )}
@@ -577,14 +726,14 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
               <>
                 <button
                   onClick={() => setActiveTab('contas')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'contas' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'contas' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                 >
                   <ShieldAlert className="w-4 h-4 shrink-0" /> Contas de Acesso
                 </button>
 
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'settings' ? 'bg-amber-500 text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'settings' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                 >
                   <SettingsIcon className="w-4 h-4 shrink-0" /> Configuração Geral
                 </button>
@@ -598,9 +747,9 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
         <div className="p-4 border-t border-zinc-900 text-xs text-zinc-550 space-y-2">
           <button
             onClick={onBackToSite}
-            className="w-full text-left hover:text-amber-500 transition py-1 text-[11px] font-mono"
+            className="w-full text-left hover:text-[#f2b705] transition py-1 text-[11px] font-mono block"
           >
-            ← RETORNAR AO SITE PÚBLICO
+            ← RETORNAR À TELA INICIAL
           </button>
           <button
             onClick={handleLogoutTrigger}

@@ -220,7 +220,7 @@ export function PublicSite({
               onClick={onNavigateToAdmin}
               className="flex items-center gap-1.5 bg-white/[0.01] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3.5 py-1 rounded-full transition-all text-[9px] font-mono tracking-widest cursor-pointer"
             >
-              <Zap className="w-2.5 h-2.5 text-[#f2b705]" /> APP AGE ELÉTRICA
+              ← VOLTAR AO PORTAL
             </button>
           </div>
         </div>
@@ -300,7 +300,7 @@ export function PublicSite({
               onClick={onNavigateToAdmin}
               className="px-3 sm:px-4 py-1.5 bg-neutral-900 border border-zinc-800 hover:border-amber-500/40 text-[#f2b705] hover:text-white text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-amber-500/10 cursor-pointer font-display"
             >
-              App AGE Elétrica
+              ← Portal
             </button>
             <button
               onClick={() => {
@@ -357,7 +357,7 @@ export function PublicSite({
             onClick={onNavigateToAdmin}
             className="transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer text-[#f2b705] hover:text-white font-bold bg-amber-500/10 border border-amber-500/20"
           >
-            App
+            ← Portal
           </button>
         </nav>
       </div>

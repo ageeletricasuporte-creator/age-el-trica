@@ -172,7 +172,8 @@ export function AdminUsers({
 
       {/* Users table */}
       <div className="bg-zinc-950 rounded-2xl border border-zinc-900 overflow-hidden">
-        <table className="w-full text-left border-collapse text-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-zinc-900 bg-zinc-900/20 text-[10px] text-zinc-400 font-mono tracking-wider uppercase">
               <th className="py-4 px-5">Colaborador / Técnico</th>
@@ -223,6 +224,7 @@ export function AdminUsers({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* MODAL: ADD USER CREDENTIAL FORM */}
