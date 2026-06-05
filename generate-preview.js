@@ -65,7 +65,13 @@ async function generate() {
   const logoOutputPath = path.join(publicDir, 'logo-age.png');
   const faviconPath = path.join(publicDir, 'favicon.png');
   const appleIconPath = path.join(publicDir, 'apple-touch-icon.png');
+  const ogImagePath = path.join(publicDir, 'og-image.png');
   
+  const favicon32Path = path.join(publicDir, 'favicon-32x32.png');
+  const favicon48Path = path.join(publicDir, 'favicon-48x48.png');
+  const rootIcon192Path = path.join(publicDir, 'icon-192.png');
+  const rootIcon512Path = path.join(publicDir, 'icon-512.png');
+
   const iconsDir = path.join(publicDir, 'icons');
   if (!fs.existsSync(iconsDir)) {
     fs.mkdirSync(iconsDir, { recursive: true });
@@ -73,8 +79,9 @@ async function generate() {
   const icon192Path = path.join(iconsDir, 'icon-192.png');
   const icon512Path = path.join(iconsDir, 'icon-512.png');
 
-  // Solid true black background SVG logo optimized for app icons
-  const iconSvgContent = `
+  // Solid true black background SVG logo optimized for app icons and social sharing previews
+  // High-precision mathematical centering with 60% scaled sizing (Perfect padding margins on all borders)
+  const socialSvgContent = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="yellowLightningGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -87,11 +94,11 @@ async function generate() {
     </filter>
   </defs>
   
-  <!-- Solid pure black background requested for crisp non-cut iPhone installation -->
+  <!-- Solid pure black background -->
   <rect width="512" height="512" fill="#000000" />
   
-  <!-- Content group slightly scaled down/padded for perfect safe margins -->
-  <g transform="translate(38, 20) scale(0.85)">
+  <!-- Centered and exactly 60% width scaled container -->
+  <g transform="translate(101.5, 112) scale(0.60)">
     <!-- Main Group "AGE" stylized and italicized -->
     <g transform="skewX(-14)">
       <!-- Letter 'A' (white) -->
@@ -126,40 +133,75 @@ async function generate() {
       .toFile(outputPathV3);
     console.log(`Success! Preview V3 PNG Image saved successfully to ${outputPathV3}`);
 
+    // Render 512x512 og-image.png (used by WhatsApp and facebook preview)
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(512, 512)
+      .png()
+      .toFile(ogImagePath);
+    console.log(`Success! og-image.png saved successfully to ${ogImagePath}`);
+
     // Render 512x512 app logo (used by site elements)
-    await sharp(Buffer.from(iconSvgContent))
+    await sharp(Buffer.from(socialSvgContent))
       .resize(512, 512)
       .png()
       .toFile(logoOutputPath);
     console.log(`Success! Logo brand PNG saved successfully to ${logoOutputPath}`);
 
-    // Render 512x512 icon-512.png
-    await sharp(Buffer.from(iconSvgContent))
+    // Render 512x512 root icon-512.png
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(512, 512)
+      .png()
+      .toFile(rootIcon512Path);
+    console.log(`Success! Root 512x512 icon saved to ${rootIcon512Path}`);
+
+    // Render 192x192 root icon-192.png
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(192, 192)
+      .png()
+      .toFile(rootIcon192Path);
+    console.log(`Success! Root 192x192 icon saved to ${rootIcon192Path}`);
+
+    // Render 512x512 icon-512.png in /icons
+    await sharp(Buffer.from(socialSvgContent))
       .resize(512, 512)
       .png()
       .toFile(icon512Path);
     console.log(`Success! PWA 512x512 icon saved to ${icon512Path}`);
 
-    // Render 192x192 icon-192.png
-    await sharp(Buffer.from(iconSvgContent))
+    // Render 192x192 icon-192.png in /icons
+    await sharp(Buffer.from(socialSvgContent))
       .resize(192, 192)
       .png()
       .toFile(icon192Path);
     console.log(`Success! PWA 192x192 icon saved to ${icon192Path}`);
 
     // Render 180x180 apple-touch-icon.png
-    await sharp(Buffer.from(iconSvgContent))
+    await sharp(Buffer.from(socialSvgContent))
       .resize(180, 180)
       .png()
       .toFile(appleIconPath);
     console.log(`Success! apple-touch-icon.png saved to ${appleIconPath}`);
 
     // Render 48x48 favicon.png
-    await sharp(Buffer.from(iconSvgContent))
+    await sharp(Buffer.from(socialSvgContent))
       .resize(48, 48)
       .png()
       .toFile(faviconPath);
     console.log(`Success! favicon.png saved to ${faviconPath}`);
+
+    // Render 32x32 favicon-32x32.png
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(32, 32)
+      .png()
+      .toFile(favicon32Path);
+    console.log(`Success! favicon-32x32.png saved to ${favicon32Path}`);
+
+    // Render 48x48 favicon-48x48.png
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(48, 48)
+      .png()
+      .toFile(favicon48Path);
+    console.log(`Success! favicon-48x48.png saved to ${favicon48Path}`);
 
   } catch (err) {
     console.error('Error generating image via sharp:', err);
