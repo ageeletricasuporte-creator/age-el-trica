@@ -28,7 +28,15 @@ import {
   Cpu,
   Award,
   Check,
-  Leaf
+  Leaf,
+  Video,
+  Wrench,
+  Instagram,
+  BatteryCharging,
+  Calendar,
+  Layers,
+  Lightbulb,
+  Flame
 } from 'lucide-react';
 import { Servico, ConfiguracaoEmpresa } from '../types';
 import { AgeEletricaDB } from '../dataSeed';
@@ -248,28 +256,39 @@ export function PublicSite({
           </div>
 
           {/* Minimal capsule tabs */}
-          <nav className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+          <nav className="hidden md:flex items-center gap-1 sm:gap-2 text-[10px] font-bold uppercase tracking-widest font-display">
             <button
               onClick={() => setPublicTab('home')}
-              className={`transition-all duration-300 px-4 py-2 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
+              className={`transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
             >
               Início
             </button>
             <button
               onClick={() => setPublicTab('servicos')}
-              className={`transition-all duration-300 px-4 py-2 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
+              className={`transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
             >
-              Catálogo
+              Serviços
             </button>
             <button
               onClick={() => setPublicTab('sobre')}
-              className={`transition-all duration-300 px-4 py-2 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
+              className={`transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
             >
-              Sobre Nós
+              Sobre
+            </button>
+            <button
+              onClick={() => {
+                setPublicTab('contato');
+                setTimeout(() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 100);
+              }}
+              className="transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer text-zinc-400 hover:text-white"
+            >
+              Orçamento
             </button>
             <button
               onClick={() => setPublicTab('contato')}
-              className={`transition-all duration-300 px-4 py-2 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
+              className={`transition-all duration-300 px-3 py-1.5 rounded-full cursor-pointer ${publicTab === 'contato' ? 'text-[#f2b705] bg-white/[0.05] border border-white/[0.08]' : 'text-zinc-400 hover:text-white'}`}
             >
               Contato
             </button>
@@ -278,8 +297,13 @@ export function PublicSite({
           {/* Action action button */}
           <div className="flex items-center gap-3">
             <button
-              onClick={onNavigateToRequest}
-              className="px-3 sm:px-4.5 py-1.5 bg-gradient-to-r from-amber-500 to-[#f2b705] text-black text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-350 hover:shadow-[0_0_20px_rgba(242,183,5,0.45)] hover:scale-[1.02] cursor-pointer"
+              onClick={() => {
+                setPublicTab('contato');
+                setTimeout(() => {
+                  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }, 100);
+              }}
+              className="px-3 sm:px-4.5 py-1.5 bg-gradient-to-r from-amber-500 to-[#f2b705] hover:from-amber-400 hover:to-[#ffca03] text-black text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:shadow-[0_0_20px_rgba(242,183,5,0.45)] hover:-translate-y-0.5 cursor-pointer font-display"
             >
               Orçamento Rápido
             </button>
@@ -287,7 +311,7 @@ export function PublicSite({
         </header>
 
         {/* Sleek Horizontal Tab Bar for Mobile viewports */}
-        <nav className="md:hidden w-full max-w-sm bg-neutral-950/90 backdrop-blur-xl border border-white/[0.06] rounded-full p-1 flex justify-around items-center shadow-lg pointer-events-auto text-[8.5px] font-extrabold uppercase tracking-widest gap-0.5">
+        <nav className="md:hidden w-full max-w-[340px] bg-neutral-950/90 backdrop-blur-xl border border-white/[0.06] rounded-full p-1 flex justify-around items-center shadow-lg pointer-events-auto text-[8.5px] font-extrabold uppercase tracking-widest gap-0.5 font-display">
           <button
             onClick={() => setPublicTab('home')}
             className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'home' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
@@ -298,13 +322,24 @@ export function PublicSite({
             onClick={() => setPublicTab('servicos')}
             className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'servicos' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
-            Catálogo
+            Serviços
           </button>
           <button
             onClick={() => setPublicTab('sobre')}
             className={`transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer ${publicTab === 'sobre' ? 'text-[#f2b705] bg-white/[0.06]' : 'text-zinc-400 hover:text-white'}`}
           >
             Sobre
+          </button>
+          <button
+            onClick={() => {
+              setPublicTab('contato');
+              setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+              }, 100);
+            }}
+            className="transition-all duration-200 py-1.5 px-2.5 rounded-full cursor-pointer text-zinc-400 hover:text-white"
+          >
+            Orçar
           </button>
           <button
             onClick={() => setPublicTab('contato')}
@@ -316,7 +351,7 @@ export function PublicSite({
       </div>
 
       {/* 4. Tab views controller */}
-      <main className="grow">
+      <main className="grow relative">
         <AnimatePresence mode="wait">
           
           {/* TAB: HOME SCREEN */}
@@ -325,361 +360,501 @@ export function PublicSite({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.4 }}
-              className="px-4 md:px-8 py-6 space-y-24"
+              transition={{ duration: 0.45 }}
+              className="px-4 sm:px-6 md:px-12 py-8 space-y-32"
             >
-              {/* BRAND HERO HIGHLIGHTS: Clean, wide-spaced centerpiece inspired by Tesla/Linear styling */}
-              <div className="max-w-6xl mx-auto pt-24 pb-8 text-center relative flex flex-col items-center">
-                
-                {/* Glow behind title */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-[#f2b705]/[0.05] blur-[120px] pointer-events-none" />
+              
+              {/* 1. TOPO / HERO WITH AKSON PROFILE PIC */}
+              <div className="max-w-6xl mx-auto pt-16 sm:pt-24 pb-12 relative">
+                {/* Dramatic background light spots matching "Imersão do Mago" style */}
+                <div className="absolute left-1/3 top-1/4 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-amber-500/[0.08] blur-[150px] pointer-events-none" />
+                <div className="absolute right-0 top-1/3 w-[350px] h-[350px] rounded-full bg-cyan-500/[0.05] blur-[130px] pointer-events-none" />
 
-                {/* Sub-header badge outline */}
-                <div className="mb-8 select-none">
-                  <div className="inline-flex items-center gap-2 bg-[#f2b705]/[0.03] border border-[#f2b705]/20 text-[#f2b705] px-5 py-2.5 rounded-full text-[9px] font-mono tracking-[0.25em] uppercase font-bold backdrop-blur-sm shadow-[0_4px_15px_rgba(242,183,5,0.05)]">
-                    <Sparkles className="w-3.5 h-3.5 text-[#f2b705] fill-[#f2b705]/20" /> SEU ELETRICISTA AMIGO
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 relative z-10">
+                  {/* Hero text side */}
+                  <div className="w-full lg:w-1/2 text-center lg:text-left space-y-8 lg:pr-4">
+                    {/* Exquisite gold badge */}
+                    <div className="inline-flex items-center gap-2.5 bg-[#f2b705]/[0.02] border border-[#f2b705]/15 text-[#f2b705] px-4.5 py-2.5 rounded-full text-[10px] sm:text-[11px] font-mono tracking-[0.25em] uppercase font-semibold backdrop-blur-sm shadow-[0_5px_15px_rgba(242,183,5,0.03)] select-none">
+                      <Sparkles className="w-3.5 h-3.5 text-[#f2b705] fill-[#f2b705]/15 animate-pulse" /> AGE ELÉTRICA • SERVIÇOS DE ALTO PADRÃO
+                    </div>
+
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl xl:text-7xl font-extrabold tracking-tight text-white uppercase leading-[1.05] font-display text-balance">
+                      Seu eletricista <br />
+                      <span className="text-zinc-300 font-light block mt-1 normal-case font-sans text-2xl sm:text-3xl md:text-4xl tracking-normal">de total confiança,</span> 
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f2b705] via-amber-400 to-[#ffca03] drop-shadow-[0_0_30px_rgba(242,183,5,0.20)] font-black">
+                        rápido e seguro
+                      </span>
+                    </h1>
+
+                    <p className="text-zinc-400 font-normal lg:font-light text-sm sm:text-base md:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 text-balance">
+                      Serviços de alto padrão para residências, condomínios e comércios. Instalações elétricas inteligentes, manutenção detalhada sob a norma <span className="text-[#f2b705] font-mono text-xs font-semibold bg-[#f2b705]/5 border border-[#f2b705]/10 px-1.5 py-0.5 rounded">NBR 5410</span>, recarga Wallbox, câmeras de segurança e automação.
+                    </p>
+
+                    {/* Action buttons */}
+                    <div className="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4.5 z-20">
+                      <button
+                        onClick={() => {
+                          setPublicTab('contato');
+                          setTimeout(() => {
+                            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                          }, 150);
+                        }}
+                        className="group w-full sm:w-auto px-9 py-5 bg-gradient-to-r from-[#f2b705] to-amber-500 hover:from-[#ffca03] hover:to-amber-400 text-black text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 hover:shadow-[0_10px_35px_rgba(242,183,5,0.4)] hover:-translate-y-1 active:translate-y-0 cursor-pointer font-display flex items-center justify-center gap-2.5"
+                      >
+                        Solicitar orçamento <ArrowRight className="w-4 h-4 text-black font-semibold transition-transform group-hover:translate-x-1" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const servicesHeadingEl = document.getElementById('services-section');
+                          if (servicesHeadingEl) {
+                            servicesHeadingEl.scrollIntoView({ behavior: 'smooth' });
+                          } else {
+                            setPublicTab('servicos');
+                          }
+                        }}
+                        className="w-full sm:w-auto px-9 py-5 bg-[#030303] border border-white/[0.12] hover:border-white/40 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all duration-300 hover:-translate-y-1 active:translate-y-0 cursor-pointer backdrop-blur-md flex items-center justify-center gap-2"
+                      >
+                        Conhecer serviços
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Hero image profile side (Cutout style with high-end glows) */}
+                  <div className="w-full lg:w-1/2 flex justify-center lg:justify-end items-center relative">
+                    {/* Exquisite glowing backlights centered behind professional silhouette */}
+                    <div className="absolute w-[320px] h-[320px] sm:w-[450px] sm:h-[450px] rounded-full bg-amber-500/[0.12] blur-[120px] pointer-events-none -translate-y-6" />
+                    <div className="absolute w-[280px] h-[280px] sm:w-[380px] sm:h-[380px] rounded-full bg-[#f2b705]/[0.08] blur-[100px] pointer-events-none translate-x-12 translate-y-6" />
+                    <div className="absolute w-[250px] h-[250px] rounded-full bg-cyan-500/[0.04] blur-[90px] pointer-events-none -translate-x-12" />
+
+                    <div className="relative z-10 w-full max-w-[380px] sm:max-w-[420px] flex flex-col justify-end items-center">
+                      {/* Image container styled for cutout transparency with bottom fade-to-black mask */}
+                      <div className="relative w-full h-[360px] sm:h-[460px] overflow-hidden flex items-end justify-center select-none">
+                        <motion.img
+                          src={config.bannerHero || defaultBannerImg}
+                          alt="Akson Pereira"
+                          className="w-auto h-full max-h-full object-contain filter contrast-[1.03] brightness-[1.02] drop-shadow-[0_15px_30px_rgba(0,0,0,0.85)] relative z-10 select-none transition-transform duration-500 hover:scale-[1.025]"
+                          referrerPolicy="no-referrer"
+                          animate={{ y: [0, -8, 0] }}
+                          transition={{
+                            duration: 5,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                        
+                        {/* Smooth bottom linear fade-to-black layer: merges chest/torso crop naturally into body background */}
+                        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#030303] via-[#030303]/75 to-transparent z-20 pointer-events-none" />
+                        
+                        {/* Side masks for seamless integration */}
+                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#030303]/10 to-transparent z-20 pointer-events-none" />
+                        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#030303]/10 to-transparent z-20 pointer-events-none" />
+                      </div>
+
+                      {/* Live active tag situated elegantly floating to the side */}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 bg-[#030303]/85 border border-white/[0.08] px-4.5 py-2 rounded-full flex items-center gap-2 shadow-[0_15px_35px_rgba(0,0,0,0.9)] backdrop-blur-md">
+                        <span className="w-2 h-2 bg-[#f2b705] rounded-full animate-ping" />
+                        <span className="text-[9px] font-mono tracking-widest text-[#f2b705] font-extrabold uppercase whitespace-nowrap">AKSON PEREIRA • ONLINE</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                {/* Main Hero giant title */}
-                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[100px] font-black tracking-tighter text-white mb-6 uppercase select-none leading-none">
-                  SEU ELETRICISTA <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f2b705] via-amber-400 to-amber-500 drop-shadow-[0_0_50px_rgba(242,183,5,0.2)]">AMIGO</span>
-                </h1>
-
-                {/* Tagline sentence */}
-                <p className="text-zinc-400 font-light text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed mb-10 text-center">
-                  Oferecemos instalações residenciais e apartamentos, reparos elétricos rápidos, manutenção preventiva técnica, câmeras de segurança CFTV, carregadores Wallbox, ar condicionado e automação residencial, com total segurança e compromisso para você e seu lar.
-                </p>
-
-                {/* Horizontal list specifications */}
-                <div className="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-5 gap-y-2 text-zinc-500 font-mono text-[9px] sm:text-[9.5px] uppercase tracking-[0.15em] sm:tracking-[0.2em] mb-12 border-t border-b border-white/[0.03] py-4 w-full max-w-3xl px-4 text-center">
-                  <span>RESIDÊNCIAS & APARTAMENTOS</span>
-                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
-                  <span>CARREGADOR INSTALADO WALLBOX</span>
-                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
-                  <span>SEGURANÇA CFTV</span>
-                  <span className="hidden sm:inline text-[#f2b705]/40 font-bold">•</span>
-                  <span>AUTOMACÃO SMART HOME</span>
-                </div>
-
-                {/* Hero Button Action Groups aligning side-by-side */}
-                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full sm:w-auto z-10">
-                  <button
-                    onClick={onNavigateToRequest}
-                    className="w-full sm:w-auto px-10 py-5 bg-[#f2b705] hover:bg-[#ffca03] text-black text-xs font-black uppercase tracking-widest rounded-xl shadow-[0_8px_30px_rgba(242,183,5,0.25)] hover:shadow-[0_8px_40px_rgba(242,183,5,0.5)] transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    Solicitar Orçamento <ArrowRight className="w-4 h-4 text-black font-semibold" />
-                  </button>
-
-                  <button
-                    onClick={() => setPublicTab('servicos')}
-                    className="w-full sm:w-auto px-10 py-5 bg-neutral-900/60 border border-white/[0.06] hover:border-[#f2b705]/40 text-zinc-300 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all duration-350 flex items-center justify-center gap-2 cursor-pointer backdrop-blur-md"
-                  >
-                    Conhecer Serviços
-                  </button>
-                </div>
-
-                {/* Floating metrics grid under hero */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20 w-full max-w-5xl">
-                  <div className="bg-neutral-900/[0.25] backdrop-blur-md border border-white/[0.04] p-5 rounded-2xl text-center">
-                    <span className="text-3xl font-extrabold text-white block mb-0.5 font-mono">24h</span>
-                    <span className="text-zinc-500 font-mono tracking-wider uppercase text-[8.5px]">Suporte de Emergência</span>
-                  </div>
-                  <div className="bg-neutral-900/[0.25] backdrop-blur-md border border-white/[0.04] p-5 rounded-2xl text-center">
-                    <span className="text-3xl font-extrabold text-[#f2b705] block mb-0.5 font-mono">100%</span>
-                    <span className="text-zinc-500 font-mono tracking-wider uppercase text-[8.5px]">Nacionais de Segurança</span>
-                  </div>
-                  <div className="bg-neutral-900/[0.25] backdrop-blur-md border border-white/[0.04] p-5 rounded-2xl text-center">
-                    <span className="text-3xl font-extrabold text-white block mb-0.5 font-mono">+1.500</span>
-                    <span className="text-zinc-500 font-mono tracking-wider uppercase text-[8.5px]">Visitas Executadas</span>
-                  </div>
-                  <div className="bg-neutral-900/[0.25] backdrop-blur-md border border-white/[0.04] p-5 rounded-2xl text-center">
-                    <span className="text-3xl font-extrabold text-emerald-400 block mb-0.5 font-mono">0 CARBON</span>
-                    <span className="text-zinc-500 font-mono tracking-wider uppercase text-[8.5px]">Foco Ambiental Wallbox</span>
-                  </div>
-                </div>
-
               </div>
 
-              {/* BRAND IMAGE BANNER COMPOSITION: Presenting existing electrician portfolio image */}
-              <div className="max-w-6xl mx-auto rounded-3xl overflow-hidden border border-white/[0.05] bg-neutral-900/[0.15] p-3 shadow-2xl backdrop-blur-xl">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-6 md:p-12">
+              {/* 2. SEÇÃO DE CHAMADA */}
+              <div className="max-w-6xl mx-auto px-2">
+                <div className="relative overflow-hidden rounded-[2rem] border border-[#f2b705]/20 bg-gradient-to-r from-neutral-950 via-[#0d0d0c] to-neutral-950 p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_20px_45px_rgba(0,0,0,0.8)] backdrop-blur-md">
+                  {/* Subtle ambient light point inside call card */}
+                  <div className="absolute -left-20 -top-20 w-48 h-48 rounded-full bg-[#f2b705]/[0.03] blur-3xl pointer-events-none" />
                   
-                  {/* Left component: Styled frame of electrician */}
-                  <div className="lg:col-span-5 relative group flex justify-center items-center">
-                    {/* Golden accent node */}
-                    <div className="absolute w-64 h-64 rounded-full bg-[#f2b705]/10 blur-[80px] pointer-events-none group-hover:scale-125 transition-transform duration-1000" />
+                  <div className="space-y-1.5 text-center md:text-left z-10">
+                    <span className="text-[9px] font-mono tracking-widest text-[#f2b705] font-black uppercase block">🔍 ATENDIMENTO IMEDIATO</span>
+                    <h3 className="text-white font-display text-xl sm:text-2xl font-bold tracking-tight text-balance">
+                      Precisando de eletricista? Fale com a AGE Elétrica e resolva seu problema com segurança.
+                    </h3>
+                    <p className="text-zinc-550 text-xs sm:text-sm font-light text-zinc-400">
+                      Evite riscos de curtos ou sobrecargas elétricas. Nossos serviços possuem garantia e emissão de laudo de conformidade técnica.
+                    </p>
+                  </div>
+                  
+                  <a 
+                    href={`https://wa.me/55${config.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Olá AGE Elétrica! Vi o site e gostaria de solicitar um atendimento técnico elétrico emergencial / orçamento.')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full md:w-auto px-6.5 py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-all duration-300 hover:shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer z-10 shrink-0 border border-emerald-450/20 font-display"
+                  >
+                    <MessageSquare className="w-4 h-4 fill-white text-white" /> Chamar no WhatsApp
+                  </a>
+                </div>
+              </div>
+
+              {/* 3. SERVIÇOS (PREMIUM CARD COMPOSITION) */}
+              <div id="services-section" className="max-w-6xl mx-auto space-y-12 scroll-mt-28">
+                <div className="text-center space-y-2 max-w-xl mx-auto">
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/20 px-3.5 py-1.5 rounded-full inline-block font-black">
+                    ⚡ SOLUÇÕES EM ENERGIA E SEGURANÇA
+                  </span>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white font-display">
+                    NOSSOS SERVIÇOS
+                  </h2>
+                  <p className="text-zinc-500 text-xs sm:text-sm font-light text-zinc-400 leading-relaxed text-balance">
+                    Cards modernos e inteligentes com ativação dinâmica. Clique em qualquer card de serviço para navegar diretamente no catálogo técnico estruturado!
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    {
+                      title: "Instalações elétricas",
+                      desc: "Redimensionamento completo de fiação, novos pontos de energia e projetos de infraestrutura sob a norma NBR 5410.",
+                      icon: Zap,
+                      categoryFilter: "Residencial",
+                      id: "inst_eletricas"
+                    },
+                    {
+                      title: "Manutenção residencial",
+                      desc: "Localização de curto-circuito, correção de rede instável e reaperto técnico de conexões para prevenir aquecimento.",
+                      icon: Wrench,
+                      categoryFilter: "Manutenção",
+                      id: "manut_res"
+                    },
+                    {
+                      title: "Instalação de chuveiro",
+                      desc: "Adequação de condutores de alta potência, troca de resistências e dimensionamento correto do disjuntor de segurança.",
+                      icon: Flame,
+                      categoryFilter: "Reparo",
+                      id: "chuveiro"
+                    },
+                    {
+                      title: "Automação residencial",
+                      desc: "Instalação inteligente de interruptores de iluminação, motores de portão, dimmer LED e centralização com Alexa/Google.",
+                      icon: Cpu,
+                      categoryFilter: "Automação",
+                      id: "automacao"
+                    },
+                    {
+                      title: "Câmeras CFTV",
+                      desc: "Planejamento e instalação de câmeras HD, bicos blindados, fontes centralizadas e monitoramento ao vivo via smartphone.",
+                      icon: Video,
+                      categoryFilter: "Segurança",
+                      id: "cftv"
+                    },
+                    {
+                      title: "Instalação de Wallbox",
+                      desc: "Infraestrutura dedicada de alta capacidade para veículos elétricos (WEG, BYD, Porsche) com proteção DPS e aterramento.",
+                      icon: BatteryCharging,
+                      categoryFilter: "Recarga veicular",
+                      id: "wallbox_inst"
+                    },
+                    {
+                      title: "Quadros de distribuição",
+                      desc: "Montagem, cabeamento, identificação e instalação de protetores de surto IDR contra choques e DPS contra apagões.",
+                      icon: Layers,
+                      categoryFilter: "Manutenção",
+                      id: "quadros"
+                    },
+                    {
+                      title: "Iluminação e tomadas",
+                      desc: "Substituição pontual de lâmpadas antigas por painéis de LED, instalação técnica de tomadas novas de 10A e 20A nas paredes.",
+                      icon: Lightbulb,
+                      categoryFilter: "Residencial",
+                      id: "ilum_tomadas"
+                    }
+                  ].map((srv, idx) => {
+                    const IconComponent = srv.icon;
+                    return (
+                      <div
+                        key={srv.id}
+                        onClick={() => {
+                          setSelectedCategory(srv.categoryFilter);
+                          setPublicTab('servicos');
+                          setTimeout(() => {
+                            window.scrollTo({ top: 300, behavior: 'smooth' });
+                          }, 100);
+                        }}
+                        className="group bg-zinc-950/40 border border-white/[0.04] hover:border-[#f2b705]/20 p-6 rounded-2xl transition-all duration-350 hover:-translate-y-1 hover:shadow-[0_12px_45px_rgba(242,183,5,0.08)] relative overflow-hidden cursor-pointer flex flex-col justify-between"
+                      >
+                        {/* Decorative inner glass gloss */}
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#f2b705]/[0.015] to-transparent rounded-bl-full pointer-events-none" />
+
+                        <div className="space-y-4">
+                          <div className="w-10 h-10 rounded-xl bg-[#f2b705]/[0.02] group-hover:bg-[#f2b705]/10 border border-white/[0.05] group-hover:border-[#f2b705]/20 flex items-center justify-center transition-all duration-300">
+                            <IconComponent className="w-5 h-5 text-[#f2b705] group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(242,183,5,0.35)] transition-all" />
+                          </div>
+                          
+                          <h3 className="text-white font-display font-bold text-sm tracking-tight uppercase group-hover:text-[#f2b705] transition-colors duration-300">
+                            {srv.title}
+                          </h3>
+
+                          <p className="text-zinc-500 group-hover:text-zinc-400 text-xs sm:text-[11px] leading-relaxed transition-colors">
+                            {srv.desc}
+                          </p>
+                        </div>
+
+                        <div className="pt-4 border-t border-white/[0.03] mt-5 flex justify-between items-center text-[9px] font-mono text-zinc-500 font-extrabold uppercase tracking-wide group-hover:text-[#f2b705] transition-colors duration-300">
+                          <span>VER DETALHES</span>
+                          <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4. SOBRE MIM */}
+              <div className="max-w-6xl mx-auto rounded-[2.5rem] overflow-hidden border border-white/[0.05] bg-zinc-950/20 p-3 shadow-2xl backdrop-blur-md relative">
+                <div className="absolute right-12 top-12 w-64 h-64 rounded-full bg-amber-500/[0.02] blur-[100px] pointer-events-none" />
+                
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-6 sm:p-12">
+                  
+                  {/* Left cutout frame */}
+                  <div className="lg:col-span-5 relative flex justify-center items-center">
+                    <div className="absolute w-56 h-56 rounded-full bg-[#f2b705]/5 blur-[70px] pointer-events-none" />
                     
-                    <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#000]/60 p-2 text-center w-full">
+                    <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#000]/65 p-2 w-full max-w-[320px] aspect-square shadow-xl shadow-black">
                       <img
-                        src={config.bannerHero || defaultBannerImg}
-                        alt="Eletricista Certificado AGE Elétrica"
-                        className="w-full max-h-[350px] object-cover rounded-xl transition-all duration-700 select-none"
+                        src={config.fotoSobre || defaultBannerImg}
+                        alt="Akson Pereira"
+                        className="w-full h-full object-cover rounded-2xl select-none"
                         referrerPolicy="no-referrer"
                       />
                     </div>
                   </div>
 
-                  {/* Right side: Core information block */}
+                  {/* Right text block */}
                   <div className="lg:col-span-7 space-y-6">
-                    <span className="text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1.5 rounded-full inline-block max-w-full font-bold text-center">
-                      ⚡ RESPONSABILIDADE SOCIAL E CONFORMIDADE
+                    <span className="text-[9px] font-mono tracking-widest text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3 py-1.5 rounded-full inline-block uppercase font-bold text-center">
+                      👤 O PROFISSIONAL RESPONSÁVEL
                     </span>
-                    
-                    <h2 className="text-3.5xl sm:text-5xl font-extrabold text-white uppercase tracking-tight leading-none">
-                      SERVIÇO TÉCNICO QUE PROTEGE SEU FAMILIAR E PATRIMÔNIO
+
+                    <h2 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight leading-none font-display text-balance">
+                      Me chamo Akson Pereira, <span className="text-[#f2b705]">eletricista certificado</span>
                     </h2>
-                    
-                    <p className="text-zinc-405 text-sm leading-relaxed text-zinc-400">
-                      Na <strong>AGE Elétrica</strong>, cada disjuntor conectado ou ramal blindado segue estritamente o manual da norma técnica brasileira NBR 5410. Garantimos que sua estrutura comercial ou residencial não sofra superaquecimentos, minimizando preventivamente riscos de curtos-circuitos repentinos.
+
+                    <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                      Me chamo Akson Pereira, técnico eletricista desde 2021. Sou cristão, casado, pai e profissional comprometido em resolver problemas elétricos com segurança, responsabilidade e qualidade.
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                      <div className="p-4 bg-white/[0.01] border border-white/[0.03] hover:border-[#f2b705]/10 rounded-xl flex gap-3 transition">
-                        <Shield className="w-5 h-5 text-[#f2b705] shrink-0 mt-0.5" />
-                        <div>
-                          <span className="font-bold text-white text-xs uppercase block">Eletricistas Certificados</span>
-                          <span className="text-zinc-500 text-[11px] block mt-0.5">Treinamento constante e homologação oficial das principais normas de segurança.</span>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-white/[0.01] border border-white/[0.03] hover:border-[#f2b705]/10 rounded-xl flex gap-3 transition">
-                        <Award className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                        <div>
-                          <span className="font-bold text-white text-xs uppercase block">Parceria Sustentável</span>
-                          <span className="text-zinc-500 text-[11px] block mt-0.5">Líderes no estado em instalação segura de carregadores verdes Wallbox.</span>
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                      {[
+                        { title: "Atendimento profissional", desc: "Suporte atencioso, limpo e devidamente uniformizado.", icon: Zap },
+                        { title: "Segurança em primeiro lugar", desc: "Uso rigoroso de EPIs e cumprimento pleno das normas.", icon: Shield },
+                        { title: "Orçamento facilitado", desc: "Precificação transparente, detalhada e sem taxas surpresa.", icon: FileText },
+                        { title: "Agendamento online", desc: "Reserve data e horário preferencial diretamente.", icon: Calendar }
+                      ].map((selo, i) => {
+                        const SeloIcon = selo.icon;
+                        return (
+                          <div key={i} className="p-4 bg-zinc-950/40 border border-white/[0.03] hover:border-[#f2b705]/10 rounded-xl flex gap-3 transition duration-300">
+                            <SeloIcon className="w-5 h-5 text-[#f2b705] shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-bold text-white text-xs uppercase tracking-wide block font-display">{selo.title}</span>
+                              <span className="text-zinc-500 text-[11px] block mt-0.5 leading-relaxed">{selo.desc}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    <div className="flex flex-wrap gap-4 pt-4 items-center">
-                      <button
-                        onClick={onNavigateToRequest}
-                        className="px-6 py-3 bg-[#f2b705]/5 hover:bg-[#f2b705]/10 border border-[#f2b705]/30 hover:border-[#f2b705] text-[#f2b705] text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 cursor-pointer"
-                      >
-                        Agendar Vistoria Técnica
-                      </button>
-                      <button
-                        onClick={() => setPublicTab('sobre')}
-                        className="text-zinc-500 hover:text-white transition text-xs font-bold uppercase tracking-wider pl-2 cursor-pointer"
-                      >
-                        Saiba mais sobre nós →
-                      </button>
-                    </div>
-
                   </div>
+
                 </div>
               </div>
 
-              {/* QUICK SERVICES PRESETS LIST: Grid layout cards displaying premier services */}
-              <div className="max-w-6xl mx-auto space-y-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/[0.04] pb-6">
-                  <div>
-                    <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tighter text-white">SERVIÇOS DE VANGUARDA</h2>
-                    <p className="text-zinc-500 text-xs sm:text-sm mt-1">Materiais homologados de alta durabilidade para máxima segurança</p>
-                  </div>
-                  <button
-                    onClick={() => setPublicTab('servicos')}
-                    className="text-[#f2b705] hover:text-[#ffca03] text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition"
-                  >
-                    Ver Tudo com {services.length} Serviços <ArrowRight className="w-4 h-4 text-[#f2b705]" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {services.slice(0, 6).map((service, idx) => (
-                    <div
-                      key={service.id}
-                      className="group bg-neutral-900/[0.15] border border-white/[0.04] hover:border-[#f2b705]/20 p-7 rounded-2xl transition-all duration-350 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.85)] relative overflow-hidden"
-                    >
-                      {/* Interactive focus gold glow corner */}
-                      <div className="absolute top-0 right-0 w-[80px] h-[80px] bg-[#f2b705]/[0.01] group-hover:bg-[#f2b705]/[0.03] transition-colors rounded-bl-full pointer-events-none" />
-
-                      <div>
-                        <div className="flex justify-between items-center mb-5">
-                          <span className="text-[9px] font-mono tracking-[0.2em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/20 px-2.5 py-1 rounded font-black">
-                            {service.categoria}
-                          </span>
-                          <span className="text-zinc-600 group-hover:text-[#f2b705]/40 transition-colors text-[9.5px] font-mono">CODE-{service.id.toUpperCase()}</span>
-                        </div>
-                        <h3 className="text-base font-extrabold text-white tracking-tight mb-2 uppercase group-hover:text-[#f2b705] transition-colors">{service.nomeServico}</h3>
-                        <p className="text-zinc-500 text-xs leading-relaxed mb-6 block line-clamp-3 group-hover:text-zinc-400 transition-colors">{service.descricao}</p>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/[0.03] flex justify-between items-center">
-                        <div>
-                          <span className="text-[8.5px] text-zinc-600 font-mono block uppercase">TEMPO DE EXECUÇÃO</span>
-                          <span className="text-[10px] font-mono font-bold text-white flex items-center gap-1.5 mt-0.5">
-                            <Clock className="w-3.5 h-3.5 text-[#f2b705]" /> {service.tempoMedio}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setSelectedServiceForModal(service)}
-                          className="text-[#f2b705] hover:text-[#ffca03] text-[9.5px] font-black uppercase tracking-widest cursor-pointer hover:bg-white/[0.03] px-3.5 py-2.5 rounded-lg transition-colors border border-transparent hover:border-white/[0.04]"
-                        >
-                          Mais Detalhes
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* GREEN ENERGY WALLBOX DEEP COMPOSITION: Stylized as highly professional tech product bento with emerald points */}
-              <div className="max-w-6xl mx-auto rounded-3xl bg-gradient-to-br from-neutral-900/40 via-neutral-950/20 to-emerald-950/[0.03] border border-emerald-500/20 p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 text-emerald-500/[0.015] pointer-events-none">
-                  <Leaf className="w-56 h-56 rotate-45" />
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-                  <div className="lg:col-span-8 space-y-4">
-                    <span className="text-[9px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-emerald-400 bg-emerald-500/10 border border-emerald-400/30 px-3.5 py-1.5 rounded-full inline-block max-w-full font-bold uppercase">
-                      🍃 MOBILIDADE ELÉTRICA SUSTENTÁVEL
-                    </span>
-                    <h3 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tighter text-white">
-                      Instalação de Wallbox Homologada BYD, WEG, Porsche & Volvo
-                    </h3>
-                    <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-                      A AGE Elétrica é lider no Rio Grande do Norte em dimensionamento de circuitos para veículos elétricos. Desenvolvemos o cálculo da rede nominal, instalamos aterramentos isolados blindados para evitar ruídos de corrente, adaptamos disjuntores inteligentes classe A e emitimos correspondente laudo de parametrização.
-                    </p>
-
-                    <div className="flex flex-wrap gap-4 pt-2">
-                      <div className="p-4 bg-black/40 border border-emerald-500/10 rounded-xl text-center min-w-[120px]">
-                        <span className="text-emerald-400 font-extrabold text-xl block leading-none">Class A</span>
-                        <span className="text-zinc-650 text-[9px] uppercase font-mono tracking-wider mt-1 block text-zinc-500">Disjuntores FI</span>
-                      </div>
-                      <div className="p-4 bg-black/40 border border-emerald-500/10 rounded-xl text-center min-w-[120px]">
-                        <span className="text-[#f2b705] font-extrabold text-xl block leading-none">Até 22kW</span>
-                        <span className="text-zinc-650 text-[9px] uppercase font-mono tracking-wider mt-1 block text-zinc-500">Carga Ultrarrápida</span>
-                      </div>
-                      <div className="p-4 bg-black/40 border border-emerald-500/10 rounded-xl text-center min-w-[120px]">
-                        <span className="text-[#f2b705] font-extrabold text-xl block leading-none">100% OK</span>
-                        <span className="text-zinc-650 text-[9px] uppercase font-mono tracking-wider mt-1 block text-zinc-500">Laudo Técnico RN</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-4 flex flex-col justify-center space-y-4 lg:items-end">
-                    <button
-                      onClick={() => {
-                        const s = services.find(x => x.id === 'srv-14') || services[0];
-                        setSelectedServiceForModal(s);
-                      }}
-                      className="px-6.5 py-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.35)] transition-all cursor-pointer border border-emerald-400/20"
-                    >
-                      Solicitar Orçamento Wallbox
-                    </button>
-                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block text-center lg:text-right">Compatível com condomínios fechados e residências</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* METHODOLOGY OF OPERATION: Standard 1-4 step map redesigned for tech vibe */}
+              {/* 5. COMO FUNCIONA (CRONOGRAMA EM ETAPAS) */}
               <div className="max-w-6xl mx-auto space-y-12">
-                <div className="text-center max-w-xl mx-auto">
-                  <h2 className="text-3xl font-black uppercase tracking-tighter text-white">METODOLOGIA CRONOMETRADA</h2>
-                  <p className="text-zinc-500 text-xs sm:text-sm mt-1">Garantia absoluta de eficiência, controle e prestação de contas digital</p>
+                <div className="text-center max-w-xl mx-auto space-y-2">
+                  <span className="text-[10px] font-mono tracking-widest text-[#f2b705] font-black uppercase">📋 ETAPAS TRANSPARENTES</span>
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-white font-display">COMO FUNCIONA?</h2>
+                  <p className="text-zinc-500 text-xs sm:text-sm font-light text-zinc-400">
+                    Você pode solicitar seu orçamento e fazer seu agendamento de forma 100% online diretamente por aqui!
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-neutral-900/[0.15] p-7 rounded-2xl border border-white/[0.04] relative">
-                    <div className="w-8 h-8 rounded-full bg-[#f2b705]/10 border border-[#f2b705]/40 text-[#f2b705] font-mono font-bold flex items-center justify-center text-xs mb-5">
-                      01
-                    </div>
-                    <h4 className="text-white font-extrabold text-xs uppercase tracking-widest mb-2 block">Abertura Digital</h4>
-                    <p className="text-zinc-500 text-[11px] leading-relaxed">Você insere sua intenção no site ou solicita via WhatsApp e nosso sistema centraliza e gera o protocolo instantâneo.</p>
-                  </div>
-
-                  <div className="bg-neutral-900/[0.15] p-7 rounded-2xl border border-white/[0.04] relative">
-                    <div className="w-8 h-8 rounded-full bg-[#f2b705]/10 border border-[#f2b705]/40 text-[#f2b705] font-mono font-bold flex items-center justify-center text-xs mb-5">
-                      02
-                    </div>
-                    <h4 className="text-white font-extrabold text-xs uppercase tracking-widest mb-2 block">Orçamento Técnico</h4>
-                    <p className="text-zinc-500 text-[11px] leading-relaxed">Nossa equipe técnica analisa o caso e formata uma discriminação estruturada de custos, peças homologadas e prazos.</p>
-                  </div>
-
-                  <div className="bg-neutral-900/[0.15] p-7 rounded-2xl border border-white/[0.04] relative">
-                    <div className="w-8 h-8 rounded-full bg-[#f2b705]/10 border border-[#f2b705]/40 text-[#f2b705] font-mono font-bold flex items-center justify-center text-xs mb-5">
-                      03
-                    </div>
-                    <h4 className="text-white font-extrabold text-xs uppercase tracking-widest mb-2 block">Execução e NR10</h4>
-                    <p className="text-zinc-500 text-[11px] leading-relaxed">Nossa equipe em escala técnica realiza a intervenção equipada com EPIs e medidores calibrados de frequências e cargas.</p>
-                  </div>
-
-                  <div className="bg-neutral-900/[0.15] p-7 rounded-2xl border border-white/[0.04] relative">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-400/40 text-emerald-400 font-mono font-bold flex items-center justify-center text-xs mb-5">
-                      04
-                    </div>
-                    <h4 className="text-white font-extrabold text-xs uppercase tracking-widest mb-2 block">Laudo e Emissão</h4>
-                    <p className="text-zinc-500 text-[11px] leading-relaxed">Testamos a rede ao vivo sob estresse, emitimos recibo digital de garantia e asseguramos conformidade integral.</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* SOCIAL PROOF SECTION: Stylized testimonial review cards */}
-              <div className="max-w-6xl mx-auto space-y-12">
-                <div className="text-center max-w-xl mx-auto">
-                  <h2 className="text-3xl font-black uppercase tracking-tighter text-white">RECONHECIMENTO REGIONAL</h2>
-                  <p className="text-zinc-500 text-xs sm:text-sm mt-1">Opinião de quem confiou nossos técnicos eletricistas em Natal e região metropolitana</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {testimonials.map((test, index) => (
-                    <div 
-                      key={index}
-                      className="bg-neutral-900/[0.15] border border-white/[0.04] rounded-2xl p-6.5 flex flex-col justify-between relative hover:border-white/[0.1] transition-all"
-                    >
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-1">
-                          {[...Array(test.rating)].map((_, i) => (
-                            <Sparkles key={i} className="w-3.5 h-3.5 text-[#f2b705] fill-[#f2b705]" />
-                          ))}
-                        </div>
-                        <p className="text-zinc-400 text-[12.5px] leading-relaxed italic">
-                          "{test.text}"
-                        </p>
+                  {[
+                    { num: "01", title: "Escolha o serviço", desc: "Navegue pelas soluções ou clique em um serviço que corresponda à sua demanda em seu lar ou empresa." },
+                    { num: "02", title: "Solicite o orçamento", desc: "Fácil e rápido: preencha as informações básicas na ficha detalhando as necessidades do serviço." },
+                    { num: "03", title: "Agende pelo site", desc: "Estipulamos em parceria o dia e a hora para a realização presencial do atendimento técnico do eletricista." },
+                    { num: "04", title: "Receba o atendimento", desc: "Akson realiza o diagnóstico ou a intervenção com máxima precisão e emite seu respectivo laudo técnico." }
+                  ].map((step, i) => (
+                    <div key={i} className="bg-zinc-950/30 p-7 rounded-2xl border border-white/[0.04] relative hover:border-[#f2b705]/10 transition-colors duration-300 flex flex-col justify-between gap-6">
+                      <div className="w-10 h-10 rounded-full bg-[#f2b705]/10 border border-[#f2b705]/20 text-[#f2b705] font-mono font-bold flex items-center justify-center text-xs shadow-inner shadow-[#f2b705]/5 select-none">
+                        {step.num}
                       </div>
-
-                      <div className="pt-6 border-t border-white/[0.03] mt-6 flex justify-between items-center bg-transparent">
-                        <div>
-                          <span className="font-extrabold text-xs text-white block uppercase">{test.author}</span>
-                          <span className="text-[10px] text-zinc-500 font-mono mt-0.5 block">{test.role} • {test.location}</span>
-                        </div>
-                        <span className="text-[8.5px] text-[#f2b705] bg-[#f2b705]/5 px-2 py-0.5 rounded uppercase font-bold font-mono">
-                          {test.category}
-                        </span>
+                      <div className="space-y-1.5">
+                        <span className="text-zinc-500 font-mono text-[9px] block uppercase">PASSO {step.num}</span>
+                        <h4 className="text-white font-display font-extrabold text-sm uppercase tracking-wide block">{step.title}</h4>
+                        <p className="text-zinc-500 text-xs sm:text-[11px] leading-relaxed block text-zinc-400">{step.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* IMPACT CALL TO ACTION: Futuristic bottom segment */}
-              <div className="max-w-6xl mx-auto bg-gradient-to-r from-neutral-950 via-[#141208] to-neutral-950 border border-white/[0.05] p-10 md:p-16 rounded-3xl text-center relative overflow-hidden">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-[#f2b705]/[0.04] blur-[90px] pointer-events-none" />
+              {/* 6. DESTAQUE PARA AGENDAMENTO */}
+              <div className="max-w-6xl mx-auto bg-gradient-to-r from-neutral-950 via-[#141208] to-neutral-950 border border-[#f2b705]/15 p-10 md:p-16 rounded-[2.5rem] text-center relative overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-[#f2b705]/[0.03] blur-[100px] pointer-events-none" />
                 
                 <div className="max-w-2xl mx-auto space-y-6 relative z-10">
-                  <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter uppercase leading-none">
-                    PRONTO PARA SOLICITAR <br />UM TÉCNICO ELETRICISTA DA <span className="text-[#f2b705]">AGE ELÉTRICA</span>?
+                  <span className="text-[9px] font-mono tracking-widest text-[#f2b705] font-black uppercase">📅 EXCLUSIVIDADE ONLINE</span>
+                  <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight font-display leading-none text-balance">
+                    Agende seu atendimento <br className="hidden sm:inline" />pelo site
                   </h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed font-light">
-                    Evite perigos de fios expostos ou dimensionamentos errôneos. Deixe nossa equipe de especialistas resolver seu caso rapidamente. Preencha agora e agende uma vistoria prioritária.
+                  <p className="text-zinc-400 text-xs sm:text-sm font-light text-zinc-350 leading-relaxed text-balance">
+                    Mais praticidade para você solicitar serviços, orçamentos e acompanhar seu atendimento com agilidade e prioridade absoluta.
                   </p>
-                  <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
+                  
+                  <div className="pt-4">
                     <button
-                      onClick={onNavigateToRequest}
-                      className="w-full sm:w-auto px-8 py-4.5 bg-[#f2b705] text-black text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 hover:shadow-[0_0_25px_rgba(242,183,5,0.4)] hover:scale-103 cursor-pointer"
+                      onClick={() => {
+                        setPublicTab('contato');
+                        setTimeout(() => {
+                          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                        }, 150);
+                      }}
+                      className="w-full sm:w-auto px-10 py-5 bg-[#f2b705] hover:bg-[#ffca03] text-black text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 hover:shadow-[0_8px_30px_rgba(242,183,5,0.4)] hover:-translate-y-1 cursor-pointer font-display"
                     >
-                      SOLICITAR AGORA
-                    </button>
-                    <button
-                      onClick={() => openWhatsAppDirect('Interessado', 'Suporte Imediato Especial')}
-                      className="w-full sm:w-auto px-8 py-4.5 bg-neutral-900 border border-white/[0.06] text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-neutral-850 hover:text-[#f2b705] transition-all cursor-pointer flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare className="w-4 h-4 text-emerald-400 fill-emerald-400/20" /> WHATSAPP CORPORATIVO
+                      AGENDAR ATENDIMENTO
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* 7. WALLBOX E AUTOMAÇÃO (GREEN ECO INTEGRATION CARD) */}
+              <div className="max-w-6xl mx-auto rounded-[2.5rem] bg-gradient-to-br from-neutral-900/30 via-neutral-950/15 to-emerald-950/[0.04] border border-emerald-500/20 p-8 sm:p-12 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 text-emerald-500/[0.012] pointer-events-none">
+                  <Leaf className="w-64 h-64 rotate-45" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+                  <div className="lg:col-span-8 space-y-5">
+                    <span className="text-[9px] font-mono tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-400/20 px-3.5 py-1.5 rounded-full inline-block font-bold uppercase font-display">
+                      🍃 MOBILIDADE ELÉTRICA E AUTOMATIZAÇÕES
+                    </span>
+                    <h3 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white font-display text-balance">
+                      Instalação de Wallbox e automação residencial
+                    </h3>
+                    <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+                      Modernize sua residência com soluções inteligentes, seguras e eficientes. A AGE Elétrica instala suas tomadas de recarga completas com total proteção de surtos DPS e aterramento NBR.
+                    </p>
+
+                    <div className="flex flex-wrap gap-4 pt-1">
+                      <div className="p-4 bg-zinc-950/60 border border-emerald-500/15 rounded-xl text-center min-w-[130px]">
+                        <span className="text-emerald-400 font-extrabold text-lg block leading-none font-mono">SEGURO</span>
+                        <span className="text-zinc-500 text-[9px] uppercase font-mono tracking-wider mt-1 block">Proteção DPS</span>
+                      </div>
+                      <div className="p-4 bg-zinc-950/60 border border-emerald-500/15 rounded-xl text-center min-w-[130px]">
+                        <span className="text-[#f2b705] font-extrabold text-lg block leading-none font-mono">ZIGBEE</span>
+                        <span className="text-zinc-500 text-[9px] uppercase font-mono tracking-wider mt-1 block">Interruptores Smart</span>
+                      </div>
+                      <div className="p-4 bg-zinc-950/60 border border-emerald-500/15 rounded-xl text-center min-w-[130px]">
+                        <span className="text-[#f2b705] font-extrabold text-lg block leading-none font-mono">EMISSÃO</span>
+                        <span className="text-zinc-500 text-[9px] uppercase font-mono tracking-wider mt-1 block">Laudo de Carga</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-4 flex flex-col justify-center space-y-4 lg:items-end w-full">
+                    <button
+                      onClick={() => {
+                        setSelectedCategory("Recarga veicular");
+                        setPublicTab('servicos');
+                        setTimeout(() => {
+                          window.scrollTo({ top: 350, behavior: 'smooth' });
+                        }, 100);
+                      }}
+                      className="w-full lg:w-auto px-7 py-4.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:shadow-[0_0_30px_rgba(16,185,129,0.35)] transition-all cursor-pointer border border-emerald-400/20 font-display text-center"
+                    >
+                      SOLICITAR WALLBOX
+                    </button>
+                    <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider block text-center lg:text-right w-full">Especificações qualificadas do RN</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 8. CONTATO (ACTION DASHBOARD ACTION TILES) */}
+              <div className="max-w-6xl mx-auto space-y-12">
+                <div className="text-center max-w-xl mx-auto space-y-2">
+                  <span className="text-[10px] font-mono tracking-widest text-[#f2b705] font-black uppercase">🤝 SUPORTE E CONTATO</span>
+                  <h2 className="text-3xl font-black uppercase tracking-tight text-white font-display">FALE CONOSCO</h2>
+                  <p className="text-zinc-500 text-xs sm:text-sm font-light text-zinc-400 mb-2">
+                    Escolha de forma livre o canal ideal para falar com a equipe da AGE Elétrica.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* WhatsApp emerald green row */}
+                  <a
+                    href={`https://wa.me/55${config.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Olá AGE Elétrica! Gostaria de falar com o Akson Pereira sobre um serviço elétrico no site.')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group bg-zinc-950/40 hover:bg-emerald-950/20 border border-white/[0.04] hover:border-emerald-500/20 p-8 rounded-2xl flex flex-col items-center justify-between text-center gap-6 shadow-md shadow-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(16,185,129,0.15)] cursor-pointer"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/5 group-hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/10 flex items-center justify-center transition-all">
+                      <MessageSquare className="w-6 h-6 text-emerald-400 fill-emerald-400/10" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-display font-bold text-xs uppercase tracking-wider block group-hover:text-emerald-400 transition-colors">WhatsApp</h4>
+                      <p className="text-zinc-500 text-[11px] mt-1 block">Tire dúvidas de reposições e fale direto no WhatsApp.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-emerald-400 font-extrabold uppercase px-4 py-1.5 bg-emerald-500/10 rounded-full">SOLICITAR NO WHATS</span>
+                  </a>
+
+                  {/* Orçamento amarelo dourado button */}
+                  <div
+                    onClick={() => {
+                      setPublicTab('contato');
+                      setTimeout(() => {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                      }, 150);
+                    }}
+                    className="group bg-zinc-950/40 hover:bg-amber-950/20 border border-white/[0.04] hover:border-[#f2b705]/20 p-8 rounded-2xl flex flex-col items-center justify-between text-center gap-6 shadow-md shadow-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(242,183,5,0.15)] cursor-pointer"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-[#f2b705]/5 group-hover:bg-[#f2b705]/20 text-[#f2b705] border border-[#f2b705]/10 flex items-center justify-center transition-all">
+                      <Zap className="w-6 h-6 text-[#f2b705]" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-display font-bold text-xs uppercase tracking-wider block group-hover:text-[#f2b705] transition-colors">Solicitar Orçamento</h4>
+                      <p className="text-zinc-500 text-[11px] mt-1 block">Preencha os dados e orce a solução completa.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#f2b705] font-extrabold uppercase px-4 py-1.5 bg-[#f2b705]/10 rounded-full">PEDIR DETALHES</span>
+                  </div>
+
+                  {/* Agendar pelo site white outline row */}
+                  <div
+                    onClick={() => {
+                      setPublicTab('contato');
+                      setTimeout(() => {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                      }, 150);
+                    }}
+                    className="group bg-zinc-950/40 hover:bg-white/5 border border-white/[0.04] hover:border-white/20 p-8 rounded-2xl flex flex-col items-center justify-between text-center gap-6 shadow-md shadow-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(255,255,255,0.08)] cursor-pointer"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-white/10 text-white border border-white/5 flex items-center justify-center transition-all">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-display font-bold text-xs uppercase tracking-wider block group-hover:text-zinc-300 transition-colors">Agendar pelo site</h4>
+                      <p className="text-zinc-500 text-[11px] mt-1 block">Realize o agendamento formal e garanta seu horário.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-white font-extrabold uppercase px-4 py-1.5 bg-white/10 rounded-full">AGENDAR VISITA</span>
+                  </div>
+
+                  {/* Instagram gradient tile */}
+                  <a
+                    href="https://instagram.com/age_eletrica"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group bg-zinc-950/40 hover:bg-neutral-900 border border-white/[0.04] hover:border-pink-500/20 p-8 rounded-2xl flex flex-col items-center justify-between text-center gap-6 shadow-md shadow-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(219,39,119,0.15)] cursor-pointer"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-600 to-rose-600 text-white flex items-center justify-center scale-95 group-hover:scale-100 transition-all duration-300 shadow-md">
+                      <Instagram className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-display font-bold text-xs uppercase tracking-wider block group-hover:text-zinc-300 transition-colors">Instagram</h4>
+                      <p className="text-zinc-500 text-[11px] mt-1 block">Conheça nossos feedbacks e publicações técnicas.</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-pink-400 font-extrabold uppercase px-4 py-1.5 bg-pink-500/10 rounded-full">IR AO INSTAGRAM</span>
+                  </a>
                 </div>
               </div>
 
@@ -1103,44 +1278,51 @@ export function PublicSite({
 
       {/* 5. Floating Widgets removed by user request to keep only compositional site controls */}
 
-      {/* 6. Clean Institutional Footer */}
-      <footer className="bg-neutral-950 border-t border-white/[0.04] py-12 px-6 text-xs text-zinc-500 z-10 relative">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+      {/* 6. Centered Institutional Premium Footer */}
+      <footer className="bg-neutral-950 border-t border-white/[0.04] py-16 px-6 text-xs text-zinc-500 z-10 relative">
+        <div className="max-w-6xl mx-auto flex flex-col items-center text-center gap-8">
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center gap-3">
             {config.logo ? (
               <img
                 src={config.logo}
                 alt="Logo AGE"
-                className="max-h-9 max-w-[110px] object-contain rounded border border-white/10 select-none"
+                className="max-h-10 max-w-[130px] object-contain rounded border border-white/10 select-none"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
-                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmMmI3MDUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWdvbiBwb2ludHM9IjEzIDIgMyAxNCAxMiAxNCAxMSAyMiAyMSAxMCAxMiAxMCAxMyAyIj48L3BvbHlnb24+PC9zdmc+';
+                  e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmMmI3MDUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWdvbiBwb2ludHM9IjEzIDIgMyAxNCAxMiAxNCAxMiAyMiAyMSAxMCAxMiAxMCAxMyAyIj48L3BvbHlnb24+PC9zdmc+';
                 }}
               />
             ) : (
-              <Zap className="w-5 h-5 text-[#f2b705]" />
+              <div className="p-1.5 bg-[#f2b705] text-black rounded-lg">
+                <Zap className="w-5 h-5 fill-black text-black" />
+              </div>
             )}
-            <div>
-              <span className="font-extrabold text-white text-xs block uppercase tracking-widest">{config.nomeFantasia}</span>
-              <span className="text-[10px] text-zinc-600 block mt-0.5">© 2026 {config.nomeEmpresa}. Todos os direitos reservados.</span>
+            <div className="mt-2">
+              <span className="font-extrabold text-white text-sm uppercase tracking-widest block">{config.nomeFantasia}</span>
+              <span className="text-[10px] text-zinc-600 block mt-1">© 2026 {config.nomeEmpresa}. Todos os direitos reservados.</span>
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-5 uppercase font-bold text-[9.5px] tracking-widest text-[10px]">
+          {/* Core brand phrase */}
+          <p className="text-[#f2b705] font-display font-medium text-sm sm:text-base tracking-normal max-w-xl text-balance">
+            “AGE Elétrica — Energia, segurança e confiança para sua casa ou empresa.”
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-5 uppercase font-bold text-[9.5px] tracking-widest text-[#f2b705]/75">
             <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('home')}>Início</span>
             <span className="text-zinc-800">•</span>
-            <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('servicos')}>Catálogo</span>
+            <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('servicos')}>Serviços</span>
             <span className="text-zinc-800">•</span>
-            <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('sobre')}>Diretrizes</span>
+            <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('sobre')}>Sobre</span>
             <span className="text-zinc-800">•</span>
             <span className="hover:text-white cursor-pointer transition-colors" onClick={() => setPublicTab('contato')}>Contato</span>
           </div>
 
-          <div className="text-center md:text-right font-mono text-[9px] uppercase tracking-wider text-zinc-600 space-y-0.5">
+          <div className="font-mono text-[9px] uppercase tracking-wider text-zinc-600 space-y-0.5">
             <span className="block">CNPJ: {config.cnpj} • CREA Autorizado RN</span>
-            <span className="block text-zinc-700">Desenvolvimento em Alta Performance e Estabilidade</span>
+            <span className="block text-zinc-700">Desenvolvimento com Alta Performance e Estabilidade</span>
           </div>
 
         </div>

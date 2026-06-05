@@ -151,6 +151,7 @@ export interface ConfiguracaoEmpresa {
   logo: string; // SVG or URL base64
   logoPdf?: string; // Exclusivo para PDFs (Orçamento e Recibo)
   bannerHero?: string; // Banner Hero do site público
+  fotoSobre?: string; // Foto da seção Sobre do site público
   corPrincipal: string; // Hex
   corSecundaria: string; // Hex
   chavePix: string;

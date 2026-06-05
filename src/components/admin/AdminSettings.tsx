@@ -42,6 +42,7 @@ export function AdminSettings({
   const [logoStr, setLogoStr] = useState(config.logo || '');
   const [logoPdfStr, setLogoPdfStr] = useState(config.logoPdf || '');
   const [bannerHeroStr, setBannerHeroStr] = useState(config.bannerHero || '');
+  const [fotoSobreStr, setFotoSobreStr] = useState(config.fotoSobre || '');
   const [pixStr, setPixStr] = useState(config.chavePix);
   const [bankStr, setBankStr] = useState(config.dadosBancarios);
   const [receiptText, setReceiptText] = useState(config.textoPadraoRecibo);
@@ -51,6 +52,7 @@ export function AdminSettings({
   const [dragActive, setDragActive] = useState(false);
   const [dragPdfActive, setDragPdfActive] = useState(false);
   const [dragBannerActive, setDragBannerActive] = useState(false);
+  const [dragSobreActive, setDragSobreActive] = useState(false);
 
   // Non-blocking states (replaces window alerts)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -64,9 +66,8 @@ export function AdminSettings({
     quality: number = 0.85
   ): Promise<string> => {
     return new Promise((resolve) => {
-      // SVGs and any reasonably sized images (< 600KB) don't need scaling or compression, keep them original. 
-      // This guarantees 100% sharp rendering, exactly as uploaded!
-      if (file.size < 600 * 1024 || file.type === 'image/svg+xml') {
+      // SVGs don't need scaling or compression because they are XML vectors and very small.
+      if (file.type === 'image/svg+xml') {
         const reader = new FileReader();
         reader.onload = (e) => resolve(e.target?.result as string || '');
         reader.onerror = () => resolve('');
@@ -86,18 +87,14 @@ export function AdminSettings({
           let width = img.width;
           let height = img.height;
 
-          // Increase resolution thresholds to maintain premium crisp details
-          const upperWidth = Math.max(maxWidth, 1000);
-          const upperHeight = Math.max(maxHeight, 1000);
-
           // Scale proportion calculation
-          if (width > upperWidth) {
-            height = Math.round((height * upperWidth) / width);
-            width = upperWidth;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
           }
-          if (height > upperHeight) {
-            width = Math.round((width * upperHeight) / height);
-            height = upperHeight;
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
           }
 
           canvas.width = width;
@@ -137,7 +134,7 @@ export function AdminSettings({
       return;
     }
     try {
-      const compressed = await compressAndResizeImage(file, 400, 400, 0.75);
+      const compressed = await compressAndResizeImage(file, 250, 250, 0.70);
       if (compressed) {
         setLogoStr(compressed);
       }
@@ -152,7 +149,7 @@ export function AdminSettings({
       return;
     }
     try {
-      const compressed = await compressAndResizeImage(file, 500, 200, 0.75);
+      const compressed = await compressAndResizeImage(file, 300, 150, 0.70);
       if (compressed) {
         setLogoPdfStr(compressed);
       }
@@ -167,13 +164,31 @@ export function AdminSettings({
       return;
     }
     try {
-      // Compress hero banner with 1200 max-width for fast rendering and safe localStorage weight (approx 40KB-80KB)
-      const compressed = await compressAndResizeImage(file, 1200, 675, 0.75);
+      // Compress hero silhouette with 450 max-width/height for ultra-fast rendering and extremely small document payload.
+      // High density displays display this portrait at max 460px height.
+      const compressed = await compressAndResizeImage(file, 500, 750, 0.70);
       if (compressed) {
         setBannerHeroStr(compressed);
       }
     } catch (err) {
       setErrorMessage('Erro ao converter e otimizar imagem do banner do site.');
+    }
+  };
+
+  const handleFotoSobreUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Por favor, envie apenas arquivos de imagem válida (PNG, JPG, WebP, SVG)!');
+      return;
+    }
+    try {
+      // Compress profiles/cutouts with 400 max-width/height to guarantee fast loading and save localStorage/Firestore size.
+      // This is displayed in a 320x320 segment, making 400x400 perfectly sharp.
+      const compressed = await compressAndResizeImage(file, 400, 400, 0.70);
+      if (compressed) {
+        setFotoSobreStr(compressed);
+      }
+    } catch (err) {
+      setErrorMessage('Erro ao converter e otimizar a imagem do profissional (Sobre).');
     }
   };
 
@@ -231,6 +246,7 @@ export function AdminSettings({
       logo: logoStr,
       logoPdf: logoPdfStr,
       bannerHero: bannerHeroStr,
+      fotoSobre: fotoSobreStr,
       chavePix: pixStr,
       dadosBancarios: bankStr,
       textoPadraoRecibo: receiptText,
@@ -650,6 +666,111 @@ export function AdminSettings({
                   <button
                     type="button"
                     onClick={() => setBannerHeroStr('')}
+                    className="mt-2 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 py-0.5 px-2 rounded border border-red-500/20 transition"
+                  >
+                    Usar imagem padrão do sistema
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* About Section Profile Image Custom Option */}
+          <div className="border-t border-zinc-900 pt-5">
+            <label className="text-xs text-zinc-400 block mb-1 font-bold text-amber-500">Imagem de Perfil do Profissional (Seção Sobre)</label>
+            <span className="text-[10px] text-zinc-550 block mb-3 font-mono">
+              ※ REQUISITO DE FORMATO: Esta foto é exibida na seção "Sobre" do site. Formato recomendado: <span className="text-amber-500 font-bold">Quadrado ou Retângulo Vertical (proporção de 1:1 ou 3:4)</span>. Formatos aceitos: <span className="text-zinc-300">PNG, JPG, WebP ou SVG</span>.
+            </span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                {/* Drag and Drop Zone */}
+                <div
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragSobreActive(true);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragSobreActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragSobreActive(false);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragSobreActive(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleFotoSobreUpload(e.dataTransfer.files[0]);
+                    }
+                  }}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition relative flex flex-col items-center justify-center min-h-[110px] ${
+                    dragSobreActive
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
+                  }`}
+                  onClick={() => document.getElementById('sobre-file-picker')?.click()}
+                >
+                  <input
+                    type="file"
+                    id="sobre-file-picker"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleFotoSobreUpload(e.target.files[0]);
+                      }
+                    }}
+                  />
+                  <Upload className="w-5 h-5 text-amber-500 mb-1.5" />
+                  <span className="text-[11px] font-bold text-white block">Arraste a sua Imagem Profissional aqui ou Clique para Selecionar</span>
+                  <span className="text-[9px] text-zinc-500 block mt-0.5">Foco Retrato/Quadrado (Proporção Recomendada: 1:1, Máx. 3MB)</span>
+                </div>
+
+                {/* Alternative URL Input */}
+                <div className="mt-2 text-[10px] text-zinc-500 font-mono">
+                  <span className="block mb-1 font-sans text-xs text-zinc-400">Ou use um link direto de imagem online:</span>
+                  <input
+                    type="text"
+                    value={fotoSobreStr}
+                    onChange={(e) => setFotoSobreStr(e.target.value)}
+                    placeholder="Cole aqui o link direto da foto do profissional (URL)"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs text-white outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* Preview Unit */}
+              <div className="bg-zinc-900/55 rounded-xl border border-zinc-800 flex flex-col items-center justify-center p-4">
+                <span className="text-[10px] text-zinc-500 font-mono uppercase mb-2 tracking-wider">Visualização Perfil</span>
+                <div className="w-24 h-24 bg-black/40 rounded-lg border border-zinc-950 flex items-center justify-center p-1 relative overflow-hidden">
+                  {fotoSobreStr ? (
+                    <img
+                      src={fotoSobreStr}
+                      alt="Nova Foto Profissional"
+                      className="w-full h-full object-cover rounded"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZjQ0NDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48bGluZSB4MT0iMTgiIHkxPSI2IiB4Mj0iNiIgeTI9IjE4Ij48L2xpbmU+PGxpbmUgeDE9IjYiIHkxPSI2IiB4Mj0iMTgiIHkyPSIxOCI+PC9saW5lPjwvc3ZnPg==';
+                      }}
+                    />
+                  ) : (
+                    <div className="text-zinc-650 flex flex-col items-center justify-center p-2 text-center">
+                      <Image className="w-5 h-5 mb-1 text-zinc-700" />
+                      <span className="text-[7.5px] text-zinc-600 font-bold uppercase block leading-tight">Imagem Padrão Ativa</span>
+                    </div>
+                  )}
+                </div>
+                {fotoSobreStr && (
+                  <button
+                    type="button"
+                    onClick={() => setFotoSobreStr('')}
                     className="mt-2 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 py-0.5 px-2 rounded border border-red-500/20 transition"
                   >
                     Usar imagem padrão do sistema

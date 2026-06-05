@@ -240,6 +240,7 @@ export const DEFAULT_CONFIG: ConfiguracaoEmpresa = {
   logo: logoSvg, // Elegant responsive SVG representation
   logoPdf: logoSvg, // Exclusivo para PDFs
   bannerHero: '', // Banner Hero do site público
+  fotoSobre: '', // Foto da seção Sobre do site público
   corPrincipal: '#f59e0b', // Yellow Amber
   corSecundaria: '#0f172a', // Slate Dark gray
   chavePix: '45.123.678/0001-90',
