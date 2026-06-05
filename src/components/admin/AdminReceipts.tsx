@@ -193,6 +193,9 @@ export function AdminReceipts({
 
   // Open Receipt PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabReceipt = (r: Recibo) => {
+    const url = `${window.location.origin}${window.location.pathname}?print-receipt=${encodeURIComponent(r.id)}`;
+    window.open(url, '_blank');
+    return;
     const clientObj = clients.find(cl => cl.id === r.clienteId);
     const clientDetailsHtml = clientObj ? `
       <div>
@@ -600,7 +603,7 @@ export function AdminReceipts({
 
       {/* A4 PRINT VIEW LAYOUT OVERLAY */}
       {selectedReceiptForPrint && (
-        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
+        <div className="fixed inset-0 bg-zinc-100 dark:bg-[#0c0c0e] backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-2 sm:p-4 md:p-8 no-print-backdrop text-zinc-900">
           
           <div className="max-w-3xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
             <span className="text-white text-xs font-bold font-mono">Recibo Eletrônico de Garantia ({selectedReceiptForPrint.numeroRecibo})</span>
@@ -640,7 +643,7 @@ export function AdminReceipts({
             </button>
           </div>
 
-          <div className="max-w-3xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-2xl rounded-sm font-sans border border-gray-300 print-card">
+          <div className="max-w-3xl mx-auto w-full bg-white dark:bg-white text-zinc-900 dark:text-zinc-900 p-4 sm:p-8 md:p-12 shadow-2xl rounded-xl sm:rounded-sm font-sans border border-zinc-250 dark:border-zinc-250 print-card">
             
             {/* Header layout */}
             <div className="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">

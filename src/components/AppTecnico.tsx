@@ -73,300 +73,14 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
 
   // Open Budget PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabBudget = (b: Orcamento) => {
-    const clientObj = clients.find(cl => cl.id === b.clienteId);
-    const clientDetailsHtml = clientObj ? `
-      <div>
-        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE DESTINATÁRIO</h3>
-        <div class="space-y-1 text-zinc-700 font-sans">
-          <p class="font-extrabold text-black text-[13px]">${clientObj.nomeCompleto}</p>
-          <p>WhatsApp: ${clientObj.whatsapp}</p>
-          <p>Tipo do Imóvel: ${clientObj.tipoCliente}</p>
-          <p>Local do Serviço: ${b.localServico || 'Natal, RN'}</p>
-        </div>
-      </div>
-    ` : `
-      <div>
-        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE DESTINATÁRIO</h3>
-        <p class="text-red-500 font-mono">Cliente não localizado no banco.</p>
-      </div>
-    `;
-
-    const itemsHtml = budgetItems
-      .filter(item => item.orcamentoId === b.id)
-      .map((it, idx) => `
-        <tr class="text-zinc-800 font-sans border-b border-zinc-150">
-          <td class="p-2.5 font-medium">${it.descricaoItem}</td>
-          <td class="p-2.5 text-center font-mono">${it.quantidade}</td>
-          <td class="p-2.5 text-right font-mono">R$ ${it.precoUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-          <td class="p-2.5 text-right font-mono font-bold text-black">R$ ${it.subtotalItem.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-        </tr>
-      `).join('');
-
-    const logoHtml = config.logo ? `
-      <img src="${config.logo}" alt="Logo" class="max-h-16 max-w-[120px] object-contain shrink-0 rounded-md" />
-    ` : `
-      <div class="p-1 px-1.5 bg-zinc-950 text-amber-500 font-extrabold text-lg rounded shrink-0">⚡ AGE</div>
-    `;
-
-    const docHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-br">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Orçamento ${b.numeroOrcamento} - AGE Elétrica</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          @media print {
-            .no-print { display: none !important; }
-            body { background: #ffffff !important; padding: 0 !important; }
-            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
-          }
-        </style>
-      </head>
-      <body class="bg-zinc-100 p-4 md:p-8 font-sans">
-        <div class="max-w-4xl mx-auto w-full bg-zinc-900 text-white p-4 rounded-xl mb-6 flex justify-between items-center no-print shadow-md">
-          <span class="text-xs font-bold font-mono tracking-wider">Visualização Segura - Orçamento AGE Elétrica</span>
-          <div class="flex gap-2">
-            <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-3.5 py-1.5 rounded-lg text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
-              Gerar PDF / Imprimir
-            </button>
-            <button onclick="window.close()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg text-xs cursor-pointer">
-              Fechar
-            </button>
-          </div>
-        </div>
-
-        <div class="max-w-4xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-xl rounded-sm border border-gray-300 print-card">
-          <div class="flex justify-between items-start border-b-2 border-amber-500 pb-5 mb-6">
-            <div class="flex items-center gap-3">
-              ${logoHtml}
-              <div>
-                <h1 class="text-lg font-black tracking-tight uppercase">${config.nomeEmpresa || 'AGE ELÉTRICA'}</h1>
-                <p class="text-[10px] text-gray-500 tracking-wider">INSTALAÇÕES COLETIVAS • SISTEMAS DE QUADROS • CARREGAMENTO WALLBOX</p>
-                <p class="text-[10px] text-gray-500">CNPJ: ${config.cnpj || '35.452.127/0001-90'} • CFT Ativo</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-xs text-gray-400 font-mono block uppercase">DOCUMENTO FISCAL</span>
-              <span class="text-xl font-bold text-amber-500 block font-mono">${b.numeroOrcamento}</span>
-              <span class="text-[10px] text-gray-500 block font-mono">Emissão: ${b.dataOrcamento.split('-').reverse().join('/')}</span>
-              <span class="text-[10px] text-red-500 block font-mono">Validade: ${b.validadeOrcamento.split('-').reverse().join('/')}</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs mb-6 border-b pb-6">
-            ${clientDetailsHtml}
-            <div>
-              <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">RESPONSÁVEL TÉCNICO</h3>
-              <div class="space-y-1 text-zinc-700">
-                <p class="font-extrabold text-black font-sans">${b.responsavelOrcamento}</p>
-                <p>NORMAS: <strong>NBR 5410, NR10, NR35</strong></p>
-                <p>Instalações Certificadas de Alta Performance</p>
-                <p>Contato corporativo: ${config.telefone || '(84) 99888-7766'}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-6 space-y-2">
-            <span class="text-[10px] uppercase font-mono tracking-wider font-extrabold text-zinc-500 block">Escopo / Descrição Geral do Serviço</span>
-            <p class="text-xs bg-zinc-50 border border-zinc-200 p-3.5 rounded leading-relaxed text-zinc-800 italic">${b.descricaoGeral}</p>
-          </div>
-
-          <div class="border border-zinc-150 rounded overflow-hidden mb-6">
-            <table class="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr class="bg-zinc-100 text-zinc-700 font-mono font-bold border-b border-zinc-200 uppercase tracking-wider">
-                  <th class="p-2.5">Item</th>
-                  <th class="p-2.5 text-center w-16">Qtd</th>
-                  <th class="p-2.5 text-right w-28">Preço Unit.</th>
-                  <th class="p-2.5 text-right w-28">Total</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-zinc-150">
-                ${itemsHtml}
-              </tbody>
-            </table>
-          </div>
-
-          <div class="flex flex-col items-end gap-1.5 text-xs font-mono text-zinc-650 mb-8 border-b pb-4">
-            <div>Subtotal Geral: R$ ${b.subtotal?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-            ${b.desconto > 0 ? `<div class="text-red-600 font-semibold">Desconto Concedido: R$ -${b.desconto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>` : ''}
-            <div class="text-sm font-bold text-zinc-950">
-              Valor Total do Orçamento: <strong class="text-green-600 text-base">R$ ${b.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[10.5px] mt-10">
-            <div class="space-y-1">
-              <p class="font-bold text-zinc-800">CONDIÇÕES COMERCIAIS</p>
-              <p><strong>Prazo de Execução:</strong> ${b.prazoExecucao}</p>
-              <p><strong>Forma de Pagamento:</strong> ${b.formaPagamento}</p>
-            </div>
-            <div class="text-center pt-8 border-t border-zinc-200 mt-4 sm:pt-4 sm:border-t-0 font-mono">
-              <div class="w-full max-w-[220px] mx-auto border-b border-zinc-400 py-3 block text-center"></div>
-              <span class="font-bold text-zinc-900 block mt-1">${b.responsavelOrcamento}</span>
-            </div>
-          </div>
-
-          <div class="text-[8px] text-zinc-400 text-center uppercase tracking-widest mt-12 pt-4 border-t">
-            ${config.rodapePdf || 'A AGE Elétrica agradece a preferência.'}
-          </div>
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 300);
-          }
-        </script>
-      </body>
-      </html>
-    `;
-
-    const newTab = window.open('', '_blank');
-    if (newTab) {
-      newTab.document.write(docHtml);
-      newTab.document.close();
-    } else {
-      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Orcamento_${b.numeroOrcamento}.html`;
-      link.click();
-    }
+    const url = `${window.location.origin}${window.location.pathname}?print-budget=${encodeURIComponent(b.id)}`;
+    window.open(url, '_blank');
   };
 
   // Open Receipt PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabReceipt = (r: Recibo) => {
-    const clientObj = clients.find(cl => cl.id === r.clienteId);
-    const clientDetailsHtml = clientObj ? `
-      <div>
-        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE BENEFICIÁRIO</h3>
-        <div class="space-y-1 text-zinc-700 font-sans">
-          <p class="font-extrabold text-black text-[13px]">${clientObj.nomeCompleto}</p>
-          <p>WhatsApp: ${clientObj.whatsapp}</p>
-          <p>Endereço: ${clientObj.endereco || 'Natal, RN'} - ${clientObj.bairro}, ${clientObj.cidade}</p>
-        </div>
-      </div>
-    ` : `
-      <div>
-        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE BENEFICIÁRIO</h3>
-        <p class="text-red-500 font-mono">Cliente não localizado no banco.</p>
-      </div>
-    `;
-
-    const logoHtml = config.logo ? `
-      <img src="${config.logo}" alt="Logo" class="max-h-16 max-w-[120px] object-contain shrink-0 rounded-md" />
-    ` : `
-      <div class="p-1 px-1.5 bg-zinc-950 text-amber-500 font-extrabold text-lg rounded shrink-0">⚡ AGE ELÉTRICA</div>
-    `;
-
-    const docHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-br">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Recibo ${r.numeroRecibo} - AGE Elétrica</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <style>
-          @media print {
-            .no-print { display: none !important; }
-            body { background: #ffffff !important; padding: 0 !important; }
-            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
-          }
-        </style>
-      </head>
-      <body class="bg-zinc-100 p-4 md:p-8 font-sans">
-        <div class="max-w-3xl mx-auto w-full bg-zinc-900 text-white p-4 rounded-xl mb-6 flex justify-between items-center no-print shadow-md">
-          <span class="text-xs font-bold font-mono tracking-wider">Visualização Segura - Recibo AGE Elétrica</span>
-          <div class="flex gap-2">
-            <button onclick="window.print()" class="bg-green-500 hover:bg-green-600 text-black font-extrabold px-3.5 py-1.5 rounded-lg text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
-              Gerar PDF / Imprimir Recibo
-            </button>
-            <button onclick="window.close()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg text-xs cursor-pointer">
-              Fechar
-            </button>
-          </div>
-        </div>
-
-        <div class="max-w-3xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-xl rounded-sm border border-gray-300 print-card">
-          <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">
-            ${logoHtml}
-            <div class="text-right">
-              <span class="text-[11px] text-gray-400 block font-mono">RECIBO DE QUITAÇÃO</span>
-              <span class="text-lg font-semibold text-gray-900 font-mono">${r.numeroRecibo}</span>
-              <span class="text-xs font-mono block">Valor: <strong class="text-green-600">R$ ${r.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></span>
-            </div>
-          </div>
-
-          <div class="bg-zinc-50 border border-gray-150 p-6 rounded-sm mb-6 text-sm leading-relaxed text-slate-800">
-            <p class="mb-4">
-              Recebemos de <strong class="text-slate-950 text-base">${clientObj ? clientObj.nomeCompleto : 'Cliente Pagador'}</strong> as devidas importâncias financeiras do serviço executado.
-            </p>
-
-            <div class="bg-zinc-100/70 p-4 rounded-lg my-4">
-              ${clientDetailsHtml}
-            </div>
-
-            <p class="mt-4">
-              A importância de <strong class="text-black font-mono">R$ ${r.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong> representa o faturamento integral e quitação total do escopo técnico:
-            </p>
-
-            <p class="bg-green-50/50 p-4 border border-green-200/60 rounded-lg font-bold text-zinc-900 italic my-3">
-              "${r.referenteServico}"
-            </p>
-
-            <p class="text-xs leading-relaxed text-zinc-600 mt-4 font-sans">
-              <strong>Garantia do Serviço:</strong> ${r.observacoes || 'Garantia legal assegurada de 90 dias conforme dispõe o Código de Defesa do Consumidor.'}
-            </p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs text-zinc-700 mt-8 border-t pt-6">
-            <div class="space-y-1 font-mono">
-              <p class="font-bold text-zinc-900">DETALHES DA QUITAÇÃO</p>
-              <p>Data Emissão: ${r.dataEmissao.split('-').reverse().join('/')}</p>
-              <p>Operado via: ${r.formaPagamento}</p>
-              <p class="text-green-600 font-bold uppercase font-sans">Estado comercial: PAGO E QUITADO</p>
-            </div>
-            <div class="text-center font-sans">
-              <div class="w-full max-w-[200px] mx-auto border-b border-zinc-400 py-3.5 block"></div>
-              <span class="font-bold text-zinc-950 block mt-1">${r.responsavelRecebimento}</span>
-              <span class="text-[8px] text-[#f2b705] block uppercase tracking-widest font-bold mt-0.5">Técnico Sênior Autorizado</span>
-            </div>
-          </div>
-
-          <div class="text-[8.5px] text-zinc-400 text-center uppercase tracking-widest mt-12 pt-4 border-t">
-            Contatos corporativo para vistorias: ${config.email || 'ageeletricasuporte@gmail.com'} • WhatsApp ${config.whatsapp || '84 99988-8877'}
-          </div>
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 300);
-          }
-        </script>
-      </body>
-      </html>
-    `;
-
-    const newTab = window.open('', '_blank');
-    if (newTab) {
-      newTab.document.write(docHtml);
-      newTab.document.close();
-    } else {
-      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Recibo_${r.numeroRecibo}.html`;
-      link.click();
-    }
+    const url = `${window.location.origin}${window.location.pathname}?print-receipt=${encodeURIComponent(r.id)}`;
+    window.open(url, '_blank');
   };
 
   // Quick Client Registration Form
@@ -1778,7 +1492,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
           A4 PRINT PREVIEW: BUDGET (ORÇAMENTO) OVERLAY
           ---------------------------------------------------- */}
       {selectedBudgetForPrint && (
-        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
+        <div className="fixed inset-0 bg-zinc-100 dark:bg-[#0c0c0e] backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-2 sm:p-4 md:p-8 no-print-backdrop text-zinc-900">
           
           {/* Top minimal control print header */}
           <div className="max-w-4xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
@@ -1823,7 +1537,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
           </div>
 
           {/* Clean White A4 Printable Card */}
-          <div className="max-w-4xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-2xl rounded-sm font-sans border border-gray-300 print-card">
+          <div className="max-w-4xl mx-auto w-full bg-white dark:bg-white text-zinc-900 dark:text-zinc-900 p-4 sm:p-8 md:p-12 shadow-2xl rounded-xl sm:rounded-sm font-sans border border-zinc-250 dark:border-zinc-250 print-card">
             
             {/* White A4 Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b pb-6 mb-6">
@@ -1980,7 +1694,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
           A4 PRINT PREVIEW: RECEIPT (RECIBO) OVERLAY
           ---------------------------------------------------- */}
       {selectedReceiptForPrint && (
-        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
+        <div className="fixed inset-0 bg-zinc-100 dark:bg-[#0c0c0e] backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-2 sm:p-4 md:p-8 no-print-backdrop text-zinc-900">
           
           <div className="max-w-3xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
             <span className="text-white text-xs font-bold font-mono">
@@ -2024,7 +1738,7 @@ export function AppTecnico({ onBackToSite }: AppTecnicoProps) {
           </div>
 
           {/* Clean White A4 Printable Card */}
-          <div className="max-w-3xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-2xl rounded-sm font-sans border border-gray-300 print-card">
+          <div className="max-w-3xl mx-auto w-full bg-white dark:bg-white text-zinc-900 dark:text-zinc-900 p-4 sm:p-8 md:p-12 shadow-2xl rounded-xl sm:rounded-sm font-sans border border-zinc-250 dark:border-zinc-250 print-card">
             
             <div className="flex justify-between items-start gap-4 border-b pb-6 mb-6">
               <div className="flex items-center gap-3">

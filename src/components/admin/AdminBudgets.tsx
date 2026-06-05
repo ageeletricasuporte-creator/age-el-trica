@@ -347,6 +347,9 @@ export function AdminBudgets({
 
   // Open Budget PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
   const handleOpenInNewTabBudget = (b: Orcamento) => {
+    const url = `${window.location.origin}${window.location.pathname}?print-budget=${encodeURIComponent(b.id)}`;
+    window.open(url, '_blank');
+    return;
     const clientObj = clients.find(cl => cl.id === b.clienteId);
     const clientDetailsHtml = clientObj ? `
       <div>
@@ -947,7 +950,7 @@ export function AdminBudgets({
 
       {/* A4 PRINT VIEW OVERLAY MODAL */}
       {selectedBudgetForPrint && (
-        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
+        <div className="fixed inset-0 bg-zinc-100 dark:bg-[#0c0c0e] backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-2 sm:p-4 md:p-8 no-print-backdrop text-zinc-900">
           
           {/* Header commands in preview */}
           <div className="max-w-4xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
@@ -991,7 +994,7 @@ export function AdminBudgets({
           </div>
 
           {/* Core Invoice container designed as standard corporative paper block */}
-          <div className="max-w-4xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-2xl rounded-sm font-sans border border-gray-300 print-card">
+          <div className="max-w-4xl mx-auto w-full bg-white dark:bg-white text-zinc-900 dark:text-zinc-900 p-4 sm:p-8 md:p-12 shadow-2xl rounded-xl sm:rounded-sm font-sans border border-zinc-250 dark:border-zinc-250 print-card">
             
             {/* Header section containing custom lightning logo */}
             <div className="flex justify-between items-start border-b-2 border-amber-500 pb-5 mb-6">
