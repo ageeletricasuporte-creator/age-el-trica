@@ -19,7 +19,8 @@ import {
   User,
   MapPin,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 import {
   Orcamento,
@@ -342,6 +343,174 @@ export function AdminBudgets({
   // PDF Print Trigger
   const handlePrint = () => {
     window.print();
+  };
+
+  // Open Budget PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
+  const handleOpenInNewTabBudget = (b: Orcamento) => {
+    const clientObj = clients.find(cl => cl.id === b.clienteId);
+    const clientDetailsHtml = clientObj ? `
+      <div>
+        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE DESTINATÁRIO</h3>
+        <div class="space-y-1 text-zinc-700 font-sans">
+          <p class="font-extrabold text-black text-[13px]">${clientObj.nomeCompleto}</p>
+          <p>WhatsApp: ${clientObj.whatsapp}</p>
+          <p>Tipo do Imóvel: ${clientObj.tipoCliente}</p>
+          <p>Local do Serviço: ${b.localServico || 'Natal, RN'}</p>
+        </div>
+      </div>
+    ` : `
+      <div>
+        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE DESTINATÁRIO</h3>
+        <p class="text-red-500 font-mono">Cliente não localizado no banco.</p>
+      </div>
+    `;
+
+    const itemsHtml = budgetItems
+      .filter(item => item.orcamentoId === b.id)
+      .map((it, idx) => `
+        <tr class="text-zinc-800 font-sans border-b border-zinc-150">
+          <td class="p-2.5 font-medium">${it.descricaoItem}</td>
+          <td class="p-2.5 text-center font-mono">${it.quantidade}</td>
+          <td class="p-2.5 text-right font-mono">R$ ${it.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          <td class="p-2.5 text-right font-mono font-bold text-black">R$ ${it.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+        </tr>
+      `).join('');
+
+    const logoHtml = (config.logoPdf || config.logo) ? `
+      <img src="${config.logoPdf || config.logo}" alt="Logo" class="max-h-16 max-w-[120px] object-contain shrink-0 rounded-md" />
+    ` : `
+      <div class="p-1 px-1.5 bg-zinc-950 text-amber-500 font-extrabold text-lg rounded shrink-0">⚡ AGE</div>
+    `;
+
+    const docHtml = `
+      <!DOCTYPE html>
+      <html lang="pt-br">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Orçamento ${b.numeroOrcamento} - AGE Elétrica</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @media print {
+            .no-print { display: none !important; }
+            body { background: #ffffff !important; padding: 0 !important; }
+            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
+          }
+        </style>
+      </head>
+      <body class="bg-zinc-100 p-4 md:p-8 font-sans">
+        <div class="max-w-4xl mx-auto w-full bg-zinc-900 text-white p-4 rounded-xl mb-6 flex justify-between items-center no-print shadow-md">
+          <span class="text-xs font-bold font-mono tracking-wider">Visualização Segura - Orçamento AGE Elétrica</span>
+          <div class="flex gap-2">
+            <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-3.5 py-1.5 rounded-lg text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
+              Gerar PDF / Imprimir
+            </button>
+            <button onclick="window.close()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg text-xs cursor-pointer">
+              Fechar
+            </button>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-xl rounded-sm border border-gray-300 print-card">
+          <div class="flex justify-between items-start border-b-2 border-amber-500 pb-5 mb-6">
+            <div class="flex items-center gap-3">
+              ${logoHtml}
+              <div>
+                <h1 class="text-lg font-black tracking-tight uppercase">${config.nomeEmpresa || 'AGE ELÉTRICA'}</h1>
+                <p class="text-[10px] text-gray-500 tracking-wider">INSTALAÇÕES COLETIVAS • SISTEMAS DE QUADROS • CARREGAMENTO WALLBOX</p>
+                <p class="text-[10px] text-gray-500">CNPJ: ${config.cnpj || '35.452.127/0001-90'} • CFT Ativo</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs text-gray-400 font-mono block uppercase">DOCUMENTO FISCAL</span>
+              <span class="text-xl font-bold text-amber-500 block font-mono">${b.numeroOrcamento}</span>
+              <span class="text-[10px] text-gray-500 block font-mono">Emissão: ${b.dataOrcamento.split('-').reverse().join('/')}</span>
+              <span class="text-[10px] text-red-500 block font-mono">Validade: ${b.validadeOrcamento.split('-').reverse().join('/')}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs mb-6 border-b pb-6">
+            ${clientDetailsHtml}
+            <div>
+              <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">RESPONSÁVEL TÉCNICO</h3>
+              <div class="space-y-1 text-zinc-700">
+                <p class="font-extrabold text-black font-sans">${b.responsavelOrcamento}</p>
+                <p>NORMAS: <strong>NBR 5410, NR10, NR35</strong></p>
+                <p>Instalações Certificadas de Alta Performance</p>
+                <p>Contato corporativo: ${config.telefone || '(84) 99888-7766'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-6 space-y-2">
+            <span class="text-[10px] uppercase font-mono tracking-wider font-extrabold text-zinc-500 block">Escopo / Descrição Geral do Serviço</span>
+            <p class="text-xs bg-zinc-50 border border-zinc-200 p-3.5 rounded leading-relaxed text-zinc-800 italic">${b.descricaoGeral}</p>
+          </div>
+
+          <div class="border border-zinc-150 rounded overflow-hidden mb-6">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-zinc-100 text-zinc-700 font-mono font-bold border-b border-zinc-200 uppercase tracking-wider">
+                  <th class="p-2.5">Item</th>
+                  <th class="p-2.5 text-center w-16">Qtd</th>
+                  <th class="p-2.5 text-right w-28">Preço Unit.</th>
+                  <th class="p-2.5 text-right w-28">Total</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-zinc-150">
+                ${itemsHtml}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex flex-col items-end gap-1.5 text-xs font-mono text-zinc-650 mb-8 border-b pb-4">
+            <div>Subtotal Geral: R$ ${b.subtotal?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            ${b.desconto > 0 ? `<div class="text-red-600 font-semibold">Desconto Concedido: R$ -${b.desconto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>` : ''}
+            <div class="text-sm font-bold text-zinc-950">
+              Valor Total do Orçamento: <strong class="text-green-600 text-base">R$ ${b.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[10.5px] mt-10">
+            <div class="space-y-1">
+              <p class="font-bold text-zinc-800">CONDIÇÕES COMERCIAIS</p>
+              <p><strong>Prazo de Execução:</strong> ${b.prazoExecucao}</p>
+              <p><strong>Forma de Pagamento:</strong> ${b.formaPagamento}</p>
+            </div>
+            <div class="text-center pt-8 border-t border-zinc-200 mt-4 sm:pt-4 sm:border-t-0 font-mono">
+              <div class="w-full max-w-[220px] mx-auto border-b border-zinc-400 py-3 block text-center"></div>
+              <span class="font-bold text-zinc-900 block mt-1">${b.responsavelOrcamento}</span>
+            </div>
+          </div>
+
+          <div class="text-[8px] text-zinc-400 text-center uppercase tracking-widest mt-12 pt-4 border-t">
+            ${config.rodapePdf || 'A AGE Elétrica agradece a preferência.'}
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    const newTab = window.open('', '_blank');
+    if (newTab) {
+      newTab.document.write(docHtml);
+      newTab.document.close();
+    } else {
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Orcamento_${b.numeroOrcamento}.html`;
+      link.click();
+    }
   };
 
   return (
@@ -778,25 +947,47 @@ export function AdminBudgets({
 
       {/* A4 PRINT VIEW OVERLAY MODAL */}
       {selectedBudgetForPrint && (
-        <div className="fixed inset-0 bg-black/95 z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop">
+        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
           
           {/* Header commands in preview */}
-          <div className="max-w-4xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl mb-6 flex justify-between items-center no-print">
-            <span className="text-white text-xs font-extrabold">Visualização A4 do Orçamento Emitido ({selectedBudgetForPrint.numeroOrcamento})</span>
-            <div className="flex gap-2">
+          <div className="max-w-4xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-2xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
+            <span className="text-white text-xs font-extrabold font-mono uppercase tracking-wider">
+              Visualização de Orçamento ({selectedBudgetForPrint.numeroOrcamento})
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handlePrint}
-                className="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-3 py-1.5 rounded transition text-xs flex items-center gap-1.5"
+                className="bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-3 py-1.5 rounded-xl transition text-xs flex items-center gap-1.5 cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" /> Imprimir / PDF
+                <Printer className="w-3.5 h-3.5" /> Baixar PDF / Imprimir
+              </button>
+              <button
+                onClick={() => handleOpenInNewTabBudget(selectedBudgetForPrint)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-3 py-1.5 rounded-xl transition text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> Abrir em Nova Aba
               </button>
               <button
                 onClick={() => setSelectedBudgetForPrint(null)}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded transition text-xs"
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white px-3 py-1.5 rounded-xl transition text-xs cursor-pointer"
               >
-                Voltar ao Sistema
+                Voltar
               </button>
             </div>
+          </div>
+
+          {/* Core iOS Safari PWA Fallback Notice */}
+          <div className="max-w-4xl mx-auto w-full bg-zinc-900/50 border border-zinc-200/20 backdrop-blur p-4 rounded-2xl mb-6 text-xs flex flex-col md:flex-row justify-between md:items-center gap-3 no-print text-zinc-700 dark:text-zinc-300">
+            <div>
+              <p className="font-bold text-amber-600 dark:text-amber-400">💡 No iPhone / PWA da AGE Elétrica:</p>
+              <p className="text-[11px] mt-0.5">Se o carregamento interno falhar ou ficar cinza/preto, toque em "Abrir em Nova Aba" para usar o visualizador do Safari e salvar o arquivo diretamente no dispositivo.</p>
+            </div>
+            <button
+              onClick={() => handleOpenInNewTabBudget(selectedBudgetForPrint)}
+              className="bg-zinc-800 hover:bg-zinc-750 text-white font-bold px-3.5 py-2 rounded-xl text-[10.5px] uppercase tracking-wide shrink-0 transition-all flex items-center justify-center gap-1.5 self-start md:self-center cursor-pointer"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-amber-500" /> Testar Nova Aba
+            </button>
           </div>
 
           {/* Core Invoice container designed as standard corporative paper block */}

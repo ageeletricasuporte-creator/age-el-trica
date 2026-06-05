@@ -15,7 +15,8 @@ import {
   DollarSign,
   Briefcase,
   Trash2,
-  Lock
+  Lock,
+  ExternalLink
 } from 'lucide-react';
 import {
   Recibo,
@@ -188,6 +189,136 @@ export function AdminReceipts({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // Open Receipt PDF/Print view in a clean standalone window/tab (iOS / PWA / Android fallback supported)
+  const handleOpenInNewTabReceipt = (r: Recibo) => {
+    const clientObj = clients.find(cl => cl.id === r.clienteId);
+    const clientDetailsHtml = clientObj ? `
+      <div>
+        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE BENEFICIÁRIO</h3>
+        <div class="space-y-1 text-zinc-700 font-sans">
+          <p class="font-extrabold text-black text-[13px]">${clientObj.nomeCompleto}</p>
+          <p>WhatsApp: ${clientObj.whatsapp}</p>
+          <p>Endereço: ${clientObj.enderecoCompleto || 'Natal, RN'} - ${clientObj.bairro}, ${clientObj.cidade}</p>
+        </div>
+      </div>
+    ` : `
+      <div>
+        <h3 class="font-bold text-zinc-900 uppercase tracking-wider mb-2 font-mono text-[11px]">CLIENTE BENEFICIÁRIO</h3>
+        <p class="text-red-500 font-mono">Cliente não localizado no banco.</p>
+      </div>
+    `;
+
+    const logoHtml = (config.logoPdf || config.logo) ? `
+      <img src="${config.logoPdf || config.logo}" alt="Logo" class="max-h-16 max-w-[120px] object-contain shrink-0 rounded-md" />
+    ` : `
+      <div class="p-1 px-1.5 bg-zinc-950 text-amber-500 font-extrabold text-lg rounded shrink-0">⚡ AGE ELÉTRICA</div>
+    `;
+
+    const docHtml = `
+      <!DOCTYPE html>
+      <html lang="pt-br">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Recibo ${r.numeroRecibo} - AGE Elétrica</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+          @media print {
+            .no-print { display: none !important; }
+            body { background: #ffffff !important; padding: 0 !important; }
+            .print-card { box-shadow: none !important; border: none !important; max-width: 100% !important; margin: 0 !important; }
+          }
+        </style>
+      </head>
+      <body class="bg-zinc-100 p-4 md:p-8 font-sans">
+        <div class="max-w-3xl mx-auto w-full bg-zinc-900 text-white p-4 rounded-xl mb-6 flex justify-between items-center no-print shadow-md">
+          <span class="text-xs font-bold font-mono tracking-wider">Visualização Segura - Recibo AGE Elétrica</span>
+          <div class="flex gap-2">
+            <button onclick="window.print()" class="bg-green-500 hover:bg-green-600 text-black font-extrabold px-3.5 py-1.5 rounded-lg text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer">
+              Gerar PDF / Imprimir Recibo
+            </button>
+            <button onclick="window.close()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg text-xs cursor-pointer">
+              Fechar
+            </button>
+          </div>
+        </div>
+
+        <div class="max-w-3xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-xl rounded-sm border border-gray-300 print-card">
+          <div class="flex justify-between items-center border-b border-gray-300 pb-4 mb-6">
+            ${logoHtml}
+            <div class="text-right">
+              <span class="text-[11px] text-gray-400 block font-mono">RECIBO DE QUITAÇÃO</span>
+              <span class="text-lg font-semibold text-gray-900 font-mono">${r.numeroRecibo}</span>
+              <span class="text-xs font-mono block">Valor: <strong class="text-green-600">R$ ${r.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></span>
+            </div>
+          </div>
+
+          <div class="bg-zinc-50 border border-gray-150 p-6 rounded-sm mb-6 text-sm leading-relaxed text-slate-800">
+            <p class="mb-4">
+              Recebemos de <strong class="text-slate-950 text-base">${clientObj ? clientObj.nomeCompleto : 'Cliente Pagador'}</strong> as devidas importâncias financeiras do serviço executado.
+            </p>
+
+            <div class="bg-zinc-100/70 p-4 rounded-lg my-4">
+              ${clientDetailsHtml}
+            </div>
+
+            <p class="mt-4">
+              A importância de <strong class="text-black font-mono">R$ ${r.valorRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong> representa o faturamento integral e quitação total do escopo técnico:
+            </p>
+
+            <p class="bg-green-50/50 p-4 border border-green-200/60 rounded-lg font-bold text-zinc-900 italic my-3">
+              "${r.referenteServico}"
+            </p>
+
+            <p class="text-xs leading-relaxed text-zinc-600 mt-4 font-sans">
+              <strong>Garantia do Serviço:</strong> ${r.observacoes || 'Garantia legal assegurada de 90 dias conforme dispõe o Código de Defesa do Consumidor.'}
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs text-zinc-700 mt-8 border-t pt-6">
+            <div class="space-y-1 font-mono">
+              <p class="font-bold text-zinc-900">DETALHES DA QUITAÇÃO</p>
+              <p>Data Emissão: ${r.dataEmissao.split('-').reverse().join('/')}</p>
+              <p>Operado via: ${r.formaPagamento}</p>
+              <p class="text-green-600 font-bold uppercase font-sans">Estado comercial: PAGO E QUITADO</p>
+            </div>
+            <div class="text-center font-sans">
+              <div class="w-full max-w-[200px] mx-auto border-b border-zinc-400 py-3.5 block"></div>
+              <span class="font-bold text-zinc-950 block mt-1">${r.responsavelRecebimento}</span>
+              <span class="text-[8px] text-[#f2b705] block uppercase tracking-widest font-bold mt-0.5">Técnico Sênior Autorizado</span>
+            </div>
+          </div>
+
+          <div class="text-[8.5px] text-zinc-400 text-center uppercase tracking-widest mt-12 pt-4 border-t">
+            Contatos corporativo para vistorias: ${config.email || 'ageeletricasuporte@gmail.com'} • WhatsApp ${config.whatsapp || '84 99988-8877'}
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    const newTab = window.open('', '_blank');
+    if (newTab) {
+      newTab.document.write(docHtml);
+      newTab.document.close();
+    } else {
+      const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Recibo_${r.numeroRecibo}.html`;
+      link.click();
+    }
   };
 
   return (
@@ -469,24 +600,44 @@ export function AdminReceipts({
 
       {/* A4 PRINT VIEW LAYOUT OVERLAY */}
       {selectedReceiptForPrint && (
-        <div className="fixed inset-0 bg-black/95 z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop">
+        <div className="fixed inset-0 bg-slate-100 dark:bg-zinc-950/98 backdrop-blur-md z-50 overflow-y-auto flex flex-col justify-start p-4 md:p-8 no-print-backdrop text-zinc-900">
           
-          <div className="max-w-3xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-6 flex justify-between items-center no-print">
+          <div className="max-w-3xl mx-auto w-full bg-zinc-900 border border-zinc-800 p-4 rounded-xl mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 no-print shadow-xl">
             <span className="text-white text-xs font-bold font-mono">Recibo Eletrônico de Garantia ({selectedReceiptForPrint.numeroRecibo})</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handlePrint}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1.5 rounded transition text-xs flex items-center gap-1"
+                className="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1.5 rounded-xl transition text-xs flex items-center gap-1 cursor-pointer"
               >
                 <Printer className="w-3.5 h-3.5" /> Baixar / Imprimir Recibo
               </button>
               <button
+                onClick={() => handleOpenInNewTabReceipt(selectedReceiptForPrint)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-3 py-1.5 rounded-xl transition text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> Abrir em Nova Aba
+              </button>
+              <button
                 onClick={() => setSelectedReceiptForPrint(null)}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-1.5 rounded transition text-xs"
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-1.5 rounded-xl transition text-xs cursor-pointer"
               >
                 Voltar
               </button>
             </div>
+          </div>
+
+          {/* Core iOS Safari PWA Fallback Notice */}
+          <div className="max-w-3xl mx-auto w-full bg-zinc-900/50 border border-zinc-200/20 backdrop-blur p-4 rounded-xl mb-6 text-xs flex flex-col md:flex-row justify-between md:items-center gap-3 no-print text-zinc-700 dark:text-zinc-300">
+            <div>
+              <p className="font-bold text-amber-600 dark:text-amber-400">💡 No iPhone / PWA da AGE Elétrica:</p>
+              <p className="text-[11px] mt-0.5">Se o carregamento interno falhar ou ficar cinza/preto, toque em "Abrir em Nova Aba" para usar o visualizador do Safari e salvar o arquivo diretamente no dispositivo.</p>
+            </div>
+            <button
+              onClick={() => handleOpenInNewTabReceipt(selectedReceiptForPrint)}
+              className="bg-zinc-800 hover:bg-zinc-750 text-white font-bold px-3.5 py-2 rounded-xl text-[10.5px] uppercase tracking-wide shrink-0 transition-all flex items-center justify-center gap-1.5 self-start md:self-center cursor-pointer"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-amber-500" /> Testar Nova Aba
+            </button>
           </div>
 
           <div className="max-w-3xl mx-auto w-full bg-white text-black p-8 md:p-12 shadow-2xl rounded-sm font-sans border border-gray-300 print-card">
