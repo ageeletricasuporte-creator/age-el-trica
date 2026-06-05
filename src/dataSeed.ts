@@ -146,84 +146,7 @@ export const DEFAULT_USERS: Usuario[] = [
 ];
 
 // Seed Clients
-export const DEFAULT_CLIENTS: Cliente[] = [
-  {
-    id: 'cli-1',
-    nomeCompleto: 'Dr. Roberto de Souza Santos',
-    cpfCnpj: '123.456.789-00',
-    telefone: '(11) 2233-4455',
-    whatsapp: '(11) 91234-5678',
-    email: 'roberto.santos@gmail.com',
-    enderecoCompleto: 'Alameda das Flores',
-    numero: '450',
-    complemento: 'Apto 122 Bloco B',
-    bairro: 'Jardins',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    cep: '01234-000',
-    tipoCliente: 'Residencial',
-    observacoes: 'Cliente extremamente exigente. Chuveiro de alta potência liofilizado na suíte master.',
-    dataCadastro: '2026-04-12T10:00:00Z',
-    statusCliente: 'Ativo'
-  },
-  {
-    id: 'cli-2',
-    nomeCompleto: 'Supermercado Nova Esperança Ltda',
-    cpfCnpj: '22.333.444/0001-55',
-    telefone: '(11) 3300-8800',
-    whatsapp: '(11) 92345-6789',
-    email: 'financeiro@supernovaesperanca.com',
-    enderecoCompleto: 'Avenida Celso Garcia',
-    numero: '2100',
-    complemento: 'Térreo - Galpão Comercial',
-    bairro: 'Brás',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    cep: '03001-000',
-    tipoCliente: 'Comercial',
-    observacoes: 'Quadro elétrico trifásico com falha intermitente nos freezers. Necessita verificação urgente.',
-    dataCadastro: '2026-04-20T15:20:00Z',
-    statusCliente: 'Ativo'
-  },
-  {
-    id: 'cli-3',
-    nomeCompleto: 'Condomínio Residencial Bella Vista',
-    cpfCnpj: '33.444.555/0001-66',
-    telefone: '(11) 2900-5500',
-    whatsapp: '(11) 93456-7890',
-    email: 'bellavista.sindico@yahoo.com.br',
-    enderecoCompleto: 'Rua das Oliveiras',
-    numero: '85',
-    complemento: 'Sindical / Entrada Principal',
-    bairro: 'Morumbi',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    cep: '05600-100',
-    tipoCliente: 'Condomínio',
-    observacoes: 'Instalação de carregadores veiculares Wallbox nas garagens subsolo das torres A e B.',
-    dataCadastro: '2026-05-02T11:45:00Z',
-    statusCliente: 'Ativo'
-  },
-  {
-    id: 'cli-4',
-    nomeCompleto: 'Mariana Peixoto Ramos',
-    cpfCnpj: '444.555.666-88',
-    telefone: '(11) 4412-8811',
-    whatsapp: '(11) 94567-8901',
-    email: 'mari.peixoto@outlook.com',
-    enderecoCompleto: 'Rua Heitor Penteado',
-    numero: '1240',
-    complemento: 'Casa 3 Corredor lateral',
-    bairro: 'Sumaré',
-    cidade: 'São Paulo',
-    estado: 'SP',
-    cep: '05438-000',
-    tipoCliente: 'Residencial',
-    observacoes: 'Reforma elétrica geral do quadro antigo de disjuntores tipo NEMA para modelo padrão DIN.',
-    dataCadastro: '2026-05-15T09:15:00Z',
-    statusCliente: 'Ativo'
-  }
-];
+export const DEFAULT_CLIENTS: Cliente[] = [];
 
 // Seed Configuration
 export const DEFAULT_CONFIG: ConfiguracaoEmpresa = {
@@ -253,273 +176,22 @@ export const DEFAULT_CONFIG: ConfiguracaoEmpresa = {
 };
 
 // Seed Budgets / Orçamentos
-export const DEFAULT_BUDGETS: Orcamento[] = [
-  {
-    id: 'orc-1',
-    numeroOrcamento: 'AGE-ORC-0001',
-    clienteId: 'cli-1',
-    dataOrcamento: '2026-05-20',
-    validadeOrcamento: '2026-06-20',
-    responsavelOrcamento: 'Geraldo Fonseca',
-    status: 'Finalizado',
-    descricaoGeral: 'Instalação de Chuveiro Elétrico de alta performance 7800W na suíte máster com troca de disjuntor de proteção.',
-    localServico: 'Alameda das Flores, 450 - Apto 122 Bloco B, Jardins - São Paulo/SP',
-    formaPagamento: 'Pix',
-    prazoExecucao: '1 dia',
-    observacoes: 'Fiação pré-existente compatível de 6mm² de cobre. Ligação perfeita e barramento reapertado.',
-    subtotal: 230.00,
-    desconto: 30.00,
-    valorTotal: 200.00,
-    dataCriacao: '2026-05-20T10:00:00Z',
-    dataAtualizacao: '2026-05-21T18:00:00Z'
-  },
-  {
-    id: 'orc-2',
-    numeroOrcamento: 'AGE-ORC-0002',
-    clienteId: 'cli-3',
-    dataOrcamento: '2026-05-28',
-    validadeOrcamento: '2026-06-28',
-    responsavelOrcamento: 'Geraldo Fonseca',
-    status: 'Aprovado',
-    descricaoGeral: 'Instalação de 2 estações de recarga rápida para veículos elétricos (Wallbox 22kW) incluindo passagem de cabos blindados de 10mm² do quadro geral subsolo até as vagas 43 e 44.',
-    localServico: 'Rua das Oliveiras, 85, Morumbi - São Paulo/SP',
-    formaPagamento: 'Cartão de crédito parcelado (3x)',
-    prazoExecucao: '3 dias',
-    observacoes: 'Instalação de DPS exclusivos e IDR classe A em caixa blindada de sobrepor.',
-    subtotal: 2500.00,
-    desconto: 100.00,
-    valorTotal: 2400.00,
-    dataCriacao: '2026-05-28T14:00:00Z',
-    dataAtualizacao: '2026-05-30T11:00:00Z'
-  },
-  {
-    id: 'orc-3',
-    numeroOrcamento: 'AGE-ORC-0003',
-    clienteId: 'cli-4',
-    dataOrcamento: '2026-06-01',
-    validadeOrcamento: '2026-06-15',
-    responsavelOrcamento: 'Fernanda Lima',
-    status: 'Enviado',
-    descricaoGeral: 'Montagem completa de novo Quadro de Distribuição de Circuitos (QDC) de 24 disjuntores atualizados padrão DIN com proteção DR de fuga e DPS de surto.',
-    localServico: 'Rua Heitor Penteado, 1240 - Sumaré - São Paulo/SP',
-    formaPagamento: 'Transf. bancária / Pix',
-    prazoExecucao: '2 dias',
-    observacoes: 'Material não incluso, a ser fornecido com acompanhamento técnico da AGE.',
-    subtotal: 1100.00,
-    desconto: 50.00,
-    valorTotal: 1050.00,
-    dataCriacao: '2026-06-01T09:00:00Z',
-    dataAtualizacao: '2026-06-01T10:30:00Z'
-  }
-];
+export const DEFAULT_BUDGETS: Orcamento[] = [];
 
 // Seed Budget Items
-export const DEFAULT_BUDGET_ITEMS: ItemOrcamento[] = [
-  {
-    id: 'item-1',
-    orcamentoId: 'orc-1',
-    servicoId: 'srv-1',
-    descricaoItem: 'Instalação de chuveiro elétrico na suíte principal',
-    quantidade: 1,
-    unidade: 'serviço',
-    valorUnitario: 150.00,
-    valorTotal: 150.00,
-    observacaoItem: 'Ducha Lorenzetti Advanced Turbofresh 220V'
-  },
-  {
-    id: 'item-2',
-    orcamentoId: 'orc-1',
-    servicoId: 'srv-2',
-    descricaoItem: 'Substituição de disjuntor monopolar antigo no QDC da casa',
-    quantidade: 1,
-    unidade: 'ponto',
-    valorUnitario: 80.00,
-    valorTotal: 80.00,
-    observacaoItem: 'Substituição por disjuntor bipolar 40A Siemens DIN'
-  },
-  {
-    id: 'item-3',
-    orcamentoId: 'orc-2',
-    servicoId: 'srv-14',
-    descricaoItem: 'Instalação física e elétrica de estação Wallbox 22kW',
-    quantidade: 2,
-    unidade: 'serviço',
-    valorUnitario: 950.00,
-    valorTotal: 1900.00,
-    observacaoItem: 'Equipamentos fornecidos pelo condomínio (marca WEG)'
-  },
-  {
-    id: 'item-4',
-    orcamentoId: 'orc-2',
-    servicoId: 'srv-10',
-    descricaoItem: 'Instalação de DPS de proteção contra surtos no circuito dos carregadores',
-    quantidade: 2,
-    unidade: 'ponto',
-    valorUnitario: 120.00,
-    valorTotal: 240.00,
-    observacaoItem: 'DPS 275V Clamper'
-  },
-  {
-    id: 'item-5',
-    orcamentoId: 'orc-2',
-    servicoId: 'srv-11',
-    descricaoItem: 'Instalação de IDR para prevenção de choques adicionais',
-    quantidade: 2,
-    unidade: 'serviço',
-    valorUnitario: 180.00,
-    valorTotal: 360.00,
-    observacaoItem: 'IDR Tetrapolar 40A 30mA Siemens'
-  },
-  {
-    id: 'item-6',
-    orcamentoId: 'orc-3',
-    servicoId: 'srv-8',
-    descricaoItem: 'Montagem completa de QDC residencial atualizado',
-    quantidade: 1,
-    unidade: 'serviço',
-    valorUnitario: 650.00,
-    valorTotal: 650.00,
-    observacaoItem: 'Até 24 disjuntores residenciais'
-  },
-  {
-    id: 'item-7',
-    orcamentoId: 'orc-3',
-    servicoId: 'srv-12',
-    descricaoItem: 'Revisão elétrica preventiva com reaperto geral',
-    quantidade: 1,
-    unidade: 'visita',
-    valorUnitario: 250.00,
-    valorTotal: 250.00,
-    observacaoItem: 'Varredura térmica nas tomadas de maior carga'
-  },
-  {
-    id: 'item-8',
-    orcamentoId: 'orc-3',
-    servicoId: 'srv-11',
-    descricaoItem: 'Instalação de DR geral',
-    quantidade: 1,
-    unidade: 'serviço',
-    valorUnitario: 180.00,
-    valorTotal: 180.00,
-    observacaoItem: 'Dispositivo bipolar'
-  }
-];
+export const DEFAULT_BUDGET_ITEMS: ItemOrcamento[] = [];
 
 // Seed Receipts / Recibos
-export const DEFAULT_RECEIPTS: Recibo[] = [
-  {
-    id: 'rec-1',
-    numeroRecibo: 'AGE-REC-0001',
-    clienteId: 'cli-1',
-    orcamentoId: 'orc-1',
-    dataEmissao: '2026-05-21',
-    valorRecebido: 200.00,
-    formaPagamento: 'Pix',
-    referenteServico: 'Serviço de instalação de chuveiro elétrico e troca de disjuntor de segurança',
-    responsavelRecebimento: 'Geraldo Fonseca',
-    observacoes: 'Garantia legal de 90 dias concedida a contar desta data.',
-    status: 'Pago',
-    assinaturaResponsavel: 'Geraldo Fonseca - AGE Elétrica',
-    dataCriacao: '2026-05-21T18:10:00Z'
-  }
-];
+export const DEFAULT_RECEIPTS: Recibo[] = [];
 
 // Seed Payments
-export const DEFAULT_PAYMENTS: Pagamento[] = [
-  {
-    id: 'pag-1',
-    clienteId: 'cli-1',
-    orcamentoId: 'orc-1',
-    reciboId: 'rec-1',
-    valor: 200.00,
-    formaPagamento: 'Pix',
-    dataPagamento: '2026-05-21',
-    status: 'Confirmado',
-    comprovante: 'comprovante_pix_01239.pdf',
-    observacoes: 'Recebido em conta jurídica Itaú.'
-  }
-];
+export const DEFAULT_PAYMENTS: Pagamento[] = [];
 
 // Seed Appointments / Atendimentos (Agenda)
-export const DEFAULT_APPOINTMENTS: Atendimento[] = [
-  {
-    id: 'ate-1',
-    clienteId: 'cli-1',
-    orcamentoId: 'orc-1',
-    tecnicoResponsavel: 'Carlos Silva (Eletricista)',
-    dataAgendada: '2026-05-21',
-    horario: '14:00',
-    status: 'Concluído',
-    descricaoAtendimento: 'Instalação de chuveiro térmico Lorenzetti Advanced na residência do Dr. Roberto de Souza Santos.',
-    observacoesTecnicas: 'Pressurizador ativo funcionando. Fiação de 6mm conectada a conector cerâmico reforçado. Disjuntor trocado.',
-    fotosAntes: ['https://images.unsplash.com/photo-1621905252507-b354bc25edac?w=400&auto=format&fit=crop&q=60'],
-    fotosDepois: ['https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=400&auto=format&fit=crop&q=60'],
-    assinaturaCliente: 'Roberto S. Santos',
-    dataFinalizacao: '2026-05-21T15:30:00Z'
-  },
-  {
-    id: 'ate-2',
-    clienteId: 'cli-3',
-    orcamentoId: 'orc-2',
-    tecnicoResponsavel: 'Carlos Silva (Eletricista)',
-    dataAgendada: '2026-06-08',
-    horario: '09:00',
-    status: 'Agendado',
-    descricaoAtendimento: 'Montagem de infraestrutura e início da passagem dos condutores elétricos na garagem do Morumbi.',
-    observacoesTecnicas: 'Separar eletroduto de PVC rígido paralelo e braçadeiras reforçadas.',
-    fotosAntes: [],
-    fotosDepois: [],
-    assinaturaCliente: '',
-    dataFinalizacao: ''
-  },
-  {
-    id: 'ate-3',
-    clienteId: 'cli-2',
-    orcamentoId: '',
-    tecnicoResponsavel: 'Carlos Silva (Eletricista)',
-    dataAgendada: '2026-06-04',
-    horario: '15:30',
-    status: 'Em andamento',
-    descricaoAtendimento: 'Visita emergencial para avaliar aquecimento excessivo e desarmamento automático de disjuntor principal dos condensadores e freezers do mercado.',
-    observacoesTecnicas: 'Levar cabo reserva flexível de 16mm e disjuntor tripolar de 63A Curva C comercial.',
-    fotosAntes: [],
-    fotosDepois: [],
-    assinaturaCliente: '',
-    dataFinalizacao: ''
-  }
-];
+export const DEFAULT_APPOINTMENTS: Atendimento[] = [];
 
 // Seed Public Requests / Solicitações
-export const DEFAULT_SOLICITATIONS: SolicitacaoPublica[] = [
-  {
-    id: 'sol-1',
-    nome: 'Giselle Moura Antunes',
-    whatsapp: '(11) 98012-3456',
-    endereco: 'Rua Bela Cintra, 2040',
-    bairro: 'Consolação',
-    cidade: 'São Paulo',
-    tipoServico: 'Instalação de Chuveiro Elétrico',
-    descricaoProblema: 'Comprei uma ducha nova e preciso que faça a instalação correta e troque o fio que parece ser meio fino demais.',
-    foto: '',
-    melhorHorario: 'Manhã (08:00 às 12:00)',
-    dataSolicitacao: '2026-06-03 16:30',
-    status: 'Novo'
-  },
-  {
-    id: 'sol-2',
-    nome: 'Dra. Gisela Albuquerque',
-    whatsapp: '(84) 99122-3844',
-    endereco: 'Rua Potengi, 450',
-    bairro: 'Petrópolis',
-    cidade: 'Natal',
-    tipoServico: 'Instalação de carregador veicular Wallbox',
-    descricaoProblema: 'Comprei um novo carro elétrico e necessito fazer a instalação técnica e infraestrutura dedicada para o Wallbox na minha vaga de garagem.',
-    foto: '',
-    melhorHorario: 'Tarde (13:00 às 18:00)',
-    dataSolicitacao: '2026-06-04 02:15',
-    status: 'Em atendimento'
-  }
-];
+export const DEFAULT_SOLICITATIONS: SolicitacaoPublica[] = [];
 
 // Safe Storage Utility to bypass iframe/third-party cookie/localstorage restrictions on mobile viewports
 const isStorageAvailable = (() => {
@@ -767,10 +439,9 @@ export class AgeEletricaDB {
         });
       } else {
         onSnapshot(collection(db, colInfo.name), (snapshot) => {
-          if (snapshot.empty) return;
           this.syncingCloud = true;
           try {
-            const listData = snapshot.docs.map(d => d.data());
+            const listData = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
             SafeStorage.setItem(colInfo.name, JSON.stringify(listData));
             this.notifySubscribers();
           } catch (e) {

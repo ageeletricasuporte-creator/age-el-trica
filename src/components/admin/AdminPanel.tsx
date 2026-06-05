@@ -124,7 +124,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
     setLoginError('');
 
     if (!loginEmail || !loginPassword) {
-      setLoginError('Por favor, preencha todos os campos do terminal!');
+      setLoginError('Por favor, preencha todos os campos!');
       return;
     }
 
@@ -323,7 +323,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
           >
             ← VOLTAR À PÁGINA INICIAL
           </button>
-          <span>ÁREA ADMINISTRATIVA PRIVADA</span>
+          <span>SISTEMA INTERNO AGE ELÉTRICA</span>
         </header>
 
         {/* Center panel */}
@@ -416,19 +416,19 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
                 <span className="p-1 px-1.5 bg-zinc-900 text-amber-500 font-black text-xs rounded border border-zinc-550/20 italic tracking-widest inline-block mb-3">
                   ⚡ AGE ELÉTRICA
                 </span>
-                <h1 className="text-white text-xl font-black uppercase tracking-tight">Painel de Engenharia</h1>
-                <p className="text-zinc-500 text-[11px] leading-relaxed mt-1">Insira suas chaves funcionais para faturamento de wallbox, agendas e laudos técnicos.</p>
+                <h1 className="text-white text-xl font-black uppercase tracking-tight">Login do Sistema</h1>
+                <p className="text-zinc-500 text-[11px] leading-relaxed mt-1">Insira seus dados de acesso cadastrados para entrar no aplicativo de gestão.</p>
               </div>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
                 {loginError && (
-                  <div className="bg-red-500/10 border border-red-505/20 text-red-400 p-3 rounded-xl font-semibold leading-relaxed">
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl font-semibold leading-relaxed">
                     ⚠️ {loginError}
                   </div>
                 )}
 
                 <div>
-                  <label className="text-zinc-400 font-mono block mb-1">E-mail Corporativo</label>
+                  <label className="text-zinc-400 font-mono block mb-1">E-mail</label>
                   <input
                     type="email"
                     value={loginEmail}
@@ -440,7 +440,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
                 </div>
 
                 <div>
-                  <label className="text-zinc-400 font-mono block mb-1">Chave de Segurança / Senha</label>
+                  <label className="text-zinc-400 font-mono block mb-1">Senha de Acesso</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-zinc-650 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
@@ -458,7 +458,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
                   type="submit"
                   className="w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-3.5 rounded-xl transition text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  LIBERAR ACESSO <ChevronRight className="w-4 h-4 text-black" strokeWidth={3} />
+                  Entrar no App <ChevronRight className="w-4 h-4 text-black" strokeWidth={3} />
                 </button>
               </form>
             </div>
@@ -467,7 +467,7 @@ export function AdminPanel({ onBackToSite }: AdminPanelProps) {
 
         {/* Footer */}
         <footer className="text-center text-[10px] text-zinc-700 font-mono z-15 no-print">
-          PLATAFORMA PRIVADA • ENGENHARIA CIVIL E ELÉTRICA NBR 5410 • CFT ATIVO
+          Aplicativo de Gestão AGE Elétrica • NBR 5410
         </footer>
 
       </div>
