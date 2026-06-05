@@ -366,12 +366,6 @@ export function PublicSite({
           {/* Action action button */}
           <div className="flex items-center gap-2">
             <button
-              onClick={onNavigateToAdmin}
-              className="px-3 sm:px-4 py-1.5 bg-neutral-900 border border-zinc-800 hover:border-amber-500/40 text-zinc-400 hover:text-white text-[8.5px] sm:text-[9.5px] font-black uppercase tracking-widest rounded-full transition-all duration-300 hover:bg-amber-500/10 cursor-pointer font-display"
-            >
-              Terminal
-            </button>
-            <button
               onClick={() => {
                 setPublicTab('contato');
                 setTimeout(() => {
