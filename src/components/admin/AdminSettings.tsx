@@ -58,7 +58,7 @@ export function AdminSettings({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Client-side automatic image compression and scaling optimizer to prevent storage quota limits
+  // Client-side automatic image compression and scaling optimizer to prevent storage quota and Firestore limits
   const compressAndResizeImage = (
     file: File,
     maxWidth: number,
@@ -97,25 +97,60 @@ export function AdminSettings({
             height = maxHeight;
           }
 
-          canvas.width = width;
-          canvas.height = height;
+          // We want the resulting base64 dataUrl string to be under ~220KB to avoid any local storage/Firestore upload issues.
+          // Let's set a target length of 220,000 characters.
+          const maxUrlLength = 220000;
+          let currentWidth = width;
+          let currentHeight = height;
+          let currentQuality = quality;
+          let dataUrl = '';
 
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(e.target?.result as string);
-            return;
+          // Let's iterate if necessary to find a clean balance between size and quality
+          for (let iter = 0; iter < 4; iter++) {
+            canvas.width = currentWidth;
+            canvas.height = currentHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              resolve(e.target?.result as string);
+              return;
+            }
+
+            // Render scaled image smoothly
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, currentWidth, currentHeight);
+
+            // Support transparency for PNG, WebP or GIF, otherwise use JPEG
+            const isTransparentCompatible = file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/webp';
+            
+            let outputFormat = 'image/jpeg';
+            if (isTransparentCompatible) {
+              // Try to use image/webp because it supports alpha transparency AND quality compression.
+              const testCanvas = document.createElement('canvas');
+              testCanvas.width = 1;
+              testCanvas.height = 1;
+              const testUrl = testCanvas.toDataURL('image/webp');
+              if (testUrl.indexOf('data:image/webp') === 0) {
+                outputFormat = 'image/webp';
+              } else {
+                outputFormat = 'image/png'; // Fallback
+              }
+            }
+
+            const encodeQuality = outputFormat === 'image/png' ? undefined : currentQuality;
+            dataUrl = canvas.toDataURL(outputFormat, encodeQuality);
+
+            // If it's small enough, or if we cannot compress/shrink further, stop
+            if (dataUrl.length < maxUrlLength) {
+              break;
+            }
+
+            // Otherwise, scale down by 15% and reduce quality by 15%
+            currentWidth = Math.round(currentWidth * 0.85);
+            currentHeight = Math.round(currentHeight * 0.85);
+            currentQuality = Math.max(0.4, currentQuality - 0.15);
           }
 
-          // Render scaled image smoothly
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Support transparency for PNG, WebP or GIF, otherwise use JPEG
-          const isTransparentCompatible = file.type === 'image/png' || file.type === 'image/gif' || file.type === 'image/webp';
-          const outputFormat = isTransparentCompatible ? 'image/png' : 'image/jpeg';
-          
-          const dataUrl = canvas.toDataURL(outputFormat, outputFormat === 'image/jpeg' ? quality : undefined);
           resolve(dataUrl);
         };
         img.onerror = () => {

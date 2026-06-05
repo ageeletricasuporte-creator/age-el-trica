@@ -741,32 +741,51 @@ export class AgeEletricaDB {
     ];
 
     collectionsToSync.forEach(colInfo => {
-      onSnapshot(collection(db, colInfo.name), (snapshot) => {
-        if (snapshot.empty) return;
-        this.syncingCloud = true;
-        try {
-          if (colInfo.isSingle) {
-            const docData = snapshot.docs[0]?.data();
+      if (colInfo.isSingle) {
+        // Listen specifically to 'cfg-default' for config to avoid sorting and rollback issues with multiple documents
+        const docRef = doc(db, colInfo.name, 'cfg-default');
+        onSnapshot(docRef, (docSnap) => {
+          if (!docSnap.exists()) return;
+          this.syncingCloud = true;
+          try {
+            const docData = docSnap.data();
             if (docData) {
               SafeStorage.setItem(colInfo.name, JSON.stringify(docData));
             }
-          } else {
+            this.notifySubscribers();
+          } catch (e) {
+            console.error(`Error onSnapshot sync for document ${colInfo.name}/cfg-default:`, e);
+          } finally {
+            this.syncingCloud = false;
+          }
+        }, (error) => {
+          try {
+            handleFirestoreError(error, OperationType.GET, `${colInfo.name}/cfg-default`);
+          } catch (e) {
+            console.error(`Subscription error handled for document ${colInfo.name}/cfg-default:`, e);
+          }
+        });
+      } else {
+        onSnapshot(collection(db, colInfo.name), (snapshot) => {
+          if (snapshot.empty) return;
+          this.syncingCloud = true;
+          try {
             const listData = snapshot.docs.map(d => d.data());
             SafeStorage.setItem(colInfo.name, JSON.stringify(listData));
+            this.notifySubscribers();
+          } catch (e) {
+            console.error(`Error onSnapshot sync for ${colInfo.name}:`, e);
+          } finally {
+            this.syncingCloud = false;
           }
-          this.notifySubscribers();
-        } catch (e) {
-          console.error(`Error onSnapshot sync for ${colInfo.name}:`, e);
-        } finally {
-          this.syncingCloud = false;
-        }
-      }, (error) => {
-        try {
-          handleFirestoreError(error, OperationType.GET, colInfo.name);
-        } catch (e) {
-          console.error(`Subscription error handled for ${colInfo.name}:`, e);
-        }
-      });
+        }, (error) => {
+          try {
+            handleFirestoreError(error, OperationType.GET, colInfo.name);
+          } catch (e) {
+            console.error(`Subscription error handled for ${colInfo.name}:`, e);
+          }
+        });
+      }
     });
   }
 

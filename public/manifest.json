@@ -1,0 +1,16 @@
+{
+  "short_name": "AGE Elétrica",
+  "name": "AGE Elétrica - Gestão Interna",
+  "icons": [
+    {
+      "src": "/src/assets/logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#050505",
+  "theme_color": "#f2b705",
+  "display": "standalone",
+  "orientation": "portrait"
+}
