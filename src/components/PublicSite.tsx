@@ -41,7 +41,11 @@ import {
   Key,
   Facebook,
   Share2,
-  Star
+  Star,
+  Send,
+  Bot,
+  User,
+  Loader
 } from 'lucide-react';
 import { Servico, ConfiguracaoEmpresa, Cliente } from '../types';
 import { AgeEletricaDB } from '../dataSeed';
@@ -133,6 +137,9 @@ export function PublicSite({
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedServiceForModal, setSelectedServiceForModal] = useState<Servico | null>(null);
 
+  // Active form tab for contact area
+  const [activeFormTab, setActiveFormTab] = useState<'orcamento' | 'agendamento'>('agendamento');
+
   // Contact form submission states
   const [contactForm, setContactForm] = useState({
     nome: '',
@@ -146,6 +153,39 @@ export function PublicSite({
   });
   const [contactSuccess, setContactSuccess] = useState(false);
   const [submittedNum, setSubmittedNum] = useState('');
+
+  // Pristine Service Scheduling Form States
+  const [scheduleForm, setScheduleForm] = useState({
+    nome: '',
+    whatsapp: '',
+    email: '',
+    bairro: '',
+    endereco: '',
+    tipoServico: '',
+    dataDesejada: '',
+    horarioDesejado: 'Qualquer Horário',
+    observacoes: '',
+    urgencia: 'Média',
+    categoria: 'Instalações'
+  });
+  const [scheduleSuccess, setScheduleSuccess] = useState(false);
+  const [scheduleSubmittedNum, setScheduleSubmittedNum] = useState('');
+
+  // AI Classification and Qualification states
+  const [isClassifying, setIsClassifying] = useState(false);
+  const [classificationSuccess, setClassificationSuccess] = useState(false);
+
+  // AI Chatbot states
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; date: Date; isGreen?: boolean; isWhatsApp?: boolean }>>([
+    {
+      sender: 'bot',
+      text: 'Olá! Sou o Assistente Inteligente da AGE Elétrica. ⚡\nComo posso ajudar você hoje com seus serviços elétricos, automação residencial ou agendamento de orçamento?',
+      date: new Date()
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatTyping, setIsChatTyping] = useState(false);
 
   // Interactive App-Cliente States
   const [loginPhone, setLoginPhone] = useState('');
@@ -245,6 +285,203 @@ export function PublicSite({
 
   const getWhatsAppSubmissionLink = (id: string, name: string, service: string) => {
     const textMsg = `Olá, equipe AGE Elétrica! Enviei minha solicitação de orçamento pelo site. (Protocolo: AGE-SOL-${id}).\nNome: ${name}\nServiço: ${service}`;
+    return `https://wa.me/55${config.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(textMsg)}`;
+  };
+
+  // Pristine Handler: Submit Appointment Booking & Securely Deliver Email Reports
+  const handleScheduleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!scheduleForm.nome || !scheduleForm.whatsapp) {
+      alert('Por favor, preencha pelo menos o Nome Completo e o WhatsApp!');
+      return;
+    }
+
+    // 1. Log a solicitation row into the Firestore-bound class manager
+    const summaryNotes = `AGENDAMENTO DE SERVIÇO:
+- Bairro: ${scheduleForm.bairro}
+- Endereço / Ref: ${scheduleForm.endereco}
+- Urgência Determinada por IA: ${scheduleForm.urgencia}
+- Categoria Geral: ${scheduleForm.categoria}
+- Observações: ${scheduleForm.observacoes || 'Nenhuma'}
+- Data Solicitada: ${scheduleForm.dataDesejada}
+- Horário: ${scheduleForm.horarioDesejado}`;
+
+    const solicitation = AgeEletricaDB.addSolicitacao({
+      nome: scheduleForm.nome,
+      whatsapp: scheduleForm.whatsapp,
+      endereco: scheduleForm.endereco || 'Não informado',
+      bairro: scheduleForm.bairro || 'Não informado',
+      cidade: 'Natal',
+      tipoServico: scheduleForm.tipoServico || 'Serviço Elétrico Geral',
+      descricaoProblema: summaryNotes,
+      foto: '',
+      melhorHorario: scheduleForm.horarioDesejado
+    });
+
+    const protocolId = solicitation.id.replace('sol-', '');
+    setScheduleSubmittedNum(protocolId);
+    setScheduleSuccess(true);
+
+    // 2. Dispatch secure server-to-server HTML email dispatch report
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: scheduleForm.nome,
+          whatsapp: scheduleForm.whatsapp,
+          email: scheduleForm.email || 'Não informado',
+          bairro: scheduleForm.bairro || 'Não informado',
+          endereco: scheduleForm.endereco || 'Não informado',
+          tipoServico: scheduleForm.tipoServico || 'Serviço Elétrico Geral',
+          dataDesejada: scheduleForm.dataDesejada || 'Não fornecida',
+          horarioDesejado: scheduleForm.horarioDesejado,
+          observacoes: `Urência: ${scheduleForm.urgencia} | Categoria: ${scheduleForm.categoria}\n\nObservações Adicionais: ${scheduleForm.observacoes || 'Nenhuma'}`
+        })
+      });
+    } catch (err) {
+      console.error('Falha de rede para disparar e-mail:', err);
+    }
+
+    // 3. Clear schedule state cleanly
+    setScheduleForm({
+      nome: '',
+      whatsapp: '',
+      email: '',
+      bairro: '',
+      endereco: '',
+      tipoServico: '',
+      dataDesejada: '',
+      horarioDesejado: 'Qualquer Horário',
+      observacoes: '',
+      urgencia: 'Média',
+      categoria: 'Instalações'
+    });
+    setClassificationSuccess(false);
+  };
+
+  // Pristine Handler: AI Auto-Classification & Qualification
+  const handleAIClassification = async () => {
+    const textToClassify = scheduleForm.observacoes || contactForm.descricaoProblema;
+    if (!textToClassify || !textToClassify.trim()) {
+      alert('Por favor, descreva em poucas palavras o problema elétrico no campo de observações para a inteligência analisar.');
+      return;
+    }
+
+    setIsClassifying(true);
+    setClassificationSuccess(false);
+
+    try {
+      const response = await fetch('/api/classify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: textToClassify })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha técnica no serviço de classificação de IA');
+      }
+
+      const parsed = await response.json();
+      if (parsed && !parsed.error) {
+        // Apply structured parameters to the scheduling form
+        setScheduleForm(prev => ({
+          ...prev,
+          tipoServico: parsed.tipoServico || prev.tipoServico,
+          urgencia: parsed.urgencia || prev.urgencia,
+          categoria: parsed.categoria || prev.categoria
+        }));
+
+        // Mirror service type to contact form to streamline both screens
+        setContactForm(prev => ({
+          ...prev,
+          tipoServico: parsed.tipoServico || prev.tipoServico
+        }));
+
+        setClassificationSuccess(true);
+      }
+    } catch (err) {
+      console.error('Erro na classificação automática:', err);
+    } finally {
+      setIsClassifying(false);
+    }
+  };
+
+  // Pristine Handler: Chatbot Interactivity & Answers Dispatch
+  const handleSendChatMessage = async (textToSend?: string) => {
+    const msgText = textToSend || chatInput;
+    if (!msgText || !msgText.trim()) return;
+
+    // Append user message
+    const userMsg = { sender: 'user' as const, text: msgText, date: new Date() };
+    const updatedMessages = [...chatMessages, userMsg];
+    setChatMessages(updatedMessages);
+
+    if (!textToSend) {
+      setChatInput('');
+    }
+
+    setIsChatTyping(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({
+            sender: m.sender,
+            text: m.text
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na conexão com assistente virtual');
+      }
+
+      const data = await response.json();
+      const botReply = data.text || 'Desculpe, não consegui obter resposta da minha central de IA no momento. Por favor tente novamente.';
+
+      // Determine colors based on keywords
+      const replyLower = botReply.toLowerCase();
+      const isGreen = replyLower.includes('carregador') || 
+                      replyLower.includes('veicular') || 
+                      replyLower.includes('solar') || 
+                      replyLower.includes('energia limpa') || 
+                      replyLower.includes('wallbox') || 
+                      replyLower.includes('fotovoltaica');
+      const isWhatsApp = replyLower.includes('whatsapp') || 
+                         replyLower.includes('contato') || 
+                         replyLower.includes('chamar');
+
+      setChatMessages(prev => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: botReply,
+          date: new Date(),
+          isGreen,
+          isWhatsApp
+        }
+      ]);
+    } catch (err) {
+      console.error('Erro na IA do Chat:', err);
+      setChatMessages(prev => [
+        ...prev,
+        {
+          sender: 'bot',
+          text: 'Estou com uma breve interrupção de conexão de rede ou falta de chave de API. Se preferir, fale diretamente com nossa central de especialistas pelo botão verde do WhatsApp! ⚡',
+          date: new Date(),
+          isWhatsApp: true
+        }
+      ]);
+    } finally {
+      setIsChatTyping(false);
+    }
+  };
+
+  const getWhatsAppBookingLink = (id: string, name: string, service: string) => {
+    const textMsg = `Olá equipe AGE! Fiz meu agendamento pelo site. (Código: AGE-SCH-${id}).\nNome: ${name}\nServiço Solicitado: ${service}`;
     return `https://wa.me/55${config.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(textMsg)}`;
   };
 
@@ -1274,44 +1511,262 @@ export function PublicSite({
 
                 {/* Form layout */}
                 <div className="lg:col-span-7 bg-neutral-900/[0.15] border border-white/[0.04] p-8 rounded-3xl relative shadow-2xl space-y-6">
-                  <div>
-                    <h3 className="text-xl font-bold uppercase tracking-tight text-white">Solicitar Orçamento Online</h3>
-                    <p className="text-zinc-500 text-xs mt-1">Nossa equipe técnica fará um diagnóstico preliminar do seu caso para envio de proposta eletrônica.</p>
+                  {/* Selector Header inside Form */}
+                  <div className="grid grid-cols-2 p-1.5 bg-black/45 rounded-xl border border-white/[0.04]">
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('agendamento')}
+                      className={`py-2.5 px-3 text-[10px] tracking-widest uppercase font-mono font-black rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${activeFormTab === 'agendamento' ? 'bg-[#f2b705] text-black shadow-md font-bold' : 'text-zinc-450 hover:text-white'}`}
+                    >
+                      <Calendar className="w-3.5 h-3.5" /> Agendar Visita (IA)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('orcamento')}
+                      className={`py-2.5 px-3 text-[10px] tracking-widest uppercase font-mono font-black rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${activeFormTab === 'orcamento' ? 'bg-[#f2b705] text-black shadow-md' : 'text-zinc-450 hover:text-white'}`}
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Pedir Orçamento
+                    </button>
                   </div>
 
-                  {contactSuccess ? (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-black/40 border border-[#f2b705]/20 p-8 rounded-2xl text-center flex flex-col items-center space-y-5"
-                    >
-                      <CheckCircle className="w-14 h-14 text-emerald-400 animate-bounce" />
-                      <div className="space-y-2">
-                        <h4 className="text-base font-bold text-white uppercase tracking-wider block">SOLICITAÇÃO PROTOCOLADA NO CLOUD!</h4>
-                        <p className="text-zinc-450 text-xs text-zinc-400 max-w-md leading-relaxed">
-                          Sua manifestação foi registrada no módulo de solicitações pendentes sob o protocolo permanente <strong className="text-[#f2b705]">AGE-SOL-{submittedNum}</strong>. Vamos analisar imediatamente.
-                        </p>
+                  {activeFormTab === 'agendamento' ? (
+                    <div>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-extrabold uppercase tracking-tight text-white flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-[#f2b705] animate-pulse" /> Agendamento de Serviços com IA
+                        </h3>
+                        <p className="text-zinc-500 text-xs mt-1">Insira suas informações de contato e visita. Descreva livremente o problema elétrico no campo observações e nossa IA preencherá automaticamente as qualificações abaixo.</p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
-                        <a
-                          href={getWhatsAppSubmissionLink(submittedNum, 'Cliente', 'Solicitação pelo Site')}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="grow bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(16,185,129,0.2)] border border-emerald-400/20"
+                      {scheduleSuccess ? (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-black/40 border border-[#f2b705]/20 p-8 rounded-2xl text-center flex flex-col items-center space-y-5"
                         >
-                          <MessageSquare className="w-4 h-4 text-white fill-white" /> Notificar em WhatsApp
-                        </a>
-                        <button
-                          onClick={() => setContactSuccess(false)}
-                          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 px-5 rounded-xl transition text-xs cursor-pointer border border-white/[0.05]"
-                        >
-                          Nova Solicitação
-                        </button>
-                      </div>
-                    </motion.div>
+                          <CheckCircle className="w-14 h-14 text-emerald-400 animate-bounce" />
+                          <div className="space-y-2">
+                            <h4 className="text-base font-bold text-white uppercase tracking-wider block">AGENDAMENTO ENVIADO COM SUCESSO!</h4>
+                            <p className="text-zinc-400 text-xs max-w-sm mx-auto leading-relaxed">
+                              A AGE Elétrica recebeu sua solicitação e em breve entrará em contato pelo WhatsApp informado. O código do protocolo é <span className="text-[#f2b705] font-bold font-mono">AGE-SCH-{scheduleSubmittedNum}</span>.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+                            <a
+                              href={getWhatsAppBookingLink(scheduleSubmittedNum, 'Cliente', 'Agendamento pela AGE Elétrica')}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="grow bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(16,185,129,0.2)] border border-emerald-400/20"
+                            >
+                              <MessageSquare className="w-4 h-4 text-white fill-white" /> Validar no WhatsApp
+                            </a>
+                            <button
+                              onClick={() => setScheduleSuccess(false)}
+                              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 px-5 rounded-xl transition text-xs cursor-pointer border border-white/[0.05]"
+                            >
+                              Novo Agendamento
+                            </button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <form onSubmit={handleScheduleSubmit} className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">Nome Completo *</label>
+                              <input
+                                type="text"
+                                required
+                                value={scheduleForm.nome}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, nome: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white uppercase font-sans tracking-wide"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">WhatsApp (Central de Contato) *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="DDD + Número (Ex: 84999998888)"
+                                value={scheduleForm.whatsapp}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, whatsapp: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="sm:col-span-2 space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Endereço de Realização com Ponto de Referência *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Rua, número, complemento e pontos de referência"
+                                value={scheduleForm.endereco}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, endereco: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white uppercase font-sans"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Bairro em Natal/RN *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Petrópolis, Ponta Negra, Lagoa Nova, etc."
+                                value={scheduleForm.bairro}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, bairro: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white uppercase font-sans"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Endereço de E-mail (Opcional)</label>
+                              <input
+                                type="email"
+                                placeholder="Ex: seuemail@provedor.com"
+                                value={scheduleForm.email}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, email: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white font-sans"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Especialidade / Serviço Técnico Solicitado *</label>
+                              <select
+                                required
+                                value={scheduleForm.tipoServico}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, tipoServico: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white uppercase font-sans tracking-wide"
+                              >
+                                <option value="">Selecione ou clique em Inteligência Artificial...</option>
+                                {services.map(s => (
+                                  <option key={s.id} value={s.nomeServico}>{s.nomeServico}</option>
+                                ))}
+                                <option value="Outro">Outro serviço técnico elétrico</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Data Desejada para o Atendimento *</label>
+                              <input
+                                type="date"
+                                required
+                                value={scheduleForm.dataDesejada}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, dataDesejada: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white font-mono"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-500 block">Horário de Preferência *</label>
+                              <select
+                                required
+                                value={scheduleForm.horarioDesejado}
+                                onChange={(e) => setScheduleForm({ ...scheduleForm, horarioDesejado: e.target.value })}
+                                className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3 text-xs text-white uppercase font-sans tracking-wide"
+                              >
+                                <option value="Manhã (08:00 às 12:00)">Manhã (08:00 às 12:00)</option>
+                                <option value="Tarde (13:00 às 18:00)">Tarde (13:00 às 18:00)</option>
+                                <option value="Noite (Suporte Crítico)">Noite (Suporte Crítico)</option>
+                                <option value="Qualquer Horário">Qualquer Horário (Indiferente)</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <label className="text-[9px] uppercase font-bold tracking-widest text-[#f2b705] block">Descreva seu Problema / Observações *</label>
+                              <button
+                                type="button"
+                                onClick={handleAIClassification}
+                                disabled={isClassifying}
+                                className="px-3 py-1 bg-[#f2b705]/10 hover:bg-[#f2b705]/20 border border-[#f2b705]/30 text-[#f2b705] rounded-lg text-[9px] font-mono uppercase tracking-wider flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+                              >
+                                {isClassifying ? (
+                                  <>
+                                    <Loader className="w-3 h-3 animate-spin text-[#f2b705]" /> Classificando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-3 h-3 text-[#f2b705]" /> Qualificar com IA
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                            <textarea
+                              rows={3}
+                              required
+                              value={scheduleForm.observacoes}
+                              onChange={(e) => setScheduleForm({ ...scheduleForm, observacoes: e.target.value })}
+                              className="w-full bg-[#111] border border-white/[0.05] focus:border-[#f2b705]/30 focus:outline-none rounded-lg py-2.5 px-3.5 text-xs text-white font-sans placeholder:text-zinc-700"
+                              placeholder="Fale detalhadamente sobre o curto-circuito, tomadas paradas, troca de fiação ou instalação de ar condicionado para qualificarmos seu ticket..."
+                            />
+                          </div>
+
+                          {classificationSuccess && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="p-3 bg-[#f2b705]/10 border border-[#f2b705]/20 rounded-xl text-[11px] text-[#f2b705] flex items-center gap-2"
+                            >
+                              <Sparkles className="w-4 h-4 shrink-0 text-[#f2b705]" />
+                              <span>
+                                ✨ <strong>IA AGE Qualificou com Sucesso:</strong> Demanda classificada como <strong>{scheduleForm.categoria}</strong> com Urgência <strong>{scheduleForm.urgencia}</strong>. O tipo correspondente foi pré-selecionado no formulário acima.
+                              </span>
+                            </motion.div>
+                          )}
+
+                          <button
+                            type="submit"
+                            className="w-full py-4 bg-[#f2b705] text-black text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[#ffca03] transition-all shadow-[0_5px_20px_rgba(242,183,5,0.2)] flex items-center justify-center gap-2 cursor-pointer"
+                          >
+                            Finalizar Agendamento Técnico <Zap className="w-3.5 h-3.5 fill-black text-black" />
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   ) : (
-                    <form onSubmit={handleContactSubmit} className="space-y-4">
+                    <div>
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold uppercase tracking-tight text-white animate-pulse">Solicitar Orçamento Online</h3>
+                        <p className="text-zinc-500 text-xs mt-1">Nossa equipe técnica fará um diagnóstico preliminar do seu caso para envio de proposta eletrônica.</p>
+                      </div>
+
+                      {contactSuccess ? (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="bg-black/40 border border-[#f2b705]/20 p-8 rounded-2xl text-center flex flex-col items-center space-y-5"
+                        >
+                          <CheckCircle className="w-14 h-14 text-emerald-400 animate-bounce" />
+                          <div className="space-y-2">
+                            <h4 className="text-base font-bold text-white uppercase tracking-wider block">SOLICITAÇÃO PROTOCOLADA NO CLOUD!</h4>
+                            <p className="text-zinc-450 text-xs text-zinc-400 max-w-md leading-relaxed">
+                              Sua manifestação foi registrada no módulo de solicitações pendentes sob o protocolo permanente <strong className="text-[#f2b705]">AGE-SOL-{submittedNum}</strong>. Vamos analisar imediatamente.
+                            </p>
+                          </div>
+
+                          <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+                            <a
+                              href={getWhatsAppSubmissionLink(submittedNum, 'Cliente', 'Solicitação pelo Site')}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="grow bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(16,185,129,0.2)] border border-[#f2b705]/20"
+                            >
+                              <MessageSquare className="w-4 h-4 text-white fill-white" /> Notificar em WhatsApp
+                            </a>
+                            <button
+                              onClick={() => setContactSuccess(false)}
+                              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 px-5 rounded-xl transition text-xs cursor-pointer border border-white/[0.05]"
+                            >
+                              Nova Solicitação
+                            </button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <form onSubmit={handleContactSubmit} className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="text-[9px] uppercase font-bold tracking-widest text-zinc-450 text-zinc-500 block">Seu Nome *</label>
@@ -1415,6 +1870,8 @@ export function PublicSite({
                         Enviar Solicitação à AGE Elétrica <Zap className="w-3.5 h-3.5 fill-black text-black" />
                       </button>
                     </form>
+                  )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -2430,6 +2887,167 @@ export function PublicSite({
           </div>
         )}
       </AnimatePresence>
+
+      {/* 8. Pristine Floating AI Assistant Client Chat Widget */}
+      <div className="fixed bottom-6 right-6 z-50 font-sans">
+        <AnimatePresence>
+          {isChatOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-80 sm:w-96 h-[500px] bg-[#090909]/95 border border-white/[0.08] backdrop-blur-xl rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col mb-4"
+            >
+              {/* Header */}
+              <div className="p-4 bg-gradient-to-r from-neutral-900 to-black border-b border-white/[0.04] flex justify-between items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-[#f2b705]/10 rounded-xl flex items-center justify-center border border-[#f2b705]/20">
+                    <Sparkles className="w-4 h-4 text-[#f2b705] animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="text-white text-xs font-black uppercase tracking-wider">Suporte Inteligente (IA)</h4>
+                    <span className="text-[9px] text-[#f2b705] font-mono block">AGE ELÉTRICA ONLINE</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="p-1 px-2 hover:bg-white/5 text-zinc-400 hover:text-white rounded-lg transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Chat messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-xs scrollbar-thin scrollbar-thumb-zinc-800">
+                {chatMessages.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex gap-2.5 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {m.sender === 'bot' && (
+                      <div className="w-6 h-6 rounded-lg bg-zinc-900 text-[#f2b705] flex items-center justify-center shrink-0 border border-white/[0.04]">
+                        <Bot className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                    <div className="max-w-[80%] flex flex-col gap-1.5">
+                      <div
+                        className={`p-3 rounded-2xl leading-relaxed whitespace-pre-wrap selection:bg-[#f2b705]/30 ${
+                          m.sender === 'user'
+                            ? 'bg-[#f2b705] text-black font-semibold rounded-tr-none'
+                            : m.isGreen
+                            ? 'bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 rounded-tl-none'
+                            : 'bg-zinc-900/60 text-zinc-200 border border-white/[0.03] rounded-tl-none'
+                        }`}
+                      >
+                        {m.text}
+
+                        {m.isWhatsApp && (
+                          <div className="mt-3 pt-2.5 border-t border-white/[0.05]">
+                            <a
+                              href={`https://wa.me/55${config.whatsapp.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 py-1.5 px-3 bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 hover:border-emerald-500 text-emerald-400 hover:text-white rounded-lg text-[10px] font-mono uppercase font-black tracking-wider transition-all"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 fill-current" /> Falar com Especialista
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[8px] text-zinc-500 font-mono self-end">
+                        {m.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+
+                {isChatTyping && (
+                  <div className="flex gap-2.5 justify-start">
+                    <div className="w-6 h-6 rounded-lg bg-zinc-900 text-[#f2b705] flex items-center justify-center shrink-0 border border-white/[0.04]">
+                      <Bot className="w-3.5 h-3.5 animate-bounce" />
+                    </div>
+                    <div className="bg-zinc-900/40 text-zinc-400 border border-white/[0.03] p-3 rounded-2xl rounded-tl-none flex items-center gap-2">
+                      <Loader className="w-3 h-3 text-[#f2b705] animate-spin" />
+                      <span className="text-[10px] font-mono uppercase tracking-wider">Analisando infraestrutura...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Suggested Questions */}
+              <div className="px-4 py-2 border-t border-white/[0.03] bg-zinc-950/50 flex flex-wrap gap-1.5 overflow-x-auto whitespace-nowrap scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => handleSendChatMessage('Como funciona a instalação de Wallbox / carregadores de veículo? 🚗⚡')}
+                  className="py-1 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-white/[0.05] rounded-full text-[9px] text-[#f2b705] transition-colors uppercase tracking-tight cursor-pointer font-bold"
+                >
+                  🚗 Instalação de Wallbox
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendChatMessage('Instalação e manutenção de Chuveiro Elétrico e Disjuntores. ⚡🚿')}
+                  className="py-1 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-white/[0.05] rounded-full text-[9px] text-zinc-300 transition-colors uppercase tracking-tight cursor-pointer"
+                >
+                  ⚡ Chuveiro e Disjuntores
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendChatMessage('Automação residencial com Sonoff e Alexa. Por onde iniciar? 🏠💡')}
+                  className="py-1 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-white/[0.05] rounded-full text-[9px] text-[#f2b705] transition-colors uppercase tracking-tight cursor-pointer font-bold"
+                >
+                  🏠 Automação Sonoff
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendChatMessage('Como agendo um orçamento ou visita técnica pelo site? 🗓️📋')}
+                  className="py-1 px-2.5 bg-zinc-900 hover:bg-zinc-800 border border-white/[0.05] rounded-full text-[9px] text-zinc-300 transition-colors uppercase tracking-tight cursor-pointer"
+                >
+                  🗓️ Agendar no Site
+                </button>
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 bg-neutral-900/60 border-t border-white/[0.04] flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Pergunte sobre serviços ou agendamento..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSendChatMessage();
+                  }}
+                  className="flex-1 bg-[#111] border border-white/[0.05] rounded-xl px-3 py-2 text-xs text-white placeholder:text-zinc-600 focus:border-[#f2b705]/40 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSendChatMessage()}
+                  className="w-8 h-8 rounded-xl bg-[#f2b705] hover:bg-[#ffca03] text-black flex items-center justify-center shrink-0 cursor-pointer shadow-md transition-transform active:scale-95"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Toggle floating launcher button */}
+        <button
+          type="button"
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className={`relative group h-14 w-14 rounded-full bg-neutral-950 border text-white flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.65)] hover:-translate-y-0.5 cursor-pointer hover:shadow-[#f2b705]/10 ${
+            isChatOpen ? 'border-[#f2b705]/40 rotate-90' : 'border-[#f2b705]/20'
+          }`}
+        >
+          {isChatOpen ? <X className="w-5 h-5 text-white" /> : <Sparkles className="w-5 h-5 text-[#f2b705] animate-pulse" />}
+
+          {/* Badge saying 'IA' */}
+          {!isChatOpen && (
+            <span className="absolute -top-1 -right-1 bg-[#f2b705] text-black text-[7.5px] font-black uppercase font-mono px-1.5 py-0.5 rounded-full scale-95 border border-black shadow">
+              IA
+            </span>
+          )}
+        </button>
+      </div>
 
     </div>
   );
