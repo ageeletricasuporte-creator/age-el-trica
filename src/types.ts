@@ -152,6 +152,7 @@ export interface ConfiguracaoEmpresa {
   logoPdf?: string; // Exclusivo para PDFs (Orçamento e Recibo)
   logoPdfAgendamento?: string; // Exclusivo para o PDF de Agendamento de Visita
   logoPdfLaudo?: string; // Exclusivo para o PDF do Laudo Técnico de Obra
+  backendApiUrl?: string; // URL do servidor backend para integrar chats e orçamentos em sites externos (Vercel, GitHub Pages)
   favicon?: string; // Logomarca do Favicon (abas do navegador)
   bannerHero?: string; // Banner Hero do site público
   fotoSobre?: string; // Foto da seção Sobre do site público

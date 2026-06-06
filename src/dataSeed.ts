@@ -435,6 +435,26 @@ export class AgeEletricaDB {
           await setDoc(configRef, { logo: PREMIUM_LOGO_BASE64, logoPdf: PREMIUM_LOGO_BASE64 }, { merge: true });
         }
 
+        // Auto-register backendApiUrl in Firestore if accessed on Cloud Run instance
+        if (typeof window !== 'undefined') {
+          try {
+            const host = window.location.hostname;
+            const isVercel = host.endsWith('vercel.app') || host.includes('vercel') || host.includes('github.io');
+            const isCustomDomain = host.endsWith('ageeletrica.com') || host.endsWith('ageeletrica.com.br');
+            const isStaticDev = window.location.port === '5173';
+            
+            if (host && !isVercel && !isCustomDomain && !isStaticDev) {
+              const currentOrigin = window.location.origin;
+              if (cloudConfigData && (!cloudConfigData.backendApiUrl || cloudConfigData.backendApiUrl !== currentOrigin)) {
+                console.log(`Auto-registering backend API URL inside Cloud Config: ${currentOrigin}`);
+                await setDoc(configRef, { backendApiUrl: currentOrigin }, { merge: true });
+              }
+            }
+          } catch (err) {
+            console.error('Error auto-registering backend API URL in Firestore:', err);
+          }
+        }
+
         // Migrate cloud admin user's password from Admin@123 to 1234
         try {
           const userDocRef = doc(db, 'users', 'usr-1');

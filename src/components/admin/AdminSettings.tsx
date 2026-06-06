@@ -43,6 +43,7 @@ export function AdminSettings({
   const [logoPdfStr, setLogoPdfStr] = useState(config.logoPdf || '');
   const [logoPdfAgendamentoStr, setLogoPdfAgendamentoStr] = useState(config.logoPdfAgendamento || '');
   const [logoPdfLaudoStr, setLogoPdfLaudoStr] = useState(config.logoPdfLaudo || '');
+  const [backendApiUrlStr, setBackendApiUrlStr] = useState(config.backendApiUrl || '');
   const [faviconStr, setFaviconStr] = useState(config.favicon || '');
   const [bannerHeroStr, setBannerHeroStr] = useState(config.bannerHero || '');
   const [fotoSobreStr, setFotoSobreStr] = useState(config.fotoSobre || '');
@@ -332,6 +333,7 @@ export function AdminSettings({
       logoPdf: logoPdfStr,
       logoPdfAgendamento: logoPdfAgendamentoStr,
       logoPdfLaudo: logoPdfLaudoStr,
+      backendApiUrl: backendApiUrlStr,
       favicon: faviconStr,
       bannerHero: bannerHeroStr,
       fotoSobre: fotoSobreStr,
@@ -469,6 +471,20 @@ export function AdminSettings({
               placeholder="Ex: Akson Pereira"
             />
             <span className="text-[10px] text-zinc-500 font-mono mt-1 block">※ Esse nome será refletido na sua credencial e na assinatura técnica da plataforma de serviço.</span>
+          </div>
+
+          <div className="border-t border-zinc-900/60 pt-4">
+            <label className="text-xs text-zinc-400 block mb-1 font-bold text-amber-500">URL do Servidor Backend / API (Suporte para Vercel e Domínio Próprio)</label>
+            <input
+              type="text"
+              value={backendApiUrlStr}
+              onChange={(e) => setBackendApiUrlStr(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-2 px-3 text-xs text-white font-mono"
+              placeholder="Deixe em branco para detectar automaticamente ou cole a URL do Cloud Run"
+            />
+            <span className="text-[10px] text-zinc-400 font-mono mt-1 block leading-relaxed">
+              💡 <strong className="text-white">Dica:</strong> Se você utiliza o site estático no Vercel (<span className="text-amber-500 font-bold">ageeletrica.vercel.app</span>) ou no domínio próprio (<span className="text-amber-500 font-bold">www.ageeletrica.com</span>), esta URL permite que as funcionalidades de Inteligência Artificial (Chatbot e Classificador Automático de Orçamentos) acessem o servidor ativo com segurança.
+            </span>
           </div>
 
           <div className="border-t border-zinc-900 pt-4">

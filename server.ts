@@ -33,6 +33,19 @@ function getGeminiClient(): GoogleGenAI {
 
 app.use(express.json());
 
+// Enable native CORS middleware to support integrations in external sites (e.g., Vercel, GitHub Pages)
+app.use((req, res, next) => {
+  // Allow all origins to seamlessly support the custom domain ageeletrica.com and vercel previews
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // API: AI Assistant Q&A
 app.post("/api/chat", async (req, res) => {
   try {

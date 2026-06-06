@@ -340,7 +340,7 @@ export function PublicSite({
 
     // 2. Dispatch secure server-to-server HTML email dispatch report
     try {
-      await fetch('/api/send-email', {
+      await fetch(`${config.backendApiUrl || ''}/api/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -388,7 +388,7 @@ export function PublicSite({
     setClassificationSuccess(false);
 
     try {
-      const response = await fetch('/api/classify', {
+      const response = await fetch(`${config.backendApiUrl || ''}/api/classify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -444,7 +444,7 @@ export function PublicSite({
     setIsChatTyping(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch(`${config.backendApiUrl || ''}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
