@@ -49,6 +49,7 @@ import {
 } from 'lucide-react';
 import { Servico, ConfiguracaoEmpresa, Cliente } from '../types';
 import { AgeEletricaDB } from '../dataSeed';
+import { generateAppointmentPDF, generateTechnicalReportPDF } from '../lib/pdfGenerator';
 import defaultBannerImg from '../assets/images/electrician_hero_1780581241012.png';
 
 interface PublicSiteProps {
@@ -170,6 +171,7 @@ export function PublicSite({
   });
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [scheduleSubmittedNum, setScheduleSubmittedNum] = useState('');
+  const [lastSubmittedSchedule, setLastSubmittedSchedule] = useState<any | null>(null);
 
   // AI Classification and Qualification states
   const [isClassifying, setIsClassifying] = useState(false);
@@ -320,6 +322,20 @@ export function PublicSite({
 
     const protocolId = solicitation.id.replace('sol-', '');
     setScheduleSubmittedNum(protocolId);
+    setLastSubmittedSchedule({
+      nome: scheduleForm.nome,
+      whatsapp: scheduleForm.whatsapp,
+      email: scheduleForm.email,
+      bairro: scheduleForm.bairro,
+      endereco: scheduleForm.endereco,
+      tipoServico: scheduleForm.tipoServico || 'Serviço Elétrico Geral',
+      dataDesejada: scheduleForm.dataDesejada,
+      horarioDesejado: scheduleForm.horarioDesejado,
+      observacoes: scheduleForm.observacoes,
+      urgencia: scheduleForm.urgencia,
+      categoria: scheduleForm.categoria,
+      protocolId: protocolId
+    });
     setScheduleSuccess(true);
 
     // 2. Dispatch secure server-to-server HTML email dispatch report
@@ -1556,18 +1572,28 @@ export function PublicSite({
                             </p>
                           </div>
 
-                          <div className="flex flex-col sm:flex-row gap-3 w-full pt-2">
+                          <div className="flex flex-col gap-3 w-full pt-2">
                             <a
                               href={getWhatsAppBookingLink(scheduleSubmittedNum, 'Cliente', 'Agendamento pela AGE Elétrica')}
                               target="_blank"
                               rel="noreferrer"
-                              className="grow bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(16,185,129,0.2)] border border-emerald-400/20"
+                              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(16,185,129,0.2)] border border-emerald-400/20"
                             >
                               <MessageSquare className="w-4 h-4 text-white fill-white" /> Validar no WhatsApp
                             </a>
+
+                            {lastSubmittedSchedule && (
+                              <button
+                                onClick={() => generateAppointmentPDF(lastSubmittedSchedule, config)}
+                                className="w-full bg-[#f2b705] hover:bg-amber-500 text-black font-extrabold py-3 px-5 rounded-xl transition text-xs flex items-center justify-center gap-2 cursor-pointer shadow-[0_5px_15px_rgba(242,183,5,0.15)] border border-amber-600/30 font-sans uppercase tracking-wider"
+                              >
+                                <span className="text-sm">📄</span> Baixar PDF do Agendamento
+                              </button>
+                            )}
+
                             <button
                               onClick={() => setScheduleSuccess(false)}
-                              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 px-5 rounded-xl transition text-xs cursor-pointer border border-white/[0.05]"
+                              className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold py-3 px-5 rounded-xl transition text-xs cursor-pointer border border-white/[0.05]"
                             >
                               Novo Agendamento
                             </button>
@@ -2542,16 +2568,65 @@ export function PublicSite({
                                 <div className="p-3 bg-neutral-950/60 rounded-xl border border-white/[0.02] flex items-center justify-between text-xs font-mono">
                                   <div>
                                     <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">DATA PROGRAMADA</span>
-                                    <span className="text-[#f2b705] font-bold">{ap.dataAgendamento}</span>
+                                    <span className="text-[#f2b705] font-bold">{ap.dataAgendamento || ap.dataAgendada}</span>
                                   </div>
                                   <div>
                                     <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">HORÁRIO</span>
-                                    <span className="text-white font-bold">{ap.horarioPrevisto || 'A combinar'}</span>
+                                    <span className="text-white font-bold">{ap.horarioPrevisto || ap.horario || 'A combinar'}</span>
                                   </div>
                                   <div>
                                     <span className="text-zinc-500 text-[8px] block uppercase text-zinc-650">ATIVIDADE ESTADO</span>
-                                    <span className="text-emerald-400 font-bold uppercase">{ap.statusAtendimento || 'Agendado'}</span>
+                                    <span className="text-emerald-400 font-bold uppercase">{ap.statusAtendimento || ap.status || 'Agendado'}</span>
                                   </div>
+                                </div>
+
+                                <div className="pt-2 flex flex-wrap gap-2">
+                                  <button
+                                    onClick={() => {
+                                      generateAppointmentPDF({
+                                        nome: loggedClient.nomeCompleto,
+                                        whatsapp: loggedClient.whatsapp,
+                                        email: loggedClient.email,
+                                        bairro: loggedClient.bairro || 'Não informado',
+                                        endereco: loggedClient.enderecoCompleto || 'Não informado',
+                                        tipoServico: ap.descritorServico || ap.descricaoAtendimento || 'Serviço Técnico',
+                                        dataDesejada: ap.dataAgendamento || ap.dataAgendada || '',
+                                        horarioDesejado: ap.horarioPrevisto || ap.horario || 'A combinar',
+                                        observacoes: ap.descricaoAtendimento || ap.descritorServico || 'Nenhuma',
+                                        protocolId: ap.id.replace('atend-', '').toUpperCase(),
+                                        urgencia: 'Média',
+                                        categoria: 'Serviço'
+                                      }, config);
+                                    }}
+                                    className="bg-zinc-850 hover:bg-zinc-800 text-white font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase font-mono flex items-center gap-1.5 cursor-pointer border border-zinc-700 transition"
+                                  >
+                                    📄 Comprovante PDF
+                                  </button>
+
+                                  {((ap.statusAtendimento || ap.status) === 'Concluído') && (
+                                    <button
+                                      onClick={() => {
+                                        generateTechnicalReportPDF({
+                                          id: ap.id,
+                                          clienteId: loggedClient.id,
+                                          orcamentoId: ap.orcamentoId || '',
+                                          tecnicoResponsavel: ap.tecnicoResponsavel || 'Técnico AGE Elétrica',
+                                          dataAgendada: ap.dataAgendamento || ap.dataAgendada || '',
+                                          horario: ap.horarioPrevisto || ap.horario || '',
+                                          status: ap.statusAtendimento || ap.status || 'Concluído',
+                                          descricaoAtendimento: ap.descritorServico || ap.descricaoAtendimento || '',
+                                          observacoesTecnicas: ap.observacoesTecnicas || 'Serviço concluído com 100% de conformidade técnica pela equipe de Engenharia AGE Elétrica.',
+                                          fotosAntes: ap.fotosAntes || [],
+                                          fotosDepois: ap.fotosDepois || [],
+                                          assinaturaCliente: ap.assinaturaCliente || 'Assinado Eletronicamente',
+                                          dataFinalizacao: ap.dataFinalizacao || new Date().toISOString()
+                                        }, loggedClient, config);
+                                      }}
+                                      className="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-extrabold py-1.5 px-3 rounded-lg text-[10px] uppercase font-mono flex items-center gap-1.5 cursor-pointer border border-emerald-500/30 transition"
+                                    >
+                                      📜 Laudo Técnico PDF
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             ))}

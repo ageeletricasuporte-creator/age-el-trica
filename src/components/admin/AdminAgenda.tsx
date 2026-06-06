@@ -26,6 +26,8 @@ import {
   StatusAtendimento
 } from '../../types';
 import { ConfirmModal } from './ConfirmModal';
+import { AgeEletricaDB } from '../../dataSeed';
+import { generateAppointmentPDF, generateTechnicalReportPDF } from '../../lib/pdfGenerator';
 
 interface AdminAgendaProps {
   appointments: Atendimento[];
@@ -264,6 +266,26 @@ export function AdminAgenda({
       return a;
     });
 
+    if (techStatus === 'Concluído') {
+      const clientObj = clients.find(c => c.id === activeTechApp.clienteId);
+      const companyConfig = AgeEletricaDB.getConfig();
+      const tempCompletedApp: Atendimento = {
+        ...activeTechApp,
+        status: techStatus as any,
+        observacoesTecnicas: techObservations,
+        fotosAntes: beforePhotos,
+        fotosDepois: afterPhotos,
+        assinaturaCliente: finalSignature,
+        dataFinalizacao: new Date().toISOString()
+      };
+      // Auto download pdf laudo when technician finishes
+      try {
+        generateTechnicalReportPDF(tempCompletedApp, clientObj, companyConfig);
+      } catch (err) {
+        console.error('Falha ao gerar o laudo em PDF:', err);
+      }
+    }
+
     onSaveAppointments(updated);
     setIsTechModalOpen(false);
     setActiveTechApp(null);
@@ -402,6 +424,49 @@ export function AdminAgenda({
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* PDF Actions */}
+                <div className="mt-3.5 pt-3 border-t border-dashed border-zinc-900/60 flex gap-2">
+                  <button
+                    onClick={() => {
+                      const config = AgeEletricaDB.getConfig();
+                      generateAppointmentPDF({
+                        nome: clientObj?.nomeCompleto || 'Cliente AGE Elétrica',
+                        whatsapp: clientObj?.whatsapp || '',
+                        email: clientObj?.email || '',
+                        bairro: clientObj?.bairro || 'Não informado',
+                        endereco: clientObj?.enderecoCompleto || 'Não informado',
+                        tipoServico: app.descricaoAtendimento || 'Serviço Técnico',
+                        dataDesejada: app.dataAgendada,
+                        horarioDesejado: app.horario,
+                        observacoes: app.descricaoAtendimento || '',
+                        protocolId: app.id.replace('atend-', '').toUpperCase(),
+                        urgencia: 'Média',
+                        categoria: 'Serviço'
+                      }, config);
+                    }}
+                    className="flex-1 bg-zinc-900 hover:bg-zinc-850 text-zinc-300 hover:text-white font-bold py-1.5 px-2 rounded text-[10px] uppercase font-mono flex items-center justify-center gap-1.5 border border-zinc-850 cursor-pointer transition"
+                    title="Baixar PDF de Agendamento"
+                  >
+                    <FileText className="w-3 h-3 text-amber-500" /> PDF Ficha
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const config = AgeEletricaDB.getConfig();
+                      generateTechnicalReportPDF(app, clientObj, config);
+                    }}
+                    className={`flex-1 font-bold py-1.5 px-2 rounded text-[10px] uppercase font-mono flex items-center justify-center gap-1.5 cursor-pointer transition ${
+                      app.status === 'Concluído'
+                        ? 'bg-emerald-600/10 text-emerald-400 hover:bg-emerald-600/20 border border-emerald-500/20'
+                        : 'bg-zinc-950/40 text-zinc-600 border border-zinc-900/50 cursor-not-allowed'
+                    }`}
+                    disabled={app.status !== 'Concluído'}
+                    title={app.status === 'Concluído' ? 'Baixar PDF do Laudo Técnico' : 'Laudo disponível apenas após a conclusão'}
+                  >
+                    <CheckCircle className={`w-3 h-3 ${app.status === 'Concluído' ? 'text-emerald-400' : 'text-zinc-650'}`} /> PDF Laudo
+                  </button>
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-zinc-900 flex justify-between items-center">
