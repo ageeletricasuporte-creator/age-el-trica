@@ -1,6 +1,51 @@
 import { jsPDF } from 'jspdf';
 import { Atendimento, Cliente, Servico, ConfiguracaoEmpresa } from '../types';
 
+/**
+ * Draws a pixel-perfect, high-performance vector logo or renders the user uploaded logo.
+ */
+function drawLogo(doc: jsPDF, config: ConfiguracaoEmpresa, x: number, y: number, w: number, h: number): void {
+  const logo = config.logoPdf || config.logo;
+  if (logo && !logo.startsWith('data:image/svg+xml')) {
+    try {
+      doc.addImage(logo, 'PNG', x, y, w, h);
+      return;
+    } catch (e) {
+      console.warn('Could not render base64 image in PDF, falling back to corporate badge vector logo', e);
+    }
+  }
+
+  // Draw modern vector corporate logo badge representing AGE Elétrica
+  doc.setFillColor(15, 15, 15);
+  doc.rect(x, y, w, h, 'F');
+  
+  const sx = w / 15;
+  const sy = h / 15;
+  
+  // Stylized letters 'AGE' inside the badge
+  doc.setFont('Helvetica', 'bold');
+  doc.setFontSize(w * 0.45);
+  doc.setTextColor(255, 255, 255);
+  doc.text('AGE', x + w / 2, y + h * 0.72, { align: 'center' });
+  
+  // Custom yellow lightning bolt drawn using highly-compatible triangle geometry
+  doc.setFillColor(242, 183, 5); // #f2b705 (gold)
+  // Top downward triangle representing upper part of lightning
+  doc.triangle(
+    x + w * 0.73, y + h * 0.1,  // top peak
+    x + w * 0.9, y + h * 0.5,   // bottom right
+    x + w * 0.53, y + h * 0.5,  // bottom left
+    'F'
+  );
+  // Bottom downward triangle representing lower part of lightning
+  doc.triangle(
+    x + w * 0.82, y + h * 0.45, // top right
+    x + w * 0.4, y + h * 0.85,  // bottom peak
+    x + w * 0.45, y + h * 0.45, // top left
+    'F'
+  );
+}
+
 interface AppointmentPDFData {
   nome: string;
   whatsapp: string;
@@ -44,45 +89,45 @@ export function generateAppointmentPDF(
   doc.line(10, 287, 200, 287); // Bottom border line
 
   // 2. Header Section
-  // Logo placeholder or standard icon representation
-  doc.setFillColor(9, 9, 9);
-  doc.rect(15, 18, 12, 12, 'F');
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(242, 183, 5);
-  doc.text('AGE', 21, 26, { align: 'center' });
+  // Render Dynamic Site Logo (Custom PNG/JPEG or Pixel-Perfect Fallback Vector Logo Badge)
+  drawLogo(doc, config, 15, 16, 16, 16);
 
-  // Company Information
+  // Left Column: Company Information (dynamically spaced from the logo)
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(14);
+  doc.setFontSize(11);
   doc.setTextColor(titleText[0], titleText[1], titleText[2]);
-  doc.text(config.nomeEmpresa?.toUpperCase() || 'AGE ELÉTRICA', 32, 23);
+  doc.text(config.nomeEmpresa?.toUpperCase() || 'AGE ELÉTRICA', 34, 21);
 
   doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('INSTALAÇÕES COLETIVAS • SISTEMAS DE QUADROS • CARREGADORES WALLBOX', 32, 27);
-  doc.text(`CNPJ: ${config.cnpj || '35.452.127/0001-90'} • WhatsApp: ${config.whatsapp || '84 99999-8888'}`, 32, 31);
+  
+  // Truncate long texts if necessary, or let them render naturally with ample room
+  const lineDetails1 = 'INSTALAÇÕES COLETIVAS • SISTEMAS DE QUADROS • CARREGADORES WALLBOX';
+  const lineDetails2 = `CNPJ: ${config.cnpj || '35.452.127/0001-90'} • WhatsApp: ${config.whatsapp || '84 99999-8888'}`;
+  doc.text(lineDetails1, 34, 25.5);
+  doc.text(lineDetails2, 34, 30);
 
-  // Document Title inside right upper box
-  doc.setFillColor(245, 245, 245);
-  doc.rect(135, 18, 60, 15, 'F');
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.5);
-  doc.rect(135, 18, 60, 15, 'S');
-
+  // Right Column: Document Details in premium asymmetrical right-aligned design (no overlapping blocks!)
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setTextColor(titleText[0], titleText[1], titleText[2]);
-  doc.text('AGENDAMENTO DE VISITA', 165, 24, { align: 'center' });
+  doc.text('AGENDAMENTO DE VISITA', 195, 21, { align: 'right' });
+  
+  doc.setFont('Helvetica', 'bold');
   doc.setFontSize(8);
-  doc.setTextColor(boldColorHex(gold));
-  doc.text(`PROTOCOL: AGE-SCH-${booking.protocolId}`, 165, 29, { align: 'center' });
+  doc.setTextColor(gold[0], gold[1], gold[2]);
+  doc.text(`PROTOCOLO: OS-AGE-${booking.protocolId}`, 195, 25.5, { align: 'right' });
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
+  doc.text('DOCUMENTO DE CONFIRMAÇÃO DIGITAL ELETRÔNICA', 195, 30, { align: 'right' });
 
   // Divider Line
   doc.setLineWidth(0.5);
   doc.setDrawColor(gold[0], gold[1], gold[2]);
-  doc.line(15, 38, 195, 38);
+  doc.line(15, 36, 195, 36);
 
   // 3. Central Title Block
   doc.setFont('Helvetica', 'bold');
@@ -234,44 +279,44 @@ export function generateTechnicalReportPDF(
   doc.line(10, 287, 200, 287); // Bottom border line
 
   // 2. Header Block
-  doc.setFillColor(9, 9, 9);
-  doc.rect(15, 18, 12, 12, 'F');
-  doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.setTextColor(242, 183, 5);
-  doc.text('AGE', 21, 26, { align: 'center' });
+  // Render Dynamic Site Logo (Custom PNG/JPEG or Pixel-Perfect Fallback Vector Logo Badge)
+  drawLogo(doc, config, 15, 16, 16, 16);
 
-  // Company Information
+  // Left Column: Company Information (dynamically spaced from the logo)
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(14);
+  doc.setFontSize(11);
   doc.setTextColor(titleText[0], titleText[1], titleText[2]);
-  doc.text(config.nomeEmpresa?.toUpperCase() || 'AGE ELÉTRICA', 32, 23);
+  doc.text(config.nomeEmpresa?.toUpperCase() || 'AGE ELÉTRICA', 34, 21);
 
   doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('DIRETORIA DE ENGENHARIA ELÉTRICA • DIÁRIO DE CONFORMIDADE TÉCNICA', 32, 27);
-  doc.text(`CNPJ: ${config.cnpj || '35.452.127/0001-90'} • CFT Ativo: CFT/RN-03290`, 32, 31);
+  
+  const lineDetails1 = 'DIRETORIA DE ENGENHARIA ELÉTRICA • DIÁRIO DE CONFORMIDADE TÉCNICA';
+  const lineDetails2 = `CNPJ: ${config.cnpj || '35.452.127/0001-90'} • CFT Ativo: CFT/RN-03290`;
+  doc.text(lineDetails1, 34, 25.5);
+  doc.text(lineDetails2, 34, 30);
 
-  // Document Title box
-  doc.setFillColor(245, 245, 245);
-  doc.rect(130, 18, 65, 15, 'F');
-  doc.setDrawColor(230, 230, 230);
-  doc.setLineWidth(0.5);
-  doc.rect(130, 18, 65, 15, 'S');
-
+  // Right Column: Document Details in premium asymmetrical right-aligned design (no overlapping blocks!)
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(9);
+  doc.setFontSize(9.5);
   doc.setTextColor(titleText[0], titleText[1], titleText[2]);
-  doc.text('LAUDO TÉCNICO DE OBRA', 162.5, 24, { align: 'center' });
+  doc.text('LAUDO TÉCNICO DE OBRA', 195, 21, { align: 'right' });
+  
+  doc.setFont('Helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(emerald[0], emerald[1], emerald[2]);
-  doc.text(`CÓDIGO: AGE-TQR-${appointment.id.replace('atend-', '').toUpperCase()}`, 162.5, 29, { align: 'center' });
+  doc.text(`CÓDIGO: AGE-TQR-${appointment.id.replace('atend-', '').toUpperCase()}`, 195, 25.5, { align: 'right' });
+
+  doc.setFont('Helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
+  doc.text('CONFORMIDADE REGULAMENTAR NBR 5410 • CFT/RN', 195, 30, { align: 'right' });
 
   // Divider Line
   doc.setLineWidth(0.5);
   doc.setDrawColor(gold[0], gold[1], gold[2]);
-  doc.line(15, 38, 195, 38);
+  doc.line(15, 36, 195, 36);
 
   // 3. Central Title
   doc.setFont('Helvetica', 'bold');
