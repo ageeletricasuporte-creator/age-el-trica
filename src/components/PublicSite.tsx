@@ -38,7 +38,10 @@ import {
   Lightbulb,
   Flame,
   Smartphone,
-  Key
+  Key,
+  Facebook,
+  Share2,
+  Star
 } from 'lucide-react';
 import { Servico, ConfiguracaoEmpresa, Cliente } from '../types';
 import { AgeEletricaDB } from '../dataSeed';
@@ -286,8 +289,84 @@ export function PublicSite({
       />
 
       {/* 2. Top Minimal Technological Utility Strip */}
-      <div className="bg-neutral-950/90 border-b border-white/[0.04] py-1.5 px-6 text-[10px] uppercase tracking-[0.11em] text-zinc-500 transition-colors z-50 no-print">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+      <div className="bg-neutral-950/95 border-b border-white/[0.05] py-2 px-4 text-[10px] uppercase tracking-[0.11em] text-zinc-400 transition-colors z-50 no-print flex flex-col gap-2.5">
+        
+        {/* Row 1: Social & Review Links */}
+        <div className="max-w-7xl w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-3.5 border-b border-white/[0.03] pb-2.5">
+          {/* Social Icons & Google Share */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider mr-1">Nossas Redes:</span>
+            
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/ageeletrica"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-pink-500/10 border border-white/[0.05] hover:border-pink-500/30 hover:text-pink-400 px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-wider text-zinc-400 cursor-pointer hover:-translate-y-0.5"
+              title="Siga-nos no Instagram"
+            >
+              <Instagram className="w-3 h-3 text-current" /> Instagram
+            </a>
+
+            {/* Facebook */}
+            <a
+              href="https://www.facebook.com/ageeletrica"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-blue-500/10 border border-white/[0.05] hover:border-blue-500/30 hover:text-blue-400 px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-wider text-zinc-400 cursor-pointer hover:-translate-y-0.5"
+              title="Curta nossa página no Facebook"
+            >
+              <Facebook className="w-3 h-3 text-current" /> Facebook
+            </a>
+
+            {/* TikTok - using Video icon with custom styling */}
+            <a
+              href="https://www.tiktok.com/@ageeletrica"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-cyan-500/10 border border-white/[0.05] hover:border-cyan-500/30 hover:text-cyan-400 px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-wider text-zinc-400 cursor-pointer hover:-translate-y-0.5"
+              title="Siga-nos no TikTok"
+            >
+              <Video className="w-3 h-3 text-current" /> TikTok
+            </a>
+
+            {/* Google Share */}
+            <a
+              href="https://share.google/HMrZjcX19cXwmbKlY"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-wider text-zinc-400 cursor-pointer hover:-translate-y-0.5"
+              title="Compartilhe no Google"
+            >
+              <Share2 className="w-3 h-3 text-current" /> Google Share
+            </a>
+          </div>
+
+          {/* Special Highly Highlighted Google Review Button */}
+          <div className="flex items-center justify-center">
+            <a
+              href="https://g.page/r/CZ7dgDYjCdoUEBM/review"
+              target="_blank"
+              rel="noreferrer"
+              className="group flex items-center gap-2.5 bg-gradient-to-r from-[#f2b705]/10 to-[#f2b705]/20 hover:from-[#f2b705] hover:to-[#ffca03] border border-[#f2b705]/30 hover:border-[#f2b705] text-[#f2b705] hover:text-black px-4 py-2 rounded-full transition-all text-[9px] sm:text-[10px] font-display font-black tracking-widest uppercase cursor-pointer shadow-[0_0_15px_rgba(242,183,5,0.15)] hover:shadow-[0_0_25px_rgba(242,183,5,0.5)] transform hover:-translate-y-0.5 duration-300"
+              title="Avaliar AGE Elétrica no Google"
+            >
+              <span className="flex items-center gap-0.5 animate-pulse">
+                <Star className="w-3 h-3 fill-current text-amber-400 stroke-none" />
+                <Star className="w-3 h-3 fill-current text-amber-400 stroke-none" />
+                <Star className="w-3 h-3 fill-current text-amber-400 stroke-none" />
+                <Star className="w-3 h-3 fill-current text-amber-400 stroke-none" />
+                <Star className="w-3 h-3 fill-current text-amber-400 stroke-none" />
+              </span>
+              <span className="h-3.5 w-[1px] bg-white/20 group-hover:bg-black/20" />
+              <span className="tracking-widest font-black">AVALIAR TRABALHO NO GOOGLE</span>
+              <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
+            </a>
+          </div>
+        </div>
+
+        {/* Row 2: Atendimento and utilities */}
+        <div className="max-w-7xl w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 sm:gap-5 font-mono text-[9px] md:text-[10px]">
             <span className="flex items-center gap-1.5 text-zinc-400 font-medium whitespace-nowrap">
               <Zap className="w-3 h-3 text-[#f2b705] animate-pulse" /> Atendimento 24h Natal/RN Metropolitano
@@ -300,19 +379,20 @@ export function PublicSite({
             
             <button
               onClick={onNavigateToAppTecnico}
-              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400 hover:-translate-y-0.5"
             >
               <Smartphone className="w-3 h-3 text-current" /> App Age Elétrica
             </button>
 
             <button
               onClick={onNavigateToAdmin}
-              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400"
+              className="flex items-center gap-1.5 bg-white/[0.02] hover:bg-[#f2b705]/10 border border-white/[0.05] hover:border-[#f2b705]/30 hover:text-[#f2b705] px-3 py-1.5 rounded-full transition-all text-[9.5px] font-mono tracking-widest font-black uppercase cursor-pointer text-zinc-400 hover:-translate-y-0.5"
             >
               <Key className="w-3 h-3 text-current" /> Terminal Age Elétrica
             </button>
           </div>
         </div>
+
       </div>
 
       {/* 3. High-End Capsule Floating Navigation Header */}
@@ -681,9 +761,10 @@ export function PublicSite({
                     <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#000]/65 p-2 w-full max-w-[320px] aspect-square shadow-xl shadow-black">
                       <img
                         src={config.fotoSobre || defaultBannerImg}
-                        alt="Akson Pereira"
+                        alt="Akson Pereira - Eletricista Responsável pela AGE Elétrica em Natal"
                         className="w-full h-full object-cover rounded-2xl select-none"
                         referrerPolicy="no-referrer"
+                        loading="lazy"
                       />
                     </div>
                   </div>
@@ -908,7 +989,7 @@ export function PublicSite({
 
                   {/* Instagram gradient tile */}
                   <a
-                    href="https://instagram.com/age_eletrica"
+                    href="https://www.instagram.com/ageeletrica"
                     target="_blank"
                     rel="noreferrer"
                     className="group bg-zinc-950/40 hover:bg-neutral-900 border border-white/[0.04] hover:border-pink-500/20 p-8 rounded-2xl flex flex-col items-center justify-between text-center gap-6 shadow-md shadow-black transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(219,39,119,0.15)] cursor-pointer"
@@ -941,9 +1022,9 @@ export function PublicSite({
                 <span className="text-[9.5px] font-mono tracking-[0.2em] text-[#f2b705] uppercase bg-[#f2b705]/10 border border-[#f2b705]/30 px-3 py-1 rounded-full inline-block max-w-full font-bold">
                   ⚡ CATÁLOGO COMERCIAL COMPLETO
                 </span>
-                <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white">
+                <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter text-white font-display">
                   SOLUÇÕES EM <span className="text-[#f2b705]">ENERGIA</span>
-                </h1>
+                </h2>
                 <p className="text-zinc-500 max-w-2xl text-xs sm:text-sm leading-relaxed">
                   Consulte nossa gama completa de serviços e homologações. Cada item inclui conformidade estrita com normas vigentes e seguro contra curtos-circuitos.
                 </p>
@@ -1047,9 +1128,9 @@ export function PublicSite({
                   <span className="text-[9.5px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3.5 py-1.5 rounded-full inline-block max-w-full uppercase font-bold text-center sm:text-left">
                     🛡️ CONSTITUIÇÃO DA ORGANIZAÇÃO
                   </span>
-                  <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-none">
+                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white leading-none font-display">
                     Quem Somos Nós
-                  </h1>
+                  </h2>
                   <p className="text-zinc-400 text-base leading-relaxed font-light">
                     A AGE Elétrica é consolidada por sua alta capacitação técnica. Unimos o rigor das normas técnicas e da eletricidade recomendada com a agilidade produtiva de atendimento a Natal/RN e bacias metropolitanas.
                   </p>
@@ -1130,9 +1211,9 @@ export function PublicSite({
                     <span className="text-[9.5px] font-mono tracking-[0.2em] sm:tracking-[0.25em] text-[#f2b705] bg-[#f2b705]/5 border border-[#f2b705]/20 px-3 py-1.5 rounded-full inline-block max-w-full uppercase font-bold text-center sm:text-left">
                       📍 CANAIS DIRETOS DE ENTRADA
                     </span>
-                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white">
+                    <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white font-display">
                       Estamos Online
-                    </h1>
+                    </h2>
                     <p className="text-zinc-450 text-xs sm:text-sm text-zinc-500 leading-relaxed">
                       Entre em contato com nossa central técnica de atendimento para agendar vistorias, tirar dúvidas ou acionar suporte de emergência.
                     </p>
@@ -1355,9 +1436,9 @@ export function PublicSite({
                 <div className="inline-flex items-center gap-2 bg-[#f2b705]/[0.03] border border-[#f2b705]/15 text-[#f2b705] px-4 py-2 rounded-full text-[10px] font-mono tracking-widest uppercase font-semibold">
                   <Smartphone className="w-4 h-4 text-[#f2b705] animate-bounce" /> APLICATIVO DO CLIENTE AGE ELÉTRICA
                 </div>
-                <h1 className="text-4xl md:text-5xl font-extrabold uppercase text-white tracking-tight leading-none font-display">
+                <h2 className="text-4xl md:text-5xl font-extrabold uppercase text-white tracking-tight leading-none font-display">
                   Portal do Cliente
-                </h1>
+                </h2>
                 <p className="text-zinc-400 text-sm max-w-lg mx-auto font-sans">
                   Acesse instantaneamente o acompanhamento de orçamentos, chamados, histórico financeiro e faturas de serviços solicitados.
                 </p>
@@ -2226,9 +2307,10 @@ export function PublicSite({
             {config.logo ? (
               <img
                 src={config.logo}
-                alt="Logo AGE"
+                alt="Logo AGE Elétrica - Natal/RN"
                 className="max-h-10 max-w-[130px] object-contain rounded border border-white/10 select-none"
                 referrerPolicy="no-referrer"
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmMmI3MDUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWdvbiBwb2ludHM9IjEzIDIgMyAxNCAxMiAxNCAxMiAyMiAyMSAxMCAxMiAxMCAxMyAyIj48L3BvbHlnb24+PC9zdmc+';

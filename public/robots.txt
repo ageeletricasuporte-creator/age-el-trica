@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app-tecnico
+Disallow: /admin
+
+# Sitemap Path
+Sitemap: https://ageeletrica.com/sitemap.xml
