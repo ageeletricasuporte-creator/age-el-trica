@@ -65,7 +65,8 @@ export function AdminSettings({
     file: File,
     maxWidth: number,
     maxHeight: number,
-    quality: number = 0.85
+    quality: number = 0.85,
+    maxUrlLength: number = 220000
   ): Promise<string> => {
     return new Promise((resolve) => {
       // SVGs don't need scaling or compression because they are XML vectors and very small.
@@ -99,9 +100,6 @@ export function AdminSettings({
             height = maxHeight;
           }
 
-          // We want the resulting base64 dataUrl string to be under ~220KB to avoid any local storage/Firestore upload issues.
-          // Let's set a target length of 220,000 characters.
-          const maxUrlLength = 220000;
           let currentWidth = width;
           let currentHeight = height;
           let currentQuality = quality;
@@ -171,7 +169,8 @@ export function AdminSettings({
       return;
     }
     try {
-      const compressed = await compressAndResizeImage(file, 250, 250, 0.70);
+      // Max 200x200 px, quality 0.65, max string length 40,000 characters (~40KB)
+      const compressed = await compressAndResizeImage(file, 200, 200, 0.65, 40000);
       if (compressed) {
         setLogoStr(compressed);
       }
@@ -186,7 +185,8 @@ export function AdminSettings({
       return;
     }
     try {
-      const compressed = await compressAndResizeImage(file, 300, 150, 0.70);
+      // Max 240x120 px, quality 0.60, max string length 40,000 characters (~40KB)
+      const compressed = await compressAndResizeImage(file, 240, 120, 0.60, 40000);
       if (compressed) {
         setLogoPdfStr(compressed);
       }
@@ -201,8 +201,8 @@ export function AdminSettings({
       return;
     }
     try {
-      // 64x64 is optimal for browser favicons to keep it extremely fast and lightweight
-      const compressed = await compressAndResizeImage(file, 64, 64, 0.75);
+      // Max 48x48 px is extremely sufficient for small browser tab icons, max string length 8,000 characters (~8KB)
+      const compressed = await compressAndResizeImage(file, 48, 48, 0.50, 8000);
       if (compressed) {
         setFaviconStr(compressed);
       }
@@ -217,9 +217,8 @@ export function AdminSettings({
       return;
     }
     try {
-      // Compress hero silhouette with 450 max-width/height for ultra-fast rendering and extremely small document payload.
-      // High density displays display this portrait at max 460px height.
-      const compressed = await compressAndResizeImage(file, 500, 750, 0.70);
+      // Max 400x600 px for quick downloads and seamless responsive scaling, max string length 70,000 characters (~70KB)
+      const compressed = await compressAndResizeImage(file, 400, 600, 0.50, 70000);
       if (compressed) {
         setBannerHeroStr(compressed);
       }
@@ -234,9 +233,8 @@ export function AdminSettings({
       return;
     }
     try {
-      // Compress profiles/cutouts with 400 max-width/height to guarantee fast loading and save localStorage/Firestore size.
-      // This is displayed in a 320x320 segment, making 400x400 perfectly sharp.
-      const compressed = await compressAndResizeImage(file, 400, 400, 0.70);
+      // Max 300x300 px (rendered on a 150-250px UI frame), quality 0.55, max string length 50,000 characters (~50KB)
+      const compressed = await compressAndResizeImage(file, 300, 300, 0.55, 50000);
       if (compressed) {
         setFotoSobreStr(compressed);
       }

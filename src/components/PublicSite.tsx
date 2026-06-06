@@ -78,8 +78,8 @@ export function PublicSite({
     setLoggedClient(client);
   };
 
-  // Mouse Glow Position Tracking State for dynamic tech backdrop
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // Mouse Glow Position Tracking Overlay Ref for high-performance dynamic tech backdrop (avoids React re-renders)
+  const glowOverlayRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     // Fetch initial dataset
@@ -106,15 +106,23 @@ export function PublicSite({
       }
     });
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    let handleMouseMove: ((e: MouseEvent) => void) | null = null;
 
-    window.addEventListener('mousemove', handleMouseMove);
+    if (!isMobile) {
+      handleMouseMove = (e: MouseEvent) => {
+        if (glowOverlayRef.current) {
+          glowOverlayRef.current.style.background = `radial-gradient(550px circle at ${e.clientX}px ${e.clientY}px, rgba(242,183,5,0.06), transparent 80%)`;
+        }
+      };
+      window.addEventListener('mousemove', handleMouseMove);
+    }
 
     return () => {
       unsubscribe();
-      window.removeEventListener('mousemove', handleMouseMove);
+      if (handleMouseMove) {
+        window.removeEventListener('mousemove', handleMouseMove);
+      }
     };
   }, []);
 
@@ -270,9 +278,10 @@ export function PublicSite({
       
       {/* 1. Global Interactive Mouse Tracker Overlay */}
       <div 
+        ref={glowOverlayRef}
         className="pointer-events-none fixed inset-0 z-30 transition duration-300 opacity-25 md:opacity-45"
         style={{
-          background: `radial-gradient(550px circle at ${mousePos.x}px ${mousePos.y}px, rgba(242,183,5,0.06), transparent 80%)`
+          background: 'radial-gradient(550px circle at 50% 50%, rgba(242,183,5,0.04), transparent 80%)'
         }}
       />
 
