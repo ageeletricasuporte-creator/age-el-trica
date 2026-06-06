@@ -11,7 +11,7 @@
   </defs>
   
   <!-- Premium Dark Solid Background representing high-durability electrical work -->
-  <rect width="512" height="512" rx="112" fill="#0c0c0e" />
+  <rect width="512" height="512" rx="0" fill="#000000" />
   
   <g transform="translate(16, -10)">
     <!-- Main Group "AGE" stylized and italicized -->
@@ -26,8 +26,8 @@
       <path d="M 350,140 H 425 V 158 H 368 V 212 H 415 V 230 H 368 V 282 H 428 V 300 H 350 Z" fill="#ffffff" />
     </g>
 
-    <!-- Overlay Lightning Bolt (Yellow, glowing, centered) -->
-    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" />
+    <!-- Overlay Lightning Bolt (Yellow, glowing, centered) with black border/outline to pop -->
+    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="10" stroke-linejoin="round" />
     
     <!-- Subtitle text 'ELÉTRICA' in gold, spaced across the logo width -->
     <text x="240" y="375" fill="#f2b705" font-family="'Inter', 'Space Grotesk', system-ui, sans-serif" font-size="25" font-weight="900" letter-spacing="18" text-anchor="middle" transform="translate(10, 0)">ELÉTRICA</text>

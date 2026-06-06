@@ -46,7 +46,7 @@ const svgContent = `
     </g>
 
     <!-- Overlay Lightning Bolt (Yellow, glowing, centered) -->
-    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" />
+    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
     
     <!-- Subtitle text 'ELÉTRICA' in spaced gold -->
     <text x="240" y="375" fill="#f2b705" font-family="'Inter', 'Space Grotesk', 'Helvetica', sans-serif" font-size="26" font-weight="900" letter-spacing="18" text-anchor="middle" transform="translate(10, 0)">ELÉTRICA</text>
@@ -112,7 +112,7 @@ async function generate() {
     </g>
 
     <!-- Overlay Lightning Bolt (Yellow, glowing, centered) -->
-    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" />
+    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
     
     <!-- Subtitle text 'ELÉTRICA' in gold, spaced across the logo width -->
     <text x="240" y="375" fill="#f2b705" font-family="'Inter', 'Space Grotesk', system-ui, sans-serif" font-size="25" font-weight="900" letter-spacing="18" text-anchor="middle" transform="translate(10, 0)">ELÉTRICA</text>
