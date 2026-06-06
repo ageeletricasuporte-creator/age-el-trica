@@ -470,7 +470,7 @@ export function PublicSite({
         ...prev,
         {
           sender: 'bot',
-          text: 'Estou com uma breve interrupção de conexão de rede ou falta de chave de API. Se preferir, fale diretamente com nossa central de especialistas pelo botão verde do WhatsApp! ⚡',
+          text: 'No momento nosso suporte inteligente está passando por uma instabilidade. Você pode continuar pelo botão do WhatsApp ou fazer seu agendamento diretamente pelo site.',
           date: new Date(),
           isWhatsApp: true
         }

@@ -10,15 +10,26 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-// Set up server-side Gemini client
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+// Set up server-side Gemini client lazily to avoid error at boot if key is missing
+let aiClient: GoogleGenAI | null = null;
+
+function getGeminiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("A chave GEMINI_API_KEY não está configurada no ambiente.");
+    }
+    aiClient = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return aiClient;
+}
 
 app.use(express.json());
 
@@ -30,11 +41,22 @@ app.post("/api/chat", async (req, res) => {
       return res.status(400).json({ error: "O campo 'messages' é obrigatório e deve ser um array." });
     }
 
+    const ai = getGeminiClient();
+
     const systemInstruction = `Você é o Assistente de Inteligência Artificial da AGE Elétrica, uma prestadora de serviços elétricos em Natal/RN de excelência.
 Seus valores fundamentais: agilidade estrita, segurança corporativa inegociável, transparência em orçamentos, integridade de conduta e excelente tratamento técnico ao cliente.
 Você atende clientes de forma moderna, amigável e profissional.
 Seu tom de voz deve ser acolhedor, altamente profissional e prestativo.
 As cores da identidade visual da AGE Elétrica são fundo escuro, amarelo dourado e branco. Use detalhes verdes apenas quando falar sobre energia limpa (solar / fotovoltaica), carregador de veículo elétrico / wallbox, ou contato de WhatsApp.
+
+CRÍTICO - REGRAS DE FORMATAÇÃO DO TEXTO:
+- NUNCA utilize caracteres de formatação Markdown ou símbolos especiais na sua resposta.
+- NÃO utilize de forma alguma asteriscos (* ou **) para negrito, itálico ou listas.
+- NÃO utilize de forma alguma hashtags ou cerquilhas (# ou ##) para cabeçalhos.
+- NÃO use hífens como marcadores de tópicos.
+- Use apenas texto puro, parágrafos bem espaçados, quebras de linhas normais e tópicos enumerados de forma simples (ex: "1.", "2.") ou emojis discretos para organizar suas respostas.
+- O corpo do texto deve ser limpo, fluído e de fácil leitura para o cliente final.
+
 Você deve responder dúvidas sobre:
 1. Instalação elétrica residencial, comercial e industrial.
 2. Instalação e substituição de chuveiros elétricos.
@@ -63,7 +85,12 @@ Responda sempre em português. Se o cliente demonstrar interesse em agendar um s
       },
     });
 
-    res.json({ text: response.text });
+    let botResponseText = response.text || "";
+    
+    // Programmatic sanitization to strictly prevent any stray * or # in the response
+    botResponseText = botResponseText.replace(/[*#]/g, "");
+
+    res.json({ text: botResponseText });
   } catch (error: any) {
     console.error("Erro no chat com IA:", error);
     res.status(500).json({ error: "Falha ao processar solicitação de IA.", details: error.message });
@@ -77,6 +104,8 @@ app.post("/api/classify", async (req, res) => {
     if (!description) {
       return res.status(400).json({ error: "A descrição do problema elétrico é obrigatória." });
     }
+
+    const ai = getGeminiClient();
 
     const systemInstruction = `Analise a descrição de um problema ou demanda elétrica enviado por um cliente do site da AGE Elétrica e classifique a demanda extraindo:
 1. Especialidade ou tipo de serviço estimado com base nos problemas típicos: 'Instalação de Chuveiro', 'Troca de fiação', 'Manutenção de Disjuntores / Quadro', 'Instalação de Tomada / Interruptor', 'Instalação de Wallbox / Carregador Veicular', 'Automação Residencial (Alexa/Sonoff)', 'Instalação de Câmeras CFTV', 'Instalação de DPS / DR', 'Iluminação Externa / Interna', ou 'Outros Reparos Elétricos'.
