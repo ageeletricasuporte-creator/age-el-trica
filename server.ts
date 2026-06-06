@@ -100,17 +100,24 @@ Responda sempre em português. Se o cliente demonstrar interesse em agendar um s
 // API: AI classifier for lead qualification
 app.post("/api/classify", async (req, res) => {
   try {
-    const { description } = req.body;
+    const { description, availableServices } = req.body;
     if (!description) {
       return res.status(400).json({ error: "A descrição do problema elétrico é obrigatória." });
     }
 
     const ai = getGeminiClient();
 
+    let serviceListText = "";
+    if (availableServices && Array.isArray(availableServices) && availableServices.length > 0) {
+      serviceListText = `Você DEVE obrigatoriamente associar o problema recebido a um dos seguintes serviços cadastrados da nossa lista abaixo (retorne exatamente o nome correspondente no campo 'tipoServico'):\n` + 
+        availableServices.map((s: any) => `- Nome: "${s.nomeServico}", Categoria: "${s.categoria}"`).join("\n") + 
+        `\nSe nenhum se encaixar razoavelmente, escolha "Outro" no campo 'tipoServico' e escolha a categoria que melhor se relaciona ao problema.`;
+    }
+
     const systemInstruction = `Analise a descrição de um problema ou demanda elétrica enviado por um cliente do site da AGE Elétrica e classifique a demanda extraindo:
-1. Especialidade ou tipo de serviço estimado com base nos problemas típicos: 'Instalação de Chuveiro', 'Troca de fiação', 'Manutenção de Disjuntores / Quadro', 'Instalação de Tomada / Interruptor', 'Instalação de Wallbox / Carregador Veicular', 'Automação Residencial (Alexa/Sonoff)', 'Instalação de Câmeras CFTV', 'Instalação de DPS / DR', 'Iluminação Externa / Interna', ou 'Outros Reparos Elétricos'.
+1. Especialidade ou tipo de serviço estimado. ${serviceListText || "Associe a um destes típicos de mercado: 'Instalação de Chuveiro', 'Troca de fiação', 'Manutenção de Disjuntores / Quadro', 'Instalação de Tomada / Interruptor', 'Instalação de Wallbox / Carregador Veicular', 'Automação Residencial (Alexa/Sonoff)', 'Instalação de Câmeras CFTV', 'Instalação de DPS / DR', 'Iluminação Externa / Interna', ou 'Outros Reparos Elétricos'."}
 2. Grau de urgência estimado: 'Baixa', 'Média' ou 'Alta' (Marque como 'Alta' se houver indicação de cheiro de queimado/fumaça, faíscas, queda total de fases, disjuntor desarmando sem parar, chuveiro queimando fiação, ou risco de choques. Marque como 'Média' para reparos funcionais porém não perigosos no momento. Marque como 'Baixa' para novas instalações planejadas, estética ou melhorias).
-3. Categoria geral: 'Instalações', 'Manutenção', 'Automação', 'CFTV / Segurança', 'Chuveiro', 'Carregador Elétrico'.`;
+3. Categoria geral do serviço correspondente (Ex: 'Residencial', 'Reparo', 'Manutenção', 'Segurança', 'Recarga veicular', 'Climatização', 'Automação'). Escolha exatamente a categoria que está atrelada ao serviço recomendado.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -123,7 +130,7 @@ app.post("/api/classify", async (req, res) => {
           properties: {
             tipoServico: {
               type: Type.STRING,
-              description: "Especialidade ou tipo de serviço estimado",
+              description: "Nome da especialidade selecionada da lista ou 'Outro'",
             },
             urgencia: {
               type: Type.STRING,
@@ -131,7 +138,7 @@ app.post("/api/classify", async (req, res) => {
             },
             categoria: {
               type: Type.STRING,
-              description: "Categoria geral do serviço",
+              description: "Categoria geral do serviço atrelada ao serviço selecionado",
             },
           },
           required: ["tipoServico", "urgencia", "categoria"],

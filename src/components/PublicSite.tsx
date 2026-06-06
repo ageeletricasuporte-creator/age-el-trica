@@ -375,7 +375,10 @@ export function PublicSite({
       const response = await fetch('/api/classify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: textToClassify })
+        body: JSON.stringify({ 
+          description: textToClassify,
+          availableServices: services.map(s => ({ nomeServico: s.nomeServico, categoria: s.categoria }))
+        })
       });
 
       if (!response.ok) {
@@ -402,6 +405,7 @@ export function PublicSite({
       }
     } catch (err) {
       console.error('Erro na classificação automática:', err);
+      alert('No momento o analisador inteligente de demanda está instável. Você pode preencher o tipo de serviço manualmente no formulário ou entrar em contato pelo WhatsApp!');
     } finally {
       setIsClassifying(false);
     }
