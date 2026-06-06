@@ -4,8 +4,8 @@ import { Atendimento, Cliente, Servico, ConfiguracaoEmpresa } from '../types';
 /**
  * Draws a pixel-perfect, high-performance vector logo or renders the user uploaded logo.
  */
-function drawLogo(doc: jsPDF, config: ConfiguracaoEmpresa, x: number, y: number, w: number, h: number): void {
-  const logo = config.logoPdf || config.logo;
+function drawLogo(doc: jsPDF, config: ConfiguracaoEmpresa, x: number, y: number, w: number, h: number, logoOverride?: string): void {
+  const logo = logoOverride || config.logoPdf || config.logo;
   if (logo && !logo.startsWith('data:image/svg+xml')) {
     try {
       doc.addImage(logo, 'PNG', x, y, w, h);
@@ -90,7 +90,7 @@ export function generateAppointmentPDF(
 
   // 2. Header Section
   // Render Dynamic Site Logo (Custom PNG/JPEG or Pixel-Perfect Fallback Vector Logo Badge)
-  drawLogo(doc, config, 15, 16, 16, 16);
+  drawLogo(doc, config, 15, 16, 16, 16, config.logoPdfAgendamento);
 
   // Left Column: Company Information (dynamically spaced from the logo)
   doc.setFont('Helvetica', 'bold');
@@ -280,7 +280,7 @@ export function generateTechnicalReportPDF(
 
   // 2. Header Block
   // Render Dynamic Site Logo (Custom PNG/JPEG or Pixel-Perfect Fallback Vector Logo Badge)
-  drawLogo(doc, config, 15, 16, 16, 16);
+  drawLogo(doc, config, 15, 16, 16, 16, config.logoPdfLaudo);
 
   // Left Column: Company Information (dynamically spaced from the logo)
   doc.setFont('Helvetica', 'bold');
