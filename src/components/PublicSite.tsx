@@ -421,7 +421,7 @@ export function PublicSite({
       }
     } catch (err) {
       console.error('Erro na classificação automática:', err);
-      alert('No momento o analisador inteligente de demanda está instável. Você pode preencher o tipo de serviço manualmente no formulário ou entrar em contato pelo WhatsApp!');
+      alert('No momento, nosso suporte inteligente está passando por uma instabilidade temporária. Você pode continuar pelo botão do WhatsApp ou fazer seu agendamento diretamente pelo site.');
     } finally {
       setIsClassifying(false);
     }
@@ -490,7 +490,7 @@ export function PublicSite({
         ...prev,
         {
           sender: 'bot',
-          text: 'No momento nosso suporte inteligente está passando por uma instabilidade. Você pode continuar pelo botão do WhatsApp ou fazer seu agendamento diretamente pelo site.',
+          text: 'No momento, nosso suporte inteligente está passando por uma instabilidade temporária. Você pode continuar pelo botão do WhatsApp ou fazer seu agendamento diretamente pelo site.',
           date: new Date(),
           isWhatsApp: true
         }

@@ -45,9 +45,15 @@ app.post("/api/chat", async (req, res) => {
 
     const systemInstruction = `Você é o Assistente de Inteligência Artificial da AGE Elétrica, uma prestadora de serviços elétricos em Natal/RN de excelência.
 Seus valores fundamentais: agilidade estrita, segurança corporativa inegociável, transparência em orçamentos, integridade de conduta e excelente tratamento técnico ao cliente.
-Você atende clientes de forma moderna, amigável e profissional.
-Seu tom de voz deve ser acolhedor, altamente profissional e prestativo.
-As cores da identidade visual da AGE Elétrica são fundo escuro, amarelo dourado e branco. Use detalhes verdes apenas quando falar sobre energia limpa (solar / fotovoltaica), carregador de veículo elétrico / wallbox, ou contato de WhatsApp.
+
+COMPORTAMENTO DA INTELIGÊNCIA ARTIFICIAL:
+1. Cumprimentar o cliente de forma profissional, altamente amigável, acolhedora e prestativa.
+2. Responder dúvidas gerais sobre serviços elétricos oferecidos pela AGE Elétrica (reparos, instalações, manutenção, automação, iluminação, tomadas, disjuntores, câmeras, chuveiros, energia solar e CFTV).
+3. Orientar e conduzir o cliente com educação a solicitar orçamento ou agendamento de visita técnica diretamente pelas abas e formulários existentes no site.
+4. Quando necessário (perguntas sobre valores exatos, serviços muito fora de padrão, contato humano), oferecer orações amigáveis indicando que o cliente pode falar diretamente com nossos especialistas pelo botão do WhatsApp disponível na tela de chat.
+5. NÃO inventar valores ou preços de serviços técnicos de forma alguma! Se perguntado sobre valores, explique polidamente que o valor depende de uma avaliação técnica ou que ele pode realizar uma simulação/solicitação de orçamento preenchendo o formulário no site ou consultando via WhatsApp.
+6. NÃO confirmar execução ou agendamento de serviços diretamente no chat de conversação. Instrua que a confirmação é feita após enviar o formulário do site ou fechar via WhatsApp.
+7. Sempre preferir direcionar o cliente para o formulário do próprio site na aba de "Agendamento" / "Contato", ou para o botão de WhatsApp, quando o assunto central envolver orçamentos, contratações, solicitações e visitas técnicas.
 
 CRÍTICO - REGRAS DE FORMATAÇÃO DO TEXTO:
 - NUNCA utilize caracteres de formatação Markdown ou símbolos especiais na sua resposta.
@@ -55,26 +61,39 @@ CRÍTICO - REGRAS DE FORMATAÇÃO DO TEXTO:
 - NÃO utilize de forma alguma hashtags ou cerquilhas (# ou ##) para cabeçalhos.
 - NÃO use hífens como marcadores de tópicos.
 - Use apenas texto puro, parágrafos bem espaçados, quebras de linhas normais e tópicos enumerados de forma simples (ex: "1.", "2.") ou emojis discretos para organizar suas respostas.
-- O corpo do texto deve ser limpo, fluído e de fácil leitura para o cliente final.
+- O corpo do texto deve ser limpo, fluído e de fácil leitura para o cliente final.`;
 
-Você deve responder dúvidas sobre:
-1. Instalação elétrica residencial, comercial e industrial.
-2. Instalação e substituição de chuveiros elétricos.
-3. Substituição e instalação de novas tomadas e interruptores.
-4. Disjuntores e quadros de distribuição de energia (QDG/QDC).
-5. Automação residencial utilizando dispositivos inteligentes como Sonoff, Tuya e Alexa.
-6. Instalação de sistemas de câmeras de segurança (CFTV) e vídeo-porteiros.
-7. Dispositivos de Proteção contra Surtos (DPS) e disjuntores diferenciais residuais (DR).
-8. Projetos de iluminação interna, externa, decorativa e técnica.
-9. Instalação de Carregadores de Carro Elétrico (Wallbox) e painéis de energia solar (energia limpa).
-10. Auxiliar com cadastro de orçamento e agendamento de serviços elétricos no site.
+    // Normalize, merge consecutive messages, and filter message list so it strictly alternates roles for Gemini.
+    const contents: any[] = [];
+    for (const m of messages) {
+      if (!m.text || !m.text.trim()) continue;
+      
+      const role = m.sender === "user" ? "user" : "model";
+      const text = m.text;
 
-Responda sempre em português. Se o cliente demonstrar interesse em agendar um serviço ou solicitar um orçamento, incentive-o amigavelmente a preencher o formulário na aba de "Agendamento" / "Contato", ou informe que ele pode falar direto com nosso WhatsApp Central. Evite respostas extremamente longas, prefira formatação organizada com tópicos limpos.`;
+      if (contents.length > 0 && contents[contents.length - 1].role === role) {
+        // Safe collapse consecutive same-role messages with visual spacing
+        contents[contents.length - 1].parts[0].text += "\n" + text;
+      } else {
+        contents.push({
+          role,
+          parts: [{ text }],
+        });
+      }
+    }
 
-    const contents = messages.map((m: any) => ({
-      role: m.sender === "user" ? "user" : "model",
-      parts: [{ text: m.text }],
-    }));
+    // Gemini API expects the chat history structure to start specifically with a 'user' turn.
+    // If the conversation starts with a bot/model welcome message, we drop that leading model message.
+    while (contents.length > 0 && contents[0].role !== "user") {
+      contents.shift();
+    }
+
+    // Guard if history has become empty
+    if (contents.length === 0) {
+      return res.json({ 
+        text: "Olá! Sou o Assistente de Inteligência Artificial da AGE Elétrica. Como posso ajudar você hoje com seus serviços elétricos, automação residencial ou agendamento de orçamento?" 
+      });
+    }
 
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash",
@@ -87,10 +106,10 @@ Responda sempre em português. Se o cliente demonstrar interesse em agendar um s
 
     let botResponseText = response.text || "";
     
-    // Programmatic sanitization to strictly prevent any stray * or # in the response
-    botResponseText = botResponseText.replace(/[*#]/g, "");
+    // Strict programmatic sanitization to strip any accidental Markdown tags or backticks
+    botResponseText = botResponseText.replace(/[*#`_\-]/g, "");
 
-    res.json({ text: botResponseText });
+    res.json({ text: botResponseText.trim() });
   } catch (error: any) {
     console.error("Erro no chat com IA:", error);
     res.status(500).json({ error: "Falha ao processar solicitação de IA.", details: error.message });
