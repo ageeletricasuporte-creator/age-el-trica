@@ -15,33 +15,44 @@ function drawLogo(doc: jsPDF, config: ConfiguracaoEmpresa, x: number, y: number,
     }
   }
 
-  // Draw modern vector corporate logo badge representing AGE Elétrica
-  doc.setFillColor(15, 15, 15);
-  doc.rect(x, y, w, h, 'F');
-  
-  const sx = w / 15;
-  const sy = h / 15;
-  
-  // Stylized letters 'AGE' inside the badge
+  // Draw an incredibly premium circular vector emblem in gold & charcoal
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  const r = w / 2;
+
+  // 1. Deep Black Circle Base
+  doc.setFillColor(18, 18, 18);
+  doc.ellipse(cx, cy, r, r, 'F');
+
+  // 2. Double Golden Ring Border Accent (representing power/voltage stability loop)
+  doc.setDrawColor(242, 183, 5); // Gold #f2b705
+  doc.setLineWidth(0.6);
+  doc.ellipse(cx, cy, r - 0.3, r - 0.3, 'S');
+  doc.setLineWidth(0.2);
+  doc.ellipse(cx, cy, r - 1.2, r - 1.2, 'S');
+
+  // 3. Crisp Bold Monogram "AGE" centered at the core
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(w * 0.45);
+  doc.setFontSize(w * 0.35); // Perfectly sized to not collide
   doc.setTextColor(255, 255, 255);
-  doc.text('AGE', x + w / 2, y + h * 0.72, { align: 'center' });
+  doc.text('AGE', cx, cy + r * 0.15, { align: 'center' });
+
+  // 4. Stylized Golden Vector Lightning Bolt cutting across to represent supreme speed & energy
+  doc.setFillColor(242, 183, 5);
   
-  // Custom yellow lightning bolt drawn using highly-compatible triangle geometry
-  doc.setFillColor(242, 183, 5); // #f2b705 (gold)
-  // Top downward triangle representing upper part of lightning
+  // Upper triangle of lightning bolt
   doc.triangle(
-    x + w * 0.73, y + h * 0.1,  // top peak
-    x + w * 0.9, y + h * 0.5,   // bottom right
-    x + w * 0.53, y + h * 0.5,  // bottom left
+    cx + r * 0.1, cy - r * 0.75, // top tip
+    cx + r * 0.55, cy - r * 0.1,  // middle right corner
+    cx - r * 0.3, cy - r * 0.1,  // middle left corner
     'F'
   );
-  // Bottom downward triangle representing lower part of lightning
+  
+  // Lower triangle of lightning bolt
   doc.triangle(
-    x + w * 0.82, y + h * 0.45, // top right
-    x + w * 0.4, y + h * 0.85,  // bottom peak
-    x + w * 0.45, y + h * 0.45, // top left
+    cx + r * 0.3, cy - r * 0.15, // middle right peak
+    cx - r * 0.5, cy + r * 0.7,   // bottom tip
+    cx - r * 0.05, cy - r * 0.15, // middle left peak
     'F'
   );
 }
@@ -125,126 +136,133 @@ export function generateAppointmentPDF(
   doc.text('DOCUMENTO DE CONFIRMAÇÃO DIGITAL ELETRÔNICA', 195, 30, { align: 'right' });
 
   // Divider Line
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.4);
   doc.setDrawColor(gold[0], gold[1], gold[2]);
   doc.line(15, 36, 195, 36);
 
   // 3. Central Title Block
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(titleText[0], titleText[1], titleText[2]);
-  doc.text('COMPROVANTE DE PROTOCOLO DE ORDEM DE SERVIÇO', 105, 48, { align: 'center' });
+  doc.text('COMPROVANTE DE PROTOCOLO DE ORDEM DE SERVIÇO', 105, 46, { align: 'center' });
 
   doc.setFont('Helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
-  doc.text('Este comprovante assegura que seu chamado técnico foi registrado no nosso banco de dados.', 105, 53, { align: 'center' });
+  doc.text('Este comprovante assegura que seu chamado técnico foi registrado no nosso banco de dados.', 105, 51, { align: 'center' });
 
   // 4. Client Information Box
-  let currentY = 62;
+  let currentY = 58;
   drawCardHeader(doc, 'DADOS CADASTRAIS DO CLIENTE', 15, currentY, 180, 7, gold);
   currentY += 7;
 
-  doc.setFillColor(250, 250, 250);
-  doc.rect(15, currentY, 180, 32, 'F');
-  doc.setLineWidth(0.2);
-  doc.setDrawColor(230, 230, 230);
-  doc.rect(15, currentY, 180, 32, 'S');
+  doc.setFillColor(252, 252, 252);
+  doc.setDrawColor(225, 225, 225);
+  doc.roundedRect(15, currentY, 180, 29, 1, 1, 'FD');
 
+  // Labels
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(bodyText[0], bodyText[1], bodyText[2]);
+  doc.setFontSize(8);
+  doc.setTextColor(90, 90, 90);
+  doc.text('NOME COMPLETO:', 19, currentY + 6);
+  doc.text('WHATSAPP:', 19, currentY + 12);
+  doc.text('E-MAIL:', 19, currentY + 18);
+  doc.text('ENDEREÇO:', 19, currentY + 24);
 
-  // Labels and Columns inside box
-  doc.text('NOME COMPLETO:', 20, currentY + 7);
-  doc.text('WHATSAPP:', 20, currentY + 14);
-  doc.text('E-MAIL:', 20, currentY + 21);
-  doc.text('ENDEREÇO:', 20, currentY + 28);
-
+  // Values
   doc.setFont('Helvetica', 'normal');
-  doc.text(booking.nome.toUpperCase(), 55, currentY + 7);
-  doc.text(booking.whatsapp, 55, currentY + 14);
-  doc.text(booking.email || 'NÃO INFORMADO', 55, currentY + 21);
-  doc.text(`${booking.endereco} - BAIRRO: ${booking.bairro.toUpperCase()} - NATAL/RN`, 55, currentY + 28);
+  doc.setTextColor(20, 20, 20);
+  doc.text(booking.nome.toUpperCase(), 52, currentY + 6, { maxWidth: 138 });
+  doc.text(booking.whatsapp, 52, currentY + 12, { maxWidth: 138 });
+  doc.text(booking.email || 'NÃO INFORMADO', 52, currentY + 18, { maxWidth: 138 });
+  doc.text(`${booking.endereco} - BAIRRO: ${booking.bairro.toUpperCase()} - NATAL/RN`, 52, currentY + 24, { maxWidth: 138 });
 
   // 5. Booking and Diagnostics Box
-  currentY += 38;
+  currentY += 34;
   drawCardHeader(doc, 'DIAGNÓSTICO DA VISITA E PROGRAMAÇÃO TÉCNICA', 15, currentY, 180, 7, gold);
   currentY += 7;
 
-  doc.setFillColor(250, 250, 250);
-  doc.rect(15, currentY, 180, 48, 'F');
-  doc.rect(15, currentY, 180, 48, 'S');
+  doc.setFillColor(252, 252, 252);
+  doc.setDrawColor(225, 225, 225);
+  doc.roundedRect(15, currentY, 180, 42, 1, 1, 'FD');
 
   doc.setFont('Helvetica', 'bold');
-  doc.text('SERVIÇO REQUERIDO:', 20, currentY + 8);
-  doc.text('DATA PROGRAMADA:', 20, currentY + 16);
-  doc.text('PERÍODO DESEJADO:', 20, currentY + 24);
-  doc.text('GRAU DE URGÊNCIA:', 20, currentY + 32);
-  doc.text('CATEGORIA DO CHAMADO:', 20, currentY + 40);
+  doc.setFontSize(8);
+  doc.setTextColor(90, 90, 90);
+  doc.text('SERVIÇO REQUERIDO:', 19, currentY + 7);
+  doc.text('DATA PROGRAMADA:', 19, currentY + 14);
+  doc.text('PERÍODO DESEJADO:', 19, currentY + 21);
+  doc.text('GRAU DE URGÊNCIA:', 19, currentY + 28);
+  doc.text('CATEGORIA:', 19, currentY + 35);
 
   doc.setFont('Helvetica', 'normal');
-  doc.text(booking.tipoServico.toUpperCase(), 68, currentY + 8);
+  doc.setTextColor(20, 20, 20);
+  doc.text(booking.tipoServico.toUpperCase(), 62, currentY + 7, { maxWidth: 125 });
   
   // Format Date to friendly Portuguese layout
   let formattedDate = booking.dataDesejada;
   if (booking.dataDesejada.includes('-')) {
     formattedDate = booking.dataDesejada.split('-').reverse().join('/');
   }
-  doc.text(formattedDate, 68, currentY + 16);
-  doc.text(booking.horarioDesejado.toUpperCase(), 68, currentY + 24);
-  doc.text(booking.urgencia?.toUpperCase() || 'MÉDIA', 68, currentY + 32);
-  doc.text(booking.categoria?.toUpperCase() || 'MANUTENÇÃO', 68, currentY + 40);
+  doc.text(formattedDate, 62, currentY + 14);
+  doc.text(booking.horarioDesejado.toUpperCase(), 62, currentY + 21);
+  doc.text(booking.urgencia?.toUpperCase() || 'MÉDIA', 62, currentY + 28);
+  doc.text(booking.categoria?.toUpperCase() || 'MANUTENÇÃO', 62, currentY + 35);
 
   // Highlight urgency if High
   if (booking.urgencia?.toLowerCase() === 'alta') {
     doc.setFillColor(254, 226, 226);
-    doc.rect(145, currentY + 27, 42, 7, 'F');
+    doc.roundedRect(140, currentY + 24, 48, 8, 1, 1, 'F');
     doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(6.5);
     doc.setTextColor(220, 38, 38);
-    doc.text('⚡ SUJEITO À ESCALA DE EMERGÊNCIA', 147, currentY + 32);
+    doc.text('⚡ ESCALA DE EMERGÊNCIA ATIVA', 142, currentY + 29.5);
     doc.setTextColor(bodyText[0], bodyText[1], bodyText[2]);
   }
 
   // 6. Problem details text area
-  currentY += 54;
+  currentY += 47;
   drawCardHeader(doc, 'OBSERVAÇÕES E SINTOMAS RELATADOS PELO CLIENTE', 15, currentY, 180, 7, gold);
   currentY += 7;
 
-  doc.setFillColor(252, 252, 252);
-  doc.rect(15, currentY, 180, 35, 'F');
-  doc.rect(15, currentY, 180, 35, 'S');
+  doc.setFillColor(253, 253, 253);
+  doc.setDrawColor(225, 225, 225);
+  doc.roundedRect(15, currentY, 180, 32, 1, 1, 'FD');
 
   doc.setFont('Helvetica', 'oblique');
   doc.setFontSize(8.5);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(70, 70, 70);
 
   // Wrap multi-line text dynamically
-  const splitNotes = doc.splitTextToSize(booking.observacoes || 'Nenhum detalhe extra relatado.', 170);
-  doc.text(splitNotes, 20, currentY + 8);
+  const splitNotes = doc.splitTextToSize(booking.observacoes || 'Nenhum detalhe extra relatado pelo cliente.', 172);
+  doc.text(splitNotes, 19, currentY + 7);
 
   // 7. Security and instruction footer block
-  currentY += 41;
+  currentY += 37;
   doc.setFillColor(254, 252, 232); // Light yellow container
   doc.setDrawColor(254, 240, 138);
-  doc.rect(15, currentY, 180, 22, 'FD');
+  doc.roundedRect(15, currentY, 180, 22, 1, 1, 'FD');
+
+  // Decorative left stripe representing warning
+  doc.setFillColor(242, 183, 5);
+  doc.rect(15, currentY, 1.5, 22, 'F');
 
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
   doc.setTextColor(133, 77, 14);
-  doc.text('INFORMAÇÕES DE SEGURANÇA IMPORTANTES DA AGE ELÉTRICA:', 20, currentY + 6);
+  doc.text('INFORMAÇÕES DE SEGURANÇA IMPORTANTES DA AGE ELÉTRICA:', 19, currentY + 6);
   doc.setFont('Helvetica', 'normal');
-  doc.setTextColor(bodyText[0], bodyText[1], bodyText[2]);
-  doc.text('1. Nossos eletricistas sempre usam uniforme completo com logotipo da AGE Elétrica, crachá e EPIs.', 20, currentY + 11);
-  doc.text('2. Para sua segurança corporativa ou residencial, exija a identificação do técnico antes de liberar o acesso.', 20, currentY + 16);
+  doc.setTextColor(50, 50, 50);
+  doc.text('1. Nossos eletricistas sempre usam uniforme completo com logotipo da AGE Elétrica, crachá e EPIs.', 19, currentY + 11);
+  doc.text('2. Para sua segurança corporativa ou residencial, exija a identificação do técnico antes de liberar o acesso.', 19, currentY + 16);
 
   // 8. Signature & Metadata
   doc.setFont('Helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(mutedText[0], mutedText[1], mutedText[2]);
   const printedAt = new Date().toLocaleString('pt-BR');
-  doc.text(`Documento emitido na central do site da AGE Elétrica em ${printedAt}`, 15, 282);
-  doc.text('Este comprovante é totalmente eletrônico e autenticado.', 15, 285);
+  doc.text(`Documento emitido na central do site da AGE Elétrica em ${printedAt}`, 15, 280);
+  doc.text('Este comprovante é totalmente eletrônico e autenticado.', 15, 283);
 
   try {
     doc.save(`AGE-AGENDAMENTO-${booking.protocolId}.pdf`);
@@ -486,12 +504,17 @@ function drawCardHeader(
   height: number,
   color: number[]
 ) {
-  doc.setFillColor(9, 9, 9);
-  doc.rect(x, y, width, height, 'F');
+  doc.setFillColor(18, 18, 18);
+  doc.roundedRect(x, y, width, height, 1, 1, 'F');
+  
+  // Left border bar accent
+  doc.setFillColor(color[0], color[1], color[2]);
+  doc.rect(x, y, 1.5, height, 'F');
+  
   doc.setFont('Helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(color[0], color[1], color[2]);
-  doc.text(title, x + 4, y + 5);
+  doc.setFontSize(7.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text(title, x + 5, y + 4.5);
 }
 
 function boldColorHex(rgb: number[]): string {

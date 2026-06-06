@@ -65,16 +65,7 @@ function getBackendUrl(config: { backendApiUrl?: string }): string {
     return config.backendApiUrl.replace(/\/$/, '');
   }
 
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    const isVercel = host.endsWith('vercel.app') || host.includes('vercel') || host.includes('github.io') || host.includes('github.com');
-    const isCustomDomain = host.endsWith('ageeletrica.com') || host.endsWith('ageeletrica.com.br');
-    
-    if (isVercel || isCustomDomain) {
-      return 'https://ais-pre-fregyeqcolvecfwjkz35sy-46679672113.us-east1.run.app';
-    }
-  }
-
+  // Fallback cleanly to empty string for relative paths so requests route to the same domain (Vercel Serverless / GoDaddy domain)
   return '';
 }
 

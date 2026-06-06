@@ -22,7 +22,8 @@ import {
   ChevronRight,
   Sparkles,
   Menu,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 
 // Database core
@@ -50,6 +51,7 @@ import { AdminAgenda } from './AdminAgenda';
 import { AdminSolicitations } from './AdminSolicitations';
 import { AdminUsers } from './AdminUsers';
 import { AdminSettings } from './AdminSettings';
+import { AdminGmail } from './AdminGmail';
 import { ConfirmModal } from './ConfirmModal';
 
 interface AdminPanelProps {
@@ -91,7 +93,7 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
   const [config, setConfig] = useState<ConfiguracaoEmpresa | null>(null);
 
   // Active Tab state
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'agenda' | 'clientes' | 'servicos' | 'orcamentos' | 'recibos' | 'fila' | 'contas' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'agenda' | 'clientes' | 'servicos' | 'orcamentos' | 'recibos' | 'fila' | 'contas' | 'settings' | 'gmail'>('dashboard');
 
   // Load backend states on startup
   useEffect(() => {
@@ -729,6 +731,13 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
             {currentUser.nivelAcesso === 'Administrador' && (
               <>
                 <button
+                  onClick={() => setActiveTab('gmail')}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'gmail' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
+                >
+                  <Mail className="w-4 h-4 shrink-0" /> Correio & Gmail
+                </button>
+
+                <button
                   onClick={() => setActiveTab('contas')}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition ${activeTab === 'contas' ? 'bg-[#f2b705] text-black font-extrabold' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'}`}
                 >
@@ -867,6 +876,13 @@ export function AdminPanel({ onBackToSite, currentRoute, onNavigateToRoute }: Ad
                 onSaveUsers={handleSaveUsers}
                 userRole={currentUser.nivelAcesso}
                 currentUserEmail={currentUser.email}
+              />
+            )}
+
+            {activeTab === 'gmail' && config && (
+              <AdminGmail
+                clients={clients}
+                config={config}
               />
             )}
 
