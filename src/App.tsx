@@ -9,6 +9,7 @@ import { PublicSite } from './components/PublicSite';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { AppTecnico } from './components/AppTecnico';
 import { StandalonePrint } from './components/StandalonePrint';
+import { AgeEletricaDB } from './dataSeed';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<'portal' | 'app' | 'terminal-login' | 'terminal' | 'app-tecnico'>('app');
@@ -18,6 +19,13 @@ export default function App() {
 
   // Initialize and list popstate/hash triggers to enable physical back-forward phone controls
   useEffect(() => {
+    // Initial dynamic browser tab icon update
+    try {
+      AgeEletricaDB.updateBrowserFavicon();
+    } catch (e) {
+      console.error(e);
+    }
+
     const handleRouteSync = () => {
       const path = window.location.pathname;
       const hash = window.location.hash;

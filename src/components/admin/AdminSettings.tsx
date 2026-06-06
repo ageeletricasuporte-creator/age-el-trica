@@ -41,6 +41,7 @@ export function AdminSettings({
   const [whatsappStr, setWhatsappStr] = useState(config.whatsapp);
   const [logoStr, setLogoStr] = useState(config.logo || '');
   const [logoPdfStr, setLogoPdfStr] = useState(config.logoPdf || '');
+  const [faviconStr, setFaviconStr] = useState(config.favicon || '');
   const [bannerHeroStr, setBannerHeroStr] = useState(config.bannerHero || '');
   const [fotoSobreStr, setFotoSobreStr] = useState(config.fotoSobre || '');
   const [pixStr, setPixStr] = useState(config.chavePix);
@@ -51,6 +52,7 @@ export function AdminSettings({
   const [adminName, setAdminName] = useState(config.nomeAdministrador || 'Akson Pereira');
   const [dragActive, setDragActive] = useState(false);
   const [dragPdfActive, setDragPdfActive] = useState(false);
+  const [dragFaviconActive, setDragFaviconActive] = useState(false);
   const [dragBannerActive, setDragBannerActive] = useState(false);
   const [dragSobreActive, setDragSobreActive] = useState(false);
 
@@ -193,6 +195,22 @@ export function AdminSettings({
     }
   };
 
+  const handleFaviconUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Por favor, envie apenas arquivos de imagem válida (PNG, JPG, SVG, WebP, ICO)!');
+      return;
+    }
+    try {
+      // 64x64 is optimal for browser favicons to keep it extremely fast and lightweight
+      const compressed = await compressAndResizeImage(file, 64, 64, 0.75);
+      if (compressed) {
+        setFaviconStr(compressed);
+      }
+    } catch (err) {
+      setErrorMessage('Erro ao converter e otimizar logotipo do favicon.');
+    }
+  };
+
   const handleBannerHeroUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       setErrorMessage('Por favor, envie apenas arquivos de imagem válida (PNG, JPG, WebP, SVG)!');
@@ -280,6 +298,7 @@ export function AdminSettings({
       whatsapp: whatsappStr,
       logo: logoStr,
       logoPdf: logoPdfStr,
+      favicon: faviconStr,
       bannerHero: bannerHeroStr,
       fotoSobre: fotoSobreStr,
       chavePix: pixStr,
@@ -595,6 +614,111 @@ export function AdminSettings({
                   <button
                     type="button"
                     onClick={() => setLogoPdfStr('')}
+                    className="mt-2 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 py-0.5 px-2 rounded border border-red-500/20 transition"
+                  >
+                    Usar a mesma do site
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-zinc-900 pt-5">
+            <label className="text-xs text-zinc-400 block mb-2 font-bold text-amber-500">Logomarca do Favicon (Ícone das Abas do Navegador)</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                {/* Drag and Drop Zone */}
+                <div
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragFaviconActive(true);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragFaviconActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragFaviconActive(false);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setDragFaviconActive(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleFaviconUpload(e.dataTransfer.files[0]);
+                    }
+                  }}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition relative flex flex-col items-center justify-center min-h-[110px] ${
+                    dragFaviconActive
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700'
+                  }`}
+                  onClick={() => document.getElementById('favicon-file-picker')?.click()}
+                >
+                  <input
+                    type="file"
+                    id="favicon-file-picker"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleFaviconUpload(e.target.files[0]);
+                      }
+                    }}
+                  />
+                  <Upload className="w-5 h-5 text-amber-500 mb-1.5" />
+                  <span className="text-[11px] font-bold text-white block">Arraste a Logo do Favicon aqui ou Clique para Selecionar</span>
+                  <span className="text-[9px] text-zinc-500 block mt-0.5">Esta imagem compacta será exibida como ícone do site nas abas do navegador</span>
+                </div>
+
+                {/* Alternative URL Input */}
+                <div className="mt-2 text-[10px] text-zinc-500 font-mono">
+                  <span className="block mb-1 font-sans text-xs text-zinc-400">Opção Direta por Link (ou se preferir colar uma imagem existente):</span>
+                  <input
+                    type="text"
+                    value={faviconStr}
+                    onChange={(e) => setFaviconStr(e.target.value)}
+                    placeholder="Cole aqui o link da imagem (ou deixe em branco para herdar a logo principal acima)"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 px-3 text-xs text-white outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              {/* Preview Unit */}
+              <div className="bg-zinc-900/55 rounded-xl border border-zinc-800 flex flex-col items-center justify-center p-4">
+                <span className="text-[10px] text-zinc-500 font-mono uppercase mb-2 tracking-wider">Visualização Favicon</span>
+                <div className="w-24 h-24 bg-black/40 rounded-lg border border-zinc-950 flex items-center justify-center p-2 relative overflow-hidden font-sans">
+                  {faviconStr ? (
+                    <img
+                      src={faviconStr}
+                      alt="Logo do Favicon"
+                      className="max-w-[48px] max-h-[48px] object-contain rounded"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZjQ0NDQiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48bGluZSB4MT0iMTgiIHkxPSI2IiB4Mj0iNiIgeTI9IjE4Ij48L2xpbmU+PGxpbmUgeDE9IjYiIHkxPSI2IiB4Mj0iMTgiIHkyPSIxOCI+PC9saW5lPjwvc3ZnPg==';
+                      }}
+                    />
+                  ) : logoStr ? (
+                    <div className="text-zinc-600 flex flex-col items-center justify-center text-center">
+                      <img src={logoStr} alt="Herdada do Site" className="max-w-[28px] max-h-[28px] opacity-40 object-contain mb-1" referrerPolicy="no-referrer" />
+                      <span className="text-[8px] text-zinc-500 uppercase tracking-tight">Herdada do Site</span>
+                    </div>
+                  ) : (
+                    <div className="text-zinc-600 flex flex-col items-center justify-center">
+                      <Image className="w-6 h-6 mb-1 text-zinc-700" />
+                      <span className="text-[9px] text-zinc-650 font-bold uppercase">Padrão</span>
+                    </div>
+                  )}
+                </div>
+                {faviconStr && (
+                  <button
+                    type="button"
+                    onClick={() => setFaviconStr('')}
                     className="mt-2 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-400 py-0.5 px-2 rounded border border-red-500/20 transition"
                   >
                     Usar a mesma do site

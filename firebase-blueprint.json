@@ -184,6 +184,7 @@
         "estado": { "type": "string" },
         "logo": { "type": "string" },
         "logoPdf": { "type": "string" },
+        "favicon": { "type": "string" },
         "bannerHero": { "type": "string" },
         "corPrincipal": { "type": "string" },
         "corSecundaria": { "type": "string" },

@@ -27,6 +27,56 @@ import {
 import { db, handleFirestoreError, OperationType } from './firebase';
 import logoSvg from './assets/logo.svg';
 
+const logoSvgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="yellowLightningGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f2b705" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Premium Dark Solid Background representing high-durability electrical work -->
+  <rect width="512" height="512" rx="0" fill="#000000" />
+  
+  <g transform="translate(54, 0)">
+    <!-- Main Group "AGE" stylized and italicized -->
+    <g transform="skewX(-14)">
+      <!-- Letter 'A' (white) -->
+      <path d="M 50,300 L 120,140 H 180 L 250,300 H 200 L 185,260 H 115 L 100,300 Z M 125,225 H 175 L 150,175 Z" fill="#ffffff" />
+      
+      <!-- Letter 'G' (white) -->
+      <path d="M 370,140 H 290 V 300 H 370 V 235 H 330 V 253 H 352 V 282 H 308 V 158 H 370 Z" fill="#ffffff" />
+      
+      <!-- Letter 'E' (white) -->
+      <path d="M 385,140 H 460 V 158 H 403 V 212 H 450 V 230 H 403 V 282 H 460 V 300 H 385 Z" fill="#ffffff" />
+      
+      <!-- Overlay Lightning Bolt (Yellow, glowing, centered) - Skewed alongside letters for perfect alignment -->
+      <polygon points="230,70 290,70 220,195 295,195 180,350 215,215 170,215" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
+    </g>
+  </g>
+  
+  <!-- Subtitle text 'ELÉTRICA' in gold, spaced across the logo width, perfectly centered at x=256 -->
+  <text x="256" y="395" fill="#f2b705" font-family="'Inter', 'Space Grotesk', system-ui, sans-serif" font-size="28" font-weight="900" letter-spacing="18" text-anchor="middle">ELÉTRICA</text>
+</svg>`;
+
+// Standard robust Base64 encoder for browser and Node contexts supporting unicode
+const encodeBase64 = (str: string) => {
+  try {
+    if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+      return 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(str)));
+    }
+    return 'data:image/svg+xml;base64,' + Buffer.from(str).toString('base64');
+  } catch (e) {
+    return 'data:image/svg+xml;base64,';
+  }
+};
+
+export const PREMIUM_LOGO_BASE64 = encodeBase64(logoSvgContent);
+
 // Seed Services
 export const DEFAULT_SERVICES: Servico[] = [
   {
@@ -160,8 +210,8 @@ export const DEFAULT_CONFIG: ConfiguracaoEmpresa = {
   endereco: 'Av. Engenheiro Roberto Freire, 1200 - Capim Macio',
   cidade: 'Natal',
   estado: 'RN',
-  logo: logoSvg, // Elegant responsive SVG representation
-  logoPdf: logoSvg, // Exclusivo para PDFs
+  logo: PREMIUM_LOGO_BASE64, // Elegant responsive SVG representation
+  logoPdf: PREMIUM_LOGO_BASE64, // Exclusivo para PDFs
   bannerHero: '', // Banner Hero do site público
   fotoSobre: '', // Foto da seção Sobre do site público
   corPrincipal: '#f59e0b', // Yellow Amber
@@ -246,7 +296,33 @@ export class AgeEletricaDB {
     };
   }
 
+  public static updateBrowserFavicon(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const storedConfig = SafeStorage.getItem('config');
+      if (storedConfig) {
+        const conf = JSON.parse(storedConfig);
+        if (conf && conf.favicon) {
+          const links = document.querySelectorAll("link[rel='icon'], link[rel='shortcut icon']");
+          if (links.length > 0) {
+            links.forEach(link => {
+              link.setAttribute("href", conf.favicon);
+            });
+          } else {
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.href = conf.favicon;
+            document.head.appendChild(link);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error updating favicon dynamically:', e);
+    }
+  }
+
   private static notifySubscribers(): void {
+    this.updateBrowserFavicon();
     this.subscribers.forEach(cb => {
       try {
         cb();
@@ -308,9 +384,9 @@ export class AgeEletricaDB {
             conf.assinaturaDigital = 'Akson Pereira - Diretor Técnico AGE Elétrica';
             modified = true;
           }
-          if (!conf.logo || conf.logo === "" || conf.logo.includes("svg") === false) {
-            conf.logo = logoSvg;
-            conf.logoPdf = logoSvg;
+          if (!conf.logo) {
+            conf.logo = PREMIUM_LOGO_BASE64;
+            conf.logoPdf = PREMIUM_LOGO_BASE64;
             modified = true;
           }
           if (modified) {
@@ -324,6 +400,7 @@ export class AgeEletricaDB {
 
     // Connect to Firestore sync
     this.initFirebaseSync();
+    this.updateBrowserFavicon();
   }
 
   private static async checkAndSeedFirestore() {
@@ -351,11 +428,11 @@ export class AgeEletricaDB {
         await seedCol('solicitations', DEFAULT_SOLICITATIONS);
         console.log('Firebase Cloud database populated successfully!');
       } else {
-        // Force update cloud logo if empty or non-svg on cloud config
+        // Force update cloud logo if empty or different from the premium logo on cloud config
         const cloudConfigData = configDoc.data();
-        if (cloudConfigData && (!cloudConfigData.logo || cloudConfigData.logo === "" || !cloudConfigData.logo.includes("svg"))) {
-          console.log('Force updating cloud config with initial logoSvg...');
-          await setDoc(configRef, { logo: logoSvg, logoPdf: logoSvg }, { merge: true });
+        if (cloudConfigData && !cloudConfigData.logo) {
+          console.log('Force updating empty cloud config with premium PREMIUM_LOGO_BASE64...');
+          await setDoc(configRef, { logo: PREMIUM_LOGO_BASE64, logoPdf: PREMIUM_LOGO_BASE64 }, { merge: true });
         }
 
         // Migrate cloud admin user's password from Admin@123 to 1234

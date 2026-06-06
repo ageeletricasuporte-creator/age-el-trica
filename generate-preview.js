@@ -33,23 +33,25 @@ const svgContent = `
   <!-- Centered container for Logo (offset to align beautifully vertically and horizontally) -->
   <!-- Logo bounding box transformed to center X:600 Y:300 -->
   <g transform="translate(355, 45)">
-    <!-- Main Group "AGE" stylized and italicized -->
-    <g transform="skewX(-14)">
-      <!-- Letter 'A' (white) -->
-      <path d="M 85,300 L 155,140 H 195 L 265,300 H 220 L 205,260 H 145 L 130,300 Z M 153,225 H 197 L 175,175 Z" fill="#ffffff" />
-      
-      <!-- Letter 'G' (white) -->
-      <path d="M 335,140 H 255 V 300 H 335 V 250 H 295 V 265 H 318 V 285 H 272 V 155 H 335 Z" fill="#ffffff" />
-      
-      <!-- Letter 'E' (white) -->
-      <path d="M 350,140 H 425 V 158 H 368 V 212 H 415 V 230 H 368 V 282 H 428 V 300 H 350 Z" fill="#ffffff" />
+    <g transform="translate(54, 0)">
+      <!-- Main Group "AGE" stylized and italicized -->
+      <g transform="skewX(-14)">
+        <!-- Letter 'A' (white) -->
+        <path d="M 50,300 L 120,140 H 180 L 250,300 H 200 L 185,260 H 115 L 100,300 Z M 125,225 H 175 L 150,175 Z" fill="#ffffff" />
+        
+        <!-- Letter 'G' (white) -->
+        <path d="M 370,140 H 290 V 300 H 370 V 235 H 330 V 253 H 352 V 282 H 308 V 158 H 370 Z" fill="#ffffff" />
+        
+        <!-- Letter 'E' (white) -->
+        <path d="M 385,140 H 460 V 158 H 403 V 212 H 450 V 230 H 403 V 282 H 460 V 300 H 385 Z" fill="#ffffff" />
+        
+        <!-- Overlay Lightning Bolt (Yellow, glowing, centered) - Skewed alongside letters for perfect alignment -->
+        <polygon points="230,70 290,70 220,195 295,195 180,350 215,215 170,215" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
+      </g>
     </g>
-
-    <!-- Overlay Lightning Bolt (Yellow, glowing, centered) -->
-    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
     
-    <!-- Subtitle text 'ELÉTRICA' in spaced gold -->
-    <text x="240" y="375" fill="#f2b705" font-family="'Inter', 'Space Grotesk', 'Helvetica', sans-serif" font-size="26" font-weight="900" letter-spacing="18" text-anchor="middle" transform="translate(10, 0)">ELÉTRICA</text>
+    <!-- Subtitle text 'ELÉTRICA' in spaced gold, perfectly centered at x=256 -->
+    <text x="256" y="395" fill="#f2b705" font-family="'Inter', 'Space Grotesk', 'Helvetica', sans-serif" font-size="28" font-weight="900" letter-spacing="18" text-anchor="middle">ELÉTRICA</text>
   </g>
 </svg>
 `;
@@ -63,6 +65,7 @@ async function generate() {
   const outputPath = path.join(publicDir, 'preview-age-eletrica.png');
   const outputPathV3 = path.join(publicDir, 'preview-age-eletrica-v3.png');
   const logoOutputPath = path.join(publicDir, 'logo-age.png');
+  const srcAssetsLogoPath = path.join(process.cwd(), 'src', 'assets', 'logo.png');
   const faviconPath = path.join(publicDir, 'favicon.png');
   const appleIconPath = path.join(publicDir, 'apple-touch-icon.png');
   const ogImagePath = path.join(publicDir, 'og-image.png');
@@ -99,23 +102,25 @@ async function generate() {
   
   <!-- Centered and exactly 60% width scaled container -->
   <g transform="translate(101.5, 112) scale(0.60)">
-    <!-- Main Group "AGE" stylized and italicized -->
-    <g transform="skewX(-14)">
-      <!-- Letter 'A' (white) -->
-      <path d="M 85,300 L 155,140 H 195 L 265,300 H 220 L 205,260 H 145 L 130,300 Z M 153,225 H 197 L 175,175 Z" fill="#ffffff" />
-      
-      <!-- Letter 'G' (white) -->
-      <path d="M 335,140 H 255 V 300 H 335 V 250 H 295 V 265 H 318 V 285 H 272 V 155 H 335 Z" fill="#ffffff" />
-      
-      <!-- Letter 'E' (white) -->
-      <path d="M 350,140 H 425 V 158 H 368 V 212 H 415 V 230 H 368 V 282 H 428 V 300 H 350 Z" fill="#ffffff" />
+    <g transform="translate(54, 0)">
+      <!-- Main Group "AGE" stylized and italicized -->
+      <g transform="skewX(-14)">
+        <!-- Letter 'A' (white) -->
+        <path d="M 50,300 L 120,140 H 180 L 250,300 H 200 L 185,260 H 115 L 100,300 Z M 125,225 H 175 L 150,175 Z" fill="#ffffff" />
+        
+        <!-- Letter 'G' (white) -->
+        <path d="M 370,140 H 290 V 300 H 370 V 235 H 330 V 253 H 352 V 282 H 308 V 158 H 370 Z" fill="#ffffff" />
+        
+        <!-- Letter 'E' (white) -->
+        <path d="M 385,140 H 460 V 158 H 403 V 212 H 450 V 230 H 403 V 282 H 460 V 300 H 385 Z" fill="#ffffff" />
+        
+        <!-- Overlay Lightning Bolt (Yellow, glowing, centered) - Skewed alongside letters for perfect alignment -->
+        <polygon points="230,70 290,70 220,195 295,195 180,350 215,215 170,215" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
+      </g>
     </g>
-
-    <!-- Overlay Lightning Bolt (Yellow, glowing, centered) -->
-    <polygon points="210,85 275,85 210,215 285,215 178,365 208,235 160,235" fill="url(#yellowLightningGrad)" filter="url(#softGlow)" stroke="#000000" stroke-width="12" stroke-linejoin="round" />
     
-    <!-- Subtitle text 'ELÉTRICA' in gold, spaced across the logo width -->
-    <text x="240" y="375" fill="#f2b705" font-family="'Inter', 'Space Grotesk', system-ui, sans-serif" font-size="25" font-weight="900" letter-spacing="18" text-anchor="middle" transform="translate(10, 0)">ELÉTRICA</text>
+    <!-- Subtitle text 'ELÉTRICA' in gold, spaced across the logo width, perfectly centered at x=256 -->
+    <text x="256" y="395" fill="#f2b705" font-family="'Inter', 'Space Grotesk', system-ui, sans-serif" font-size="28" font-weight="900" letter-spacing="18" text-anchor="middle">ELÉTRICA</text>
   </g>
 </svg>
 `;
@@ -146,6 +151,17 @@ async function generate() {
       .png()
       .toFile(logoOutputPath);
     console.log(`Success! Logo brand PNG saved successfully to ${logoOutputPath}`);
+
+    // Render 512x512 src/assets/logo.png as well
+    const srcAssetsDir = path.dirname(srcAssetsLogoPath);
+    if (!fs.existsSync(srcAssetsDir)) {
+      fs.mkdirSync(srcAssetsDir, { recursive: true });
+    }
+    await sharp(Buffer.from(socialSvgContent))
+      .resize(512, 512)
+      .png()
+      .toFile(srcAssetsLogoPath);
+    console.log(`Success! src/assets/logo.png saved successfully to ${srcAssetsLogoPath}`);
 
     // Render 512x512 root icon-512.png
     await sharp(Buffer.from(socialSvgContent))
