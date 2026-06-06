@@ -515,14 +515,13 @@ export function AdminAgenda({
 
               <div>
                 <label className="text-xs text-zinc-400 block mb-1">Técnico/Eletricista Alocado de Prontidão</label>
-                <select
+                <input
+                  type="text"
+                  placeholder="Digite o nome do Técnico/Eletricista"
                   value={technician}
                   onChange={(e) => setTechnician(e.target.value)}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2 px-3 text-xs text-white"
-                >
-                  <option value="Carlos Silva (Eletricista)">Carlos Silva (Eletricista Certificado)</option>
-                  <option value="Geraldo Fonseca (AGE)">Geraldo Fonseca (Responsável Geral)</option>
-                </select>
+                />
               </div>
 
               <div>
