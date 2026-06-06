@@ -246,7 +246,21 @@ export function generateAppointmentPDF(
   doc.text(`Documento emitido na central do site da AGE Elétrica em ${printedAt}`, 15, 282);
   doc.text('Este comprovante é totalmente eletrônico e autenticado.', 15, 285);
 
-  doc.save(`AGE-AGENDAMENTO-${booking.protocolId}.pdf`);
+  try {
+    doc.save(`AGE-AGENDAMENTO-${booking.protocolId}.pdf`);
+  } catch (err) {
+    console.warn("Standard PDF save failed, using fallback:", err);
+  }
+
+  // Fallback designed specifically for Mobile App browsers (WhatsApp/Instagram/iOS Safari) which block blob downloads
+  try {
+    const rawBlob = doc.output('bloburl');
+    if (rawBlob) {
+      window.open(rawBlob, '_blank');
+    }
+  } catch (e) {
+    console.error("Blob URL open failed:", e);
+  }
 }
 
 /**
@@ -442,7 +456,21 @@ export function generateTechnicalReportPDF(
   doc.text(`Laudo gerado pelo Diário de Engenharia da AGE Elétrica em ${currentPrintedAt}`, 15, 282);
   doc.text('O selo de garantia assegura 90 dias de cobertura sobre reparos e 12 meses sobre mão de obra especializada conforme Código Civil brasileiro.', 15, 285);
 
-  doc.save(`AGE-LAUDO-TECNICO-${appointment.id.replace('atend-', '').toUpperCase()}.pdf`);
+  try {
+    doc.save(`AGE-LAUDO-TECNICO-${appointment.id.replace('atend-', '').toUpperCase()}.pdf`);
+  } catch (err) {
+    console.warn("Standard technical PDF save failed, using fallback:", err);
+  }
+
+  // Fallback designed specifically for Mobile App browsers (WhatsApp/Instagram/iOS Safari) which block blob downloads
+  try {
+    const rawBlob = doc.output('bloburl');
+    if (rawBlob) {
+      window.open(rawBlob, '_blank');
+    }
+  } catch (e) {
+    console.error("Blob URL open failed:", e);
+  }
 }
 
 // ==========================================

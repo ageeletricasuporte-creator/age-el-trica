@@ -60,6 +60,24 @@ interface PublicSiteProps {
   setPublicTab: (tab: 'home' | 'servicos' | 'sobre' | 'contato') => void;
 }
 
+function getBackendUrl(config: { backendApiUrl?: string }): string {
+  if (config?.backendApiUrl && config.backendApiUrl.trim() !== '') {
+    return config.backendApiUrl.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isVercel = host.endsWith('vercel.app') || host.includes('vercel') || host.includes('github.io') || host.includes('github.com');
+    const isCustomDomain = host.endsWith('ageeletrica.com') || host.endsWith('ageeletrica.com.br');
+    
+    if (isVercel || isCustomDomain) {
+      return 'https://ais-pre-fregyeqcolvecfwjkz35sy-46679672113.us-east1.run.app';
+    }
+  }
+
+  return '';
+}
+
 export function PublicSite({
   onNavigateToAdmin,
   onNavigateToAppTecnico,
@@ -340,7 +358,7 @@ export function PublicSite({
 
     // 2. Dispatch secure server-to-server HTML email dispatch report
     try {
-      await fetch(`${config.backendApiUrl || ''}/api/send-email`, {
+      await fetch(`${getBackendUrl(config)}/api/send-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -388,7 +406,7 @@ export function PublicSite({
     setClassificationSuccess(false);
 
     try {
-      const response = await fetch(`${config.backendApiUrl || ''}/api/classify`, {
+      const response = await fetch(`${getBackendUrl(config)}/api/classify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -444,7 +462,7 @@ export function PublicSite({
     setIsChatTyping(true);
 
     try {
-      const response = await fetch(`${config.backendApiUrl || ''}/api/chat`, {
+      const response = await fetch(`${getBackendUrl(config)}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
