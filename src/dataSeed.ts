@@ -335,16 +335,16 @@ export class AgeEletricaDB {
   public static initialize(): void {
     const isInitializedLocally = SafeStorage.getItem(this.initKey);
     if (!isInitializedLocally) {
-      SafeStorage.setItem('users', JSON.stringify(DEFAULT_USERS));
-      SafeStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
-      SafeStorage.setItem('clients', JSON.stringify(DEFAULT_CLIENTS));
-      SafeStorage.setItem('config', JSON.stringify(DEFAULT_CONFIG));
-      SafeStorage.setItem('budgets', JSON.stringify(DEFAULT_BUDGETS));
-      SafeStorage.setItem('budget_items', JSON.stringify(DEFAULT_BUDGET_ITEMS));
-      SafeStorage.setItem('receipts', JSON.stringify(DEFAULT_RECEIPTS));
-      SafeStorage.setItem('payments', JSON.stringify(DEFAULT_PAYMENTS));
-      SafeStorage.setItem('appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
-      SafeStorage.setItem('solicitations', JSON.stringify(DEFAULT_SOLICITATIONS));
+      if (!SafeStorage.getItem('users')) SafeStorage.setItem('users', JSON.stringify(DEFAULT_USERS));
+      if (!SafeStorage.getItem('services')) SafeStorage.setItem('services', JSON.stringify(DEFAULT_SERVICES));
+      if (!SafeStorage.getItem('clients')) SafeStorage.setItem('clients', JSON.stringify(DEFAULT_CLIENTS));
+      if (!SafeStorage.getItem('config')) SafeStorage.setItem('config', JSON.stringify(DEFAULT_CONFIG));
+      if (!SafeStorage.getItem('budgets')) SafeStorage.setItem('budgets', JSON.stringify(DEFAULT_BUDGETS));
+      if (!SafeStorage.getItem('budget_items')) SafeStorage.setItem('budget_items', JSON.stringify(DEFAULT_BUDGET_ITEMS));
+      if (!SafeStorage.getItem('receipts')) SafeStorage.setItem('receipts', JSON.stringify(DEFAULT_RECEIPTS));
+      if (!SafeStorage.getItem('payments')) SafeStorage.setItem('payments', JSON.stringify(DEFAULT_PAYMENTS));
+      if (!SafeStorage.getItem('appointments')) SafeStorage.setItem('appointments', JSON.stringify(DEFAULT_APPOINTMENTS));
+      if (!SafeStorage.getItem('solicitations')) SafeStorage.setItem('solicitations', JSON.stringify(DEFAULT_SOLICITATIONS));
       SafeStorage.setItem(this.initKey, 'true');
     } else {
       // Ensure admin user ageeletricasuporte@gmail.com has correct default or migrated password
@@ -404,6 +404,10 @@ export class AgeEletricaDB {
   }
 
   private static async checkAndSeedFirestore() {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      console.warn(`[Firestore Offline Warning] Device reports offline state. Skipping cloud synchronization check.`);
+      return;
+    }
     try {
       const configRef = doc(db, 'config', 'cfg-default');
       const configDoc = await getDoc(configRef);
@@ -450,8 +454,13 @@ export class AgeEletricaDB {
                 await setDoc(configRef, { backendApiUrl: currentOrigin }, { merge: true });
               }
             }
-          } catch (err) {
-            console.error('Error auto-registering backend API URL in Firestore:', err);
+          } catch (err: any) {
+            const errMsg = err instanceof Error ? err.message : String(err);
+            if (errMsg.toLowerCase().includes('offline')) {
+              console.warn('Network issue auto-registering backend API:', errMsg);
+            } else {
+              console.error('Error auto-registering backend API URL in Firestore:', err);
+            }
           }
         }
 
@@ -466,8 +475,13 @@ export class AgeEletricaDB {
               await setDoc(userDocRef, { senhaHash: '1234' }, { merge: true });
             }
           }
-        } catch (err) {
-          console.error('Error migrating cloud admin password:', err);
+        } catch (err: any) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          if (errMsg.toLowerCase().includes('offline')) {
+            console.warn('Network issue during cloud admin password migration:', errMsg);
+          } else {
+            console.error('Error migrating cloud admin password:', err);
+          }
         }
 
         // Force update cloud services count/IDs if they contain old services (or length is not 7)
@@ -485,8 +499,48 @@ export class AgeEletricaDB {
           console.log('Cloud services corrected with updated 7 items!');
         }
       }
-    } catch (e) {
-      console.error('Error during cloud check and seeding:', e);
+    } catch (e: any) {
+      const errMsg = e instanceof Error ? e.message : String(e);
+      const isOfflineMsg = errMsg.toLowerCase().includes('offline') || 
+                          errMsg.toLowerCase().includes('fetch') || 
+                          errMsg.toLowerCase().includes('network') || 
+                          errMsg.toLowerCase().includes('could not reach') ||
+                          errMsg.toLowerCase().includes('unavailable') ||
+                          errMsg.toLowerCase().includes('failed to get document') ||
+                          errMsg.toLowerCase().includes('client is offline');
+      if (isOfflineMsg) {
+        console.warn(`[Firestore Offline Warning] Cloud check was skipped because the client is offline/disconnected. Seamless local storage fallback is active.`);
+      } else {
+        console.error('Error during cloud check and seeding:', e);
+      }
+    }
+  }
+
+  private static async syncListToFirestoreBypass<T extends { id: string }>(
+    collectionName: string,
+    newList: T[]
+  ) {
+    try {
+      const docIdsInNewList = new Set(newList.map(item => item.id));
+      for (const item of newList) {
+        await setDoc(doc(db, collectionName, item.id), item);
+      }
+      const snapshot = await getDocs(collection(db, collectionName));
+      for (const d of snapshot.docs) {
+        if (!docIdsInNewList.has(d.id)) {
+          await deleteDoc(doc(db, collectionName, d.id));
+        }
+      }
+    } catch (error) {
+      console.error(`Error in syncListToFirestoreBypass for ${collectionName}:`, error);
+    }
+  }
+
+  private static async syncConfigToFirestoreBypass(data: ConfiguracaoEmpresa) {
+    try {
+      await setDoc(doc(db, 'config', 'cfg-default'), data);
+    } catch (error) {
+      console.error('Error in syncConfigToFirestoreBypass:', error);
     }
   }
 
@@ -514,7 +568,22 @@ export class AgeEletricaDB {
         // Listen specifically to 'cfg-default' for config to avoid sorting and rollback issues with multiple documents
         const docRef = doc(db, colInfo.name, 'cfg-default');
         onSnapshot(docRef, (docSnap) => {
-          if (!docSnap.exists()) return;
+          if (!docSnap.exists()) {
+            const localConfigStr = SafeStorage.getItem(colInfo.name);
+            if (localConfigStr) {
+              try {
+                const localConfig = JSON.parse(localConfigStr);
+                if (localConfig && localConfig.id) {
+                  console.warn(`[RESCUE] Config document does not exist in Firestore, but local storage has configuration. Restoring to cloud.`);
+                  this.syncConfigToFirestoreBypass(localConfig);
+                  return;
+                }
+              } catch (parseError) {
+                console.error(`[RESCUE] Error parsing local config:`, parseError);
+              }
+            }
+            return;
+          }
           this.syncingCloud = true;
           try {
             const docData = docSnap.data();
@@ -538,6 +607,21 @@ export class AgeEletricaDB {
         onSnapshot(collection(db, colInfo.name), (snapshot) => {
           this.syncingCloud = true;
           try {
+            if (snapshot.empty) {
+              const localDataStr = SafeStorage.getItem(colInfo.name);
+              if (localDataStr) {
+                try {
+                  const localData = JSON.parse(localDataStr);
+                  if (Array.isArray(localData) && localData.length > 0) {
+                    console.warn(`[RESCUE] Collection ${colInfo.name} is empty in Firestore, but local storage contains ${localData.length} records. Re-uploading to restore user data.`);
+                    this.syncListToFirestoreBypass(colInfo.name, localData);
+                    return;
+                  }
+                } catch (parseError) {
+                  console.error(`[RESCUE] Error parsing local storage data for ${colInfo.name}:`, parseError);
+                }
+              }
+            }
             const listData = snapshot.empty ? [] : snapshot.docs.map(d => d.data());
             SafeStorage.setItem(colInfo.name, JSON.stringify(listData));
             this.notifySubscribers();
@@ -561,7 +645,6 @@ export class AgeEletricaDB {
     collectionName: string,
     newList: T[]
   ) {
-    if (this.syncingCloud) return;
     try {
       const docIdsInNewList = new Set(newList.map(item => item.id));
       for (const item of newList) {
@@ -583,7 +666,6 @@ export class AgeEletricaDB {
   }
 
   private static async syncConfigToFirestore(data: ConfiguracaoEmpresa) {
-    if (this.syncingCloud) return;
     try {
       await setDoc(doc(db, 'config', 'cfg-default'), data);
     } catch (error) {

@@ -34,8 +34,26 @@ export interface FirestoreErrorInfo {
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errMsg = error instanceof Error ? error.message : String(error);
+
+  // Cleanly identify network / offline status to avoid triggering alarms or crashes
+  const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+  const isNetworkOrOfflineError = 
+    errMsg.toLowerCase().includes('offline') || 
+    errMsg.toLowerCase().includes('fetch') || 
+    errMsg.toLowerCase().includes('network') || 
+    errMsg.toLowerCase().includes('could not reach') ||
+    errMsg.toLowerCase().includes('unavailable') ||
+    errMsg.toLowerCase().includes('failed to get document') ||
+    errMsg.toLowerCase().includes('client is offline');
+
+  if (isOffline || isNetworkOrOfflineError) {
+    console.warn(`[Firestore Offline/Network Status] Operation '${operationType}' on '${path || 'unknown'}' deferred or handled offline: ${errMsg}`);
+    return; // Do not log as console.error and do not throw to maintain premium offline-first compatibility
+  }
+
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: errMsg,
     authInfo: {
       userId: auth.currentUser?.uid || null,
       email: auth.currentUser?.email || null,
